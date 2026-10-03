@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { PageId } from "../navigation";
 import {
@@ -23,11 +23,16 @@ function timeLabel(context: ScientificWorkspaceContext): string {
 
 export function ScientificContextBar({ page, onNavigate }: Props) {
   const [context, setContext] = useState(readScientificWorkspaceContext);
+  const detailsRef = useRef<HTMLDetailsElement>(null);
 
   useEffect(() => {
     setContext(readScientificWorkspaceContext());
     return subscribeScientificWorkspaceContext(setContext);
   }, []);
+
+  useEffect(() => {
+    if (detailsRef.current) detailsRef.current.open = page !== "explore";
+  }, [page]);
 
   const planned = context.blockMaterialization === "planned";
 
@@ -42,7 +47,7 @@ export function ScientificContextBar({ page, onNavigate }: Props) {
       data-time-kind={context.timeKind}
     >
       <div className="scientific-context-kicker">SHARED SCIENTIFIC CONTEXT</div>
-      <details defaultOpen={page !== "explore"}>
+      <details ref={detailsRef}>
         <summary>
           <span>{context.blockId}</span>
           <strong>{planned ? "PLANNED TARGET" : "VERIFIED CONTEXT"}</strong>
