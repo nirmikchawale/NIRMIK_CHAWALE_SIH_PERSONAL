@@ -1,0 +1,40 @@
+name: phase5-typecheck-diagnostics
+
+on:
+  push:
+    branches:
+      - ui/phase-5-shared-scientific-context
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
+      - name: Capture compiler output
+        working-directory: frontend
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck > /tmp/phase5-typecheck.log 2>&1
+          status=$?
+          {
+            echo '### Phase 5.0 typecheck diagnostics'
+            echo '```text'
+            cat /tmp/phase5-typecheck.log
+            echo '```'
+          } > /tmp/phase5-comment.md
+          gh pr comment 122 --repo "$GITHUB_REPOSITORY" --body-file /tmp/phase5-comment.md
+          exit $status
+        env:
+          GH_TOKEN: ${{ github.token }}
