@@ -1,0 +1,36 @@
+name: phase5-acceptance-patch
+
+on:
+  push:
+    branches:
+      - ui/phase-5-shared-scientific-context
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[phase5-acceptance-fixed]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Phase 5.0 branch
+        uses: actions/checkout@v4
+        with:
+          ref: ui/phase-5-shared-scientific-context
+          fetch-depth: 0
+
+      - name: Repair stale browser acceptance assertions
+        run: python .github/phase5_acceptance_patch.py
+
+      - name: Remove temporary acceptance patch machinery
+        run: |
+          rm .github/phase5_acceptance_patch.py
+          rm .github/workflows/phase5-acceptance-patch.yml
+
+      - name: Commit acceptance repairs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "test: align browser acceptance with current MVP [phase5-acceptance-fixed]"
+          git push origin HEAD:ui/phase-5-shared-scientific-context
