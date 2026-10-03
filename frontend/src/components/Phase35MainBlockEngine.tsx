@@ -168,7 +168,7 @@ export function Phase35MainBlockEngine() {
                   <span>Highlighted outline = target cell intersects the current verified baseline footprint</span>
                 </div>
 
-                <div className="phase35-block-grid" role="list" aria-label="140 logical Indian Ocean main blocks">
+                <div className="phase35-block-grid" role="group" aria-label="140 logical Indian Ocean main blocks">
                   {visibleBlocks.map((block) => {
                     const active = block.id === selected.id;
                     const overlapsCurrent = intersectsBaseline(block);
@@ -176,7 +176,6 @@ export function Phase35MainBlockEngine() {
                       <button
                         key={block.id}
                         type="button"
-                        role="listitem"
                         className={`phase35-block-cell ${active ? "active" : ""} ${overlapsCurrent ? "baseline-overlap" : ""}`}
                         aria-pressed={active}
                         aria-label={`${block.id}, ${block.region}, ${blockBoundsLabel(block)}, planned main block`}
