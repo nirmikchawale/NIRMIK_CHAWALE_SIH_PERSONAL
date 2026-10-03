@@ -1,0 +1,440 @@
+/* Phase 3 — Arabian Sea multi-block 3D atlas.
+   Presentation and spatial partitioning only; canonical scientific values remain unchanged. */
+
+.phase3-atlas-root {
+  position: relative;
+  z-index: 180;
+}
+
+.phase3-atlas-launcher {
+  position: fixed;
+  z-index: 181;
+  right: 18px;
+  bottom: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 210px;
+  min-height: 48px;
+  padding: 9px 13px;
+  border: 1px solid var(--glass-border-strong);
+  border-radius: 14px;
+  color: var(--glass-text);
+  background: color-mix(in srgb, var(--glass-panel-strong) 88%, transparent);
+  box-shadow: var(--glass-shadow-soft);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  cursor: pointer;
+}
+
+.phase3-atlas-launcher:hover,
+.phase3-atlas-launcher:focus-visible {
+  border-color: var(--glass-accent);
+  box-shadow: var(--glass-shadow), inset 0 0 0 1px color-mix(in srgb, var(--glass-accent) 26%, transparent);
+}
+
+.phase3-atlas-launcher > span:last-child {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+
+.phase3-atlas-launcher strong {
+  font-size: 12px;
+  line-height: 1.15;
+  letter-spacing: -.01em;
+}
+
+.phase3-atlas-launcher small {
+  color: var(--glass-muted);
+  font-size: 10px;
+  line-height: 1.15;
+}
+
+.phase3-live-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--glass-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--glass-accent) 14%, transparent), 0 0 18px color-mix(in srgb, var(--glass-accent) 55%, transparent);
+}
+
+.phase3-atlas-backdrop {
+  position: fixed;
+  z-index: 182;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--glass-canvas-deep) 56%, transparent);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.phase3-atlas-panel {
+  position: fixed;
+  z-index: 183;
+  top: 86px;
+  right: max(18px, calc((100vw - 1180px) / 2));
+  bottom: 50px;
+  left: max(18px, calc((100vw - 1180px) / 2));
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--glass-border-strong);
+  border-radius: 22px;
+  color: var(--glass-text);
+  background:
+    radial-gradient(circle at 14% 0%, var(--glass-orb-1), transparent 34%),
+    radial-gradient(circle at 88% 12%, var(--glass-orb-2), transparent 28%),
+    color-mix(in srgb, var(--glass-panel-strong) 92%, transparent);
+  box-shadow: 0 32px 100px color-mix(in srgb, var(--glass-canvas-deep) 64%, transparent), inset 0 1px 0 rgba(255, 255, 255, .09);
+  backdrop-filter: blur(24px) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(24px) saturate(var(--glass-saturate));
+}
+
+.phase3-atlas-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.phase3-kicker {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--glass-accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+.phase3-atlas-header h2 {
+  margin: 0;
+  font-size: clamp(21px, 2vw, 30px);
+  line-height: 1.05;
+  letter-spacing: -.035em;
+}
+
+.phase3-atlas-header p {
+  max-width: 840px;
+  margin: 8px 0 0;
+  color: var(--glass-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.phase3-atlas-close {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  color: var(--glass-text);
+  background: var(--glass-panel-soft);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.phase3-atlas-close:hover,
+.phase3-atlas-close:focus-visible {
+  border-color: var(--glass-accent);
+  color: var(--glass-accent);
+}
+
+.phase3-atlas-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 22px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.phase3-variable-switcher {
+  display: inline-flex;
+  gap: 5px;
+  padding: 3px;
+  border: 1px solid var(--glass-border);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--glass-panel) 84%, transparent);
+}
+
+.phase3-variable-switcher button {
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--glass-muted);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.phase3-variable-switcher button.active {
+  border-color: var(--glass-border-strong);
+  color: var(--glass-accent);
+  background: color-mix(in srgb, var(--glass-accent) 10%, var(--glass-panel));
+  box-shadow: inset 0 -2px var(--glass-accent);
+}
+
+.phase3-atlas-status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 12px;
+  min-width: 0;
+  color: var(--glass-muted);
+  font-size: 10px;
+}
+
+.phase3-atlas-status strong {
+  color: var(--glass-text);
+  font-size: 11px;
+}
+
+.phase3-atlas-error,
+.phase3-atlas-loading {
+  margin: 14px 22px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--glass-border-strong);
+  border-radius: 12px;
+  color: var(--glass-muted);
+  background: color-mix(in srgb, var(--glass-panel) 86%, transparent);
+  font-size: 11px;
+}
+
+.phase3-atlas-error {
+  display: grid;
+  gap: 4px;
+}
+
+.phase3-atlas-error strong {
+  color: var(--glass-text);
+}
+
+.phase3-atlas-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding: 10px 22px 0;
+  color: var(--glass-muted);
+  font-size: 10px;
+}
+
+.phase3-atlas-summary span:last-child {
+  color: var(--glass-accent);
+  font-weight: 700;
+}
+
+.phase3-sector-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  min-height: 0;
+  padding: 12px 22px 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.phase3-sector-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(96px, 1fr) auto auto;
+  min-width: 0;
+  min-height: 178px;
+  padding: 10px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  color: var(--glass-text);
+  background:
+    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--glass-accent) 9%, transparent), transparent 50%),
+    color-mix(in srgb, var(--glass-panel) 84%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 150ms ease, border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.phase3-sector-card:hover,
+.phase3-sector-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--glass-border-strong);
+  box-shadow: var(--glass-shadow-soft);
+}
+
+.phase3-sector-card.active {
+  border-color: var(--glass-accent);
+  background:
+    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--glass-accent) 16%, transparent), transparent 52%),
+    color-mix(in srgb, var(--glass-panel-strong) 92%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--glass-accent) 18%, transparent), var(--glass-shadow-soft);
+}
+
+.phase3-sector-card-head,
+.phase3-sector-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.phase3-sector-card-head strong {
+  color: var(--glass-accent);
+  font-size: 11px;
+  letter-spacing: .04em;
+}
+
+.phase3-sector-card-head span,
+.phase3-sector-meta {
+  color: var(--glass-muted);
+  font-size: 9px;
+}
+
+.phase3-sector-canvas {
+  width: 100%;
+  height: 112px;
+  min-width: 0;
+  touch-action: none;
+}
+
+.phase3-sector-meta {
+  padding-top: 3px;
+}
+
+.phase3-atlas-footer {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 12px;
+  padding: 12px 22px 14px;
+  border-top: 1px solid var(--glass-border);
+  color: var(--glass-muted);
+  background: color-mix(in srgb, var(--glass-panel-strong) 70%, transparent);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.phase3-atlas-footer strong {
+  color: var(--glass-accent);
+  letter-spacing: .06em;
+}
+
+@media (max-width: 960px) {
+  .phase3-atlas-panel {
+    top: 76px;
+    right: 12px;
+    bottom: 44px;
+    left: 12px;
+    border-radius: 18px;
+  }
+
+  .phase3-sector-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .phase3-atlas-launcher {
+    right: max(10px, env(safe-area-inset-right));
+    bottom: calc(96px + env(safe-area-inset-bottom));
+    min-width: 0;
+    max-width: calc(100vw - 20px);
+  }
+
+  .phase3-atlas-panel {
+    top: max(8px, env(safe-area-inset-top));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    left: max(8px, env(safe-area-inset-left));
+  }
+
+  .phase3-atlas-header {
+    padding: 16px 16px 12px;
+  }
+
+  .phase3-atlas-header p {
+    font-size: 11px;
+  }
+
+  .phase3-atlas-toolbar {
+    display: grid;
+    gap: 9px;
+    padding: 10px 16px;
+  }
+
+  .phase3-variable-switcher {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .phase3-variable-switcher button {
+    min-width: 0;
+    padding-inline: 6px;
+  }
+
+  .phase3-atlas-status {
+    justify-content: flex-start;
+  }
+
+  .phase3-atlas-summary {
+    padding: 9px 16px 0;
+  }
+
+  .phase3-sector-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px 16px 14px;
+  }
+
+  .phase3-sector-card {
+    min-height: 166px;
+    padding: 8px;
+  }
+
+  .phase3-sector-canvas {
+    height: 96px;
+  }
+
+  .phase3-atlas-footer {
+    grid-template-columns: 1fr;
+    padding: 10px 16px 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .phase3-sector-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .phase3-sector-card {
+    min-height: 178px;
+  }
+
+  .phase3-sector-canvas {
+    height: 112px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phase3-sector-card,
+  .phase3-atlas-launcher {
+    transition: none !important;
+  }
+}
