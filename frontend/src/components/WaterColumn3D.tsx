@@ -11,6 +11,15 @@ import {
 import type { ColorPalette, ColorScaleMode, CurrentsVolumeResponse, VolumeResponse } from "../types";
 import { displayUnits } from "../units";
 import { paletteCssGradient, paletteHsl } from "../palettes";
+import { CURRENT_VERIFIED_BASELINE, blockBoundsLabel, type OceanMainBlock } from "../main-block-engine";
+import {
+  activeMainBlockRegion,
+  isVerifiedBaseline,
+  publishActiveMainBlockId,
+  readActiveMainBlockId,
+  resolveMainBlock,
+  subscribeActiveMainBlock
+} from "../main-block-runtime";
 import { CameraOrientationHud, type CameraPreset } from "./CameraOrientationHud";
 
 interface Props {
@@ -163,6 +172,131 @@ function buildIsoTriangles(volume: VolumeResponse, isoValue: number, limit = 120
   return triangles;
 }
 
+function PlannedMainBlockShell({ block, theme }: { block: OceanMainBlock; theme: "dark" | "light" }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+
+    const draw = () => {
+      const rect = canvas.getBoundingClientRect();
+      const width = Math.max(1, rect.width);
+      const height = Math.max(1, rect.height);
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      context.clearRect(0, 0, width, height);
+
+      const dark = theme === "dark";
+      const background = context.createRadialGradient(width * 0.5, height * 0.4, 10, width * 0.5, height * 0.45, Math.max(width, height) * 0.72);
+      background.addColorStop(0, dark ? "#0a2a3b" : "#f6fbfd");
+      background.addColorStop(1, dark ? "#01070c" : "#dceaf0");
+      context.fillStyle = background;
+      context.fillRect(0, 0, width, height);
+
+      const yaw = -0.72;
+      const pitch = -0.46;
+      const scale = Math.min(width * 0.76, Math.max(180, height - 150) * 0.86);
+      const project = (x: number, y: number, z: number) => {
+        const cosYaw = Math.cos(yaw), sinYaw = Math.sin(yaw);
+        const x1 = x * cosYaw - z * sinYaw;
+        const z1 = x * sinYaw + z * cosYaw;
+        const cosPitch = Math.cos(pitch), sinPitch = Math.sin(pitch);
+        const y1 = y * cosPitch - z1 * sinPitch;
+        const z2 = y * sinPitch + z1 * cosPitch;
+        const perspective = 1 / Math.max(2.25, 3.1 + z2 * 0.48);
+        return { x: width * 0.52 + x1 * scale * perspective, y: height * 0.48 + y1 * scale * perspective };
+      };
+
+      const corners = [
+        [-1, 0, -1], [1, 0, -1], [1, 0, 1], [-1, 0, 1],
+        [-1, 1.7, -1], [1, 1.7, -1], [1, 1.7, 1], [-1, 1.7, 1]
+      ] as const;
+      const points = corners.map(([x, y, z]) => project(x, y, z));
+      const edges = [
+        [0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4],
+        [0, 4], [1, 5], [2, 6], [3, 7]
+      ] as const;
+      context.strokeStyle = dark ? "rgba(111,230,250,.78)" : "rgba(18,121,153,.72)";
+      context.lineWidth = 1.5;
+      for (const [a, b] of edges) {
+        context.beginPath();
+        context.moveTo(points[a].x, points[a].y);
+        context.lineTo(points[b].x, points[b].y);
+        context.stroke();
+      }
+
+      for (let layer = 1; layer < 5; layer += 1) {
+        const y = (layer / 5) * 1.7;
+        const layerPoints = [project(-1, y, -1), project(1, y, -1), project(1, y, 1), project(-1, y, 1)];
+        context.beginPath();
+        layerPoints.forEach((point, index) => index ? context.lineTo(point.x, point.y) : context.moveTo(point.x, point.y));
+        context.closePath();
+        context.strokeStyle = dark ? "rgba(100,190,218,.19)" : "rgba(45,104,126,.18)";
+        context.lineWidth = 1;
+        context.stroke();
+      }
+
+      context.fillStyle = dark ? "rgba(210,240,247,.72)" : "rgba(31,75,91,.74)";
+      context.font = "11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+      context.fillText(`${block.west.toFixed(0)}°E`, points[0].x - 18, points[0].y - 8);
+      context.fillText(`${block.east.toFixed(0)}°E`, points[1].x - 2, points[1].y - 8);
+      context.fillText(`${block.south.toFixed(0)}°N`, points[0].x - 18, points[0].y + 16);
+      context.fillText(`${block.north.toFixed(0)}°N`, points[3].x - 18, points[3].y + 16);
+      context.fillText("SOURCE DEPTH AXIS PENDING", points[7].x + 8, points[7].y);
+    };
+
+    const observer = new ResizeObserver(draw);
+    observer.observe(canvas);
+    draw();
+    return () => observer.disconnect();
+  }, [block, theme]);
+
+  return (
+    <main
+      className="globe-shell water-column-shell planned-main-block-shell"
+      data-main-block-id={block.id}
+      data-materialization="planned"
+      data-scientific-values="0"
+      aria-label={`Planned Water Column 3D shell for ${block.id}`}
+    >
+      <canvas ref={canvasRef} className="planned-main-block-canvas" aria-hidden="true" />
+      <section className="main-block-water-shell-summary" data-testid="planned-main-block-shell">
+        <div className="main-block-water-shell-heading">
+          <div>
+            <span>INTEGRATED WATER COLUMN TARGET</span>
+            <strong>PLANNED TARGET · NO MATERIALIZED VOLUME</strong>
+            <small>{block.id} · {activeMainBlockRegion(block)} · {blockBoundsLabel(block)}</small>
+          </div>
+          <span className="main-block-status-pill">0 values</span>
+        </div>
+        <dl className="main-block-water-shell-meta">
+          <div><dt>Geographic footprint</dt><dd>{blockBoundsLabel(block)}</dd></div>
+          <div><dt>Source plan</dt><dd>GLORYS12V1 historical + verified operational companion</dd></div>
+          <div><dt>Variables reserved</dt><dd>Temperature · Salinity · horizontal currents</dd></div>
+          <div><dt>Time hierarchy</dt><dd>Block → date → native time → variable → depth</dd></div>
+          <div><dt>Depth geometry</dt><dd>Source depth axis pending genuine materialization</dd></div>
+          <div><dt>Scientific values</dt><dd>0 bundled for this target; none copied from the baseline</dd></div>
+        </dl>
+        <div className="main-block-water-shell-actions">
+          <button type="button" onClick={() => publishActiveMainBlockId(CURRENT_VERIFIED_BASELINE.id)}>
+            Return to verified baseline volume
+          </button>
+        </div>
+      </section>
+      <div className="main-block-water-shell-disclosure" role="status">
+        <strong>SCIENTIFIC BOUNDARY</strong>
+        <span>This is the real geographic shell for {block.id}, integrated into the same Water Column 3D workflow.</span>
+        <small>No temperature, salinity, current or depth values are fabricated. Phase 3.5B can replace this empty shell only after a genuine source-backed volume is acquired and verified.</small>
+      </div>
+    </main>
+  );
+}
+
 export function WaterColumn3D({
   volume,
   currentsVolume,
@@ -186,6 +320,10 @@ export function WaterColumn3D({
   const [orbit, setOrbit] = useState(DEFAULT_ORBIT);
   const [cameraPreset, setCameraPreset] = useState<CameraPreset>("perspective");
   const [hover, setHover] = useState<HoverPoint | null>(null);
+  const [activeMainBlockId, setActiveMainBlockId] = useState(readActiveMainBlockId);
+  const activeMainBlock = resolveMainBlock(activeMainBlockId);
+
+  useEffect(() => subscribeActiveMainBlock(setActiveMainBlockId), []);
 
   const depthLevels = useMemo(() => {
     if (volume) return Array.from(new Set(volume.points.map((point) => point[2]))).sort((a, b) => a - b);
@@ -651,6 +789,10 @@ export function WaterColumn3D({
     }
   };
 
+  if (!isVerifiedBaseline(activeMainBlock)) {
+    return <PlannedMainBlockShell block={activeMainBlock} theme={theme} />;
+  }
+
   if (!volume && !currentsVolume) {
     return (
       <main className="globe-shell water-column-shell water-column-loading">
@@ -676,7 +818,14 @@ export function WaterColumn3D({
       data-iso-triangles={isoTriangles.length}
       data-current-vector-count={currentsVolume?.vectors.length ?? 0}
       data-current-depth-count={currentsVolume?.depths_m.length ?? 0}
+      data-main-block-id={CURRENT_VERIFIED_BASELINE.id}
+      data-materialization="verified-baseline"
     >
+      <div className="water-column-main-block-context" aria-label="Active verified main block">
+        <span>ACTIVE MAIN BLOCK</span>
+        <strong>{CURRENT_VERIFIED_BASELINE.id} · VERIFIED VOLUME</strong>
+        <small>{blockBoundsLabel(CURRENT_VERIFIED_BASELINE)} · 31 verified depth levels · current source-backed GLORYS baseline</small>
+      </div>
       <canvas
         ref={canvasRef}
         className="water-column-canvas"

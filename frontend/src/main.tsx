@@ -18,6 +18,7 @@ import "./phase3-atlas.css";
 import "./phase35-main-block-engine.css";
 import "./viewport-lock.css";
 import "./theme-gallery-alignment.css";
+import "./main-block-globe-integration.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -40,6 +40,22 @@ import type {
 } from "../types";
 import { displayUnits } from "../units";
 import { paletteCssGradient, paletteHsl } from "../palettes";
+import {
+  CURRENT_VERIFIED_BASELINE,
+  INDIAN_OCEAN_MAIN_BLOCKS,
+  TARGET_BLOCK_COUNT,
+  TARGET_DOMAIN,
+  blockBoundsLabel
+} from "../main-block-engine";
+import {
+  activeMainBlockRegion,
+  findTargetBlockAt,
+  isVerifiedBaseline,
+  publishActiveMainBlockId,
+  readActiveMainBlockId,
+  resolveMainBlock,
+  subscribeActiveMainBlock
+} from "../main-block-runtime";
 import { CameraOrientationHud, type CameraPreset } from "./CameraOrientationHud";
 
 interface Inspection {
@@ -148,6 +164,16 @@ export function OceanGlobe({
   const [imageryStatus, setImageryStatus] = useState<"connecting" | "online" | "offline" | "grid">("connecting");
   const [introPhase, setIntroPhase] = useState<"idle" | "earth" | "india" | "flying" | "region">("idle");
   const [regionEntryArmed, setRegionEntryArmed] = useState(true);
+  const [activeMainBlockId, setActiveMainBlockId] = useState(readActiveMainBlockId);
+  const activeMainBlock = resolveMainBlock(activeMainBlockId);
+
+  useEffect(() => subscribeActiveMainBlock(setActiveMainBlockId), []);
+
+  const selectMainBlock = (id: string) => {
+    const selectedId = publishActiveMainBlockId(id);
+    setActiveMainBlockId(selectedId);
+    setInspection(null);
+  };
 
   useEffect(() => {
     enterWaterColumnRef.current = onEnterWaterColumn;
@@ -244,7 +270,7 @@ export function OceanGlobe({
         setIntroPhase("region");
         setCameraHeight(viewer.camera.positionCartographic.height);
       };
-      const destination = Rectangle.fromDegrees(66.35, 11.35, 70.65, 14.65);
+      const destination = Rectangle.fromDegrees(TARGET_DOMAIN.west - 1.5, TARGET_DOMAIN.south - 2, TARGET_DOMAIN.east + 1.5, TARGET_DOMAIN.north + 2);
       if (skip) {
         viewer.camera.setView({ destination });
         finish();
@@ -288,9 +314,9 @@ export function OceanGlobe({
         });
       }, 900);
     };
-    // Always orient the viewer from Earth → India → verified ocean field on mount.
-    // This guarantees a fresh open or refresh never drops a judge directly into
-    // an unexplained regional map. Skip remains available for repeat users.
+    // Always orient the viewer from Earth → India → the integrated Indian Ocean block field on mount.
+    // The 140 logical targets are geographic planning geometry only; the verified GLORYS
+    // baseline remains the sole source-backed ocean volume until later materialization phases.
     journeyRef.current(false);
     // Keep judge-facing camera telemetry valid immediately, even while the
     // opening journey is still animating. This prevents transient 0-height
@@ -306,11 +332,55 @@ export function OceanGlobe({
         positions: Cartesian3.fromDegreesArray([
           67, 12, 70, 12, 70, 14, 67, 14, 67, 12
         ]),
-        width: 2.5,
-        material: Color.fromCssColorString("#4ad7f5").withAlpha(0.85)
+        width: 3.2,
+        material: Color.fromCssColorString("#ffd56a").withAlpha(0.96)
       }
     });
     void boundary;
+
+    viewer.entities.add({
+      id: "main-block-domain-boundary",
+      polyline: {
+        positions: Cartesian3.fromDegreesArray([
+          TARGET_DOMAIN.west, TARGET_DOMAIN.south,
+          TARGET_DOMAIN.east, TARGET_DOMAIN.south,
+          TARGET_DOMAIN.east, TARGET_DOMAIN.north,
+          TARGET_DOMAIN.west, TARGET_DOMAIN.north,
+          TARGET_DOMAIN.west, TARGET_DOMAIN.south
+        ]),
+        width: 2.2,
+        material: Color.fromCssColorString("#70e1f5").withAlpha(0.82)
+      }
+    });
+
+    for (const block of INDIAN_OCEAN_MAIN_BLOCKS) {
+      viewer.entities.add({
+        id: `main-block:${block.id}`,
+        rectangle: {
+          coordinates: Rectangle.fromDegrees(block.west, block.south, block.east, block.north),
+          height: 1_250,
+          material: Color.fromCssColorString("#53c9e8").withAlpha(0.035),
+          outline: true,
+          outlineColor: Color.fromCssColorString("#65d5ef").withAlpha(0.46)
+        }
+      });
+    }
+
+    viewer.entities.add({
+      id: "verified-main-block-footprint",
+      rectangle: {
+        coordinates: Rectangle.fromDegrees(
+          CURRENT_VERIFIED_BASELINE.west,
+          CURRENT_VERIFIED_BASELINE.south,
+          CURRENT_VERIFIED_BASELINE.east,
+          CURRENT_VERIFIED_BASELINE.north
+        ),
+        height: 1_650,
+        material: Color.fromCssColorString("#ffd56a").withAlpha(0.09),
+        outline: true,
+        outlineColor: Color.fromCssColorString("#ffd56a").withAlpha(0.96)
+      }
+    });
 
     viewerRef.current = viewer;
 
@@ -341,6 +411,8 @@ export function OceanGlobe({
         entryAvailableRef.current &&
         (pickedId?.kind === "ocean-inspection" || entityId === "model-domain-boundary")
       ) {
+        publishActiveMainBlockId(CURRENT_VERIFIED_BASELINE.id);
+        setActiveMainBlockId(CURRENT_VERIFIED_BASELINE.id);
         setInspection(null);
         enterWaterColumnRef.current();
         return;
@@ -361,9 +433,21 @@ export function OceanGlobe({
         const insideStudyFrame =
           longitude >= 66.35 && longitude <= 70.65 && latitude >= 11.35 && latitude <= 14.65;
 
-        if (insideStudyFrame && regionEntryArmedRef.current && entryAvailableRef.current) {
+        if (insideStudyFrame) {
+          publishActiveMainBlockId(CURRENT_VERIFIED_BASELINE.id);
+          setActiveMainBlockId(CURRENT_VERIFIED_BASELINE.id);
+          if (regionEntryArmedRef.current && entryAvailableRef.current) {
+            setInspection(null);
+            enterWaterColumnRef.current();
+          }
+          return;
+        }
+
+        const targetBlock = findTargetBlockAt(longitude, latitude);
+        if (targetBlock) {
+          publishActiveMainBlockId(targetBlock.id);
+          setActiveMainBlockId(targetBlock.id);
           setInspection(null);
-          enterWaterColumnRef.current();
           return;
         }
       }
@@ -395,6 +479,50 @@ export function OceanGlobe({
       viewerRef.current = null;
     };
   }, [onSelectProfile, onSelectImportedProfile]);
+
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer || viewer.isDestroyed()) return;
+
+    viewer.entities.removeById("active-main-block-highlight");
+    const block = resolveMainBlock(activeMainBlockId);
+    const verified = isVerifiedBaseline(block);
+    const centreLon = (block.west + block.east) / 2;
+    const centreLat = (block.south + block.north) / 2;
+    const outline = verified
+      ? Color.fromCssColorString("#ffd56a")
+      : Color.fromCssColorString("#e9fbff");
+    const fill = verified
+      ? Color.fromCssColorString("#ffd56a").withAlpha(0.12)
+      : Color.fromCssColorString("#6fe6fa").withAlpha(0.12);
+
+    viewer.entities.add({
+      id: "active-main-block-highlight",
+      position: Cartesian3.fromDegrees(centreLon, centreLat, 28_000),
+      rectangle: {
+        coordinates: Rectangle.fromDegrees(block.west, block.south, block.east, block.north),
+        height: 2_600,
+        material: fill,
+        outline: true,
+        outlineColor: outline
+      },
+      label: {
+        text: verified ? `${block.id} · VERIFIED` : `${block.id} · PLANNED`,
+        font: "700 12px system-ui",
+        fillColor: Color.WHITE,
+        outlineColor: Color.fromCssColorString("#04111d"),
+        outlineWidth: 4,
+        style: LabelStyle.FILL_AND_OUTLINE,
+        showBackground: true,
+        backgroundColor: Color.fromCssColorString("#04111d").withAlpha(0.82),
+        backgroundPadding: new Cartesian2(7, 4),
+        verticalOrigin: VerticalOrigin.BOTTOM,
+        horizontalOrigin: HorizontalOrigin.CENTER,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY
+      }
+    });
+    viewer.scene.requestRender();
+  }, [activeMainBlockId]);
 
   useEffect(() => {
     const viewer = viewerRef.current;
@@ -1102,6 +1230,39 @@ export function OceanGlobe({
 
   const fitStudyRegion = () => applyCameraPreset("basin");
 
+  const fitMainBlock = (id = activeMainBlockId) => {
+    const viewer = cancelCameraAnimation();
+    if (!viewer) return;
+    const block = resolveMainBlock(id);
+    const lonPad = Math.max(0.35, (block.east - block.west) * 0.22);
+    const latPad = Math.max(0.3, (block.north - block.south) * 0.22);
+    viewer.camera.flyTo({
+      destination: Rectangle.fromDegrees(
+        block.west - lonPad,
+        block.south - latPad,
+        block.east + lonPad,
+        block.north + latPad
+      ),
+      duration: cameraDuration(0.62),
+      complete: () => setCameraHeight(viewer.camera.positionCartographic.height)
+    });
+  };
+
+  const fitIndianOceanBlocks = () => {
+    const viewer = cancelCameraAnimation();
+    if (!viewer) return;
+    viewer.camera.flyTo({
+      destination: Rectangle.fromDegrees(
+        TARGET_DOMAIN.west - 1.5,
+        TARGET_DOMAIN.south - 2,
+        TARGET_DOMAIN.east + 1.5,
+        TARGET_DOMAIN.north + 2
+      ),
+      duration: cameraDuration(0.72),
+      complete: () => setCameraHeight(viewer.camera.positionCartographic.height)
+    });
+  };
+
   const showEarthView = () => {
     const viewer = cancelCameraAnimation();
     if (!viewer) return;
@@ -1157,8 +1318,76 @@ export function OceanGlobe({
       data-color-max={colorMaximum}
       data-imported-profile-count={importedProfiles.length}
       data-selected-imported-profile={selectedImportedProfileId}
+      data-main-block-count={TARGET_BLOCK_COUNT}
+      data-active-main-block={activeMainBlock.id}
+      data-active-main-block-materialization={isVerifiedBaseline(activeMainBlock) ? "verified-baseline" : "planned"}
     >
       <div ref={containerRef} className="cesium-host" />
+      <section
+        className="main-block-globe-hud"
+        data-testid="integrated-main-block-hud"
+        data-intro-ready={introPhase === "region" ? "true" : "false"}
+        aria-label="Integrated Indian Ocean main block controls"
+      >
+        <div className="main-block-globe-heading">
+          <div>
+            <span>INDIAN OCEAN MAIN EARTH MODEL</span>
+            <strong>{activeMainBlock.id} · {activeMainBlockRegion(activeMainBlock)}</strong>
+            <small>{blockBoundsLabel(activeMainBlock)}</small>
+          </div>
+          <span className={`main-block-status-pill ${isVerifiedBaseline(activeMainBlock) ? "verified" : ""}`}>
+            {isVerifiedBaseline(activeMainBlock) ? "Verified volume" : "Planned target"}
+          </span>
+        </div>
+        <label>
+          <span>Active main block</span>
+          <select
+            aria-label="Active main block"
+            value={activeMainBlock.id}
+            onChange={(event) => {
+              selectMainBlock(event.target.value);
+              window.setTimeout(() => fitMainBlock(event.target.value), 0);
+            }}
+          >
+            <option value={CURRENT_VERIFIED_BASELINE.id}>BASE-GLORYS-001 · verified 67–70°E / 12–14°N</option>
+            {INDIAN_OCEAN_MAIN_BLOCKS.map((block) => (
+              <option key={block.id} value={block.id}>
+                {block.id} · {block.region} · {block.west}–{block.east}°E / {block.south}–{block.north}°N
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="main-block-globe-stats" aria-label="Main block materialization status">
+          <div><span>Logical grid</span><strong>{TARGET_BLOCK_COUNT} blocks</strong></div>
+          <div><span>New volumes</span><strong>0 materialized</strong></div>
+          <div><span>Verified now</span><strong>1 baseline</strong></div>
+        </div>
+        <div className="main-block-grid-key" aria-label="Block map legend">
+          <span><i /> Planned footprint</span>
+          <span className="verified"><i /> Verified baseline</span>
+          <span className="active"><i /> Active selection</span>
+        </div>
+        <div className="main-block-globe-actions">
+          <button type="button" onClick={() => fitMainBlock()}>Fit selected block</button>
+          <button type="button" onClick={fitIndianOceanBlocks}>Fit 140-block field</button>
+          <button
+            type="button"
+            className="primary"
+            disabled={!canEnterWaterColumn}
+            onClick={() => enterWaterColumnRef.current()}
+          >
+            Open in Water Column 3D
+          </button>
+          <button type="button" onClick={() => { selectMainBlock(CURRENT_VERIFIED_BASELINE.id); fitMainBlock(CURRENT_VERIFIED_BASELINE.id); }}>
+            Verified baseline
+          </button>
+        </div>
+        <p className="main-block-globe-boundary-note">
+          {isVerifiedBaseline(activeMainBlock)
+            ? <>This footprint carries the <strong>current source-backed GLORYS volume</strong>.</>
+            : <>This footprint is integrated into the Earth model but carries <strong>no copied or synthetic ocean values</strong> until materialized from source data.</>}
+        </p>
+      </section>
       <div className="renderer-tools" aria-label="Ocean view tools">
       {selectedProfile && profileCalloutOpen && (
         <div
@@ -1258,7 +1487,7 @@ export function OceanGlobe({
         <div className="journey-stops" aria-live="polite">
           <span className={introPhase === "earth" ? "active" : ""}>01 Earth</span><i aria-hidden="true">→</i>
           <span className={introPhase === "india" ? "active" : ""}>02 India</span><i aria-hidden="true">→</i>
-          <span className={introPhase === "flying" || introPhase === "region" ? "active" : ""}>03 Ocean field</span>
+          <span className={introPhase === "flying" || introPhase === "region" ? "active" : ""}>03 140-block ocean field</span>
         </div>
         <button
           type="button"
@@ -1282,21 +1511,21 @@ export function OceanGlobe({
             ? "01 · EARTH / ONE CONNECTED SYSTEM"
             : introPhase === "india"
               ? "02 · INDIA / OPERATIONAL CONTEXT"
-              : "03 · VERIFIED OCEAN FIELD"}
+              : "03 · INDIAN OCEAN / 140-BLOCK FIELD"}
         </span>
         <strong>
           {introPhase === "earth"
             ? "One ocean. One connected system."
             : introPhase === "india"
               ? "From national context to the Indian Ocean."
-              : "From map pixels to a measurable water column."}
+              : "140 geographic targets around one verified water column."}
         </strong>
         <small>
           {introPhase === "earth"
             ? "Ocean Canvas starts at planetary scale so model fields, currents and in-situ observations stay anchored to real geography before we zoom into evidence."
             : introPhase === "india"
               ? "We narrow to the northern Indian Ocean, where INCOIS multi-time analysis adds genuine temporal breadth to the verified model baseline."
-              : "67–70°E · 12–14°N · verified GLORYS depth fields, real observation profiles and an explainable path beneath the surface."}
+              : "60–100°E · 5–25°N · 140 selectable target footprints are now part of the main Earth model; the 67–70°E · 12–14°N GLORYS baseline remains the only materialized volume."}
         </small>
       </div>}
       {canEnterWaterColumn && introPhase === "region" && <div className="field-entry-actions">
@@ -1312,9 +1541,9 @@ export function OceanGlobe({
       <div className="globe-overlay top-left judge-summary">
         <div>
           <span className="live-dot" />
-          <strong>INDIAN OCEAN · VERIFIED WINDOW</strong>
+          <strong>INDIAN OCEAN · INTEGRATED MAIN-BLOCK FIELD</strong>
         </div>
-        <span>67–70°E · 12–14°N · {profiles.length} Argo comparison profiles · {importedProfiles.length} sensor plugin profiles</span>
+        <span>{TARGET_BLOCK_COUNT} target footprints · active {activeMainBlock.id} · verified science remains 67–70°E / 12–14°N · {profiles.length} Argo comparison profiles</span>
         <small>
           {scalar?.label ?? (currents ? "Currents" : "Ocean field")}
           {field ? ` · ${field.depth_m.toFixed(2)} m` : ""}
