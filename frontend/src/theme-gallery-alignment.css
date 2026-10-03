@@ -1,0 +1,98 @@
+/* Phase 3.5 UI hotfix — keep the appearance gallery fully visible and centered.
+   ThemePicker renders this layer through a document.body portal so it cannot be clipped by
+   header/workspace overflow or shifted by the trigger's local coordinate system. */
+
+.theme-gallery-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 4200;
+  display: grid;
+  place-items: start center;
+  padding:
+    max(76px, calc(env(safe-area-inset-top) + 68px))
+    max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+  pointer-events: none;
+}
+
+.theme-gallery-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: rgba(2, 8, 13, 0.34);
+  cursor: default;
+  pointer-events: auto;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.theme-gallery-layer .theme-gallery {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: 1;
+  width: min(820px, calc(100vw - 32px)) !important;
+  max-width: 100%;
+  max-height: calc(100dvh - max(96px, calc(env(safe-area-inset-top) + 88px))) !important;
+  margin: 0 auto;
+  box-sizing: border-box;
+  pointer-events: auto;
+  transform: none !important;
+}
+
+@media (max-width: 980px) {
+  .theme-gallery-layer {
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-left: max(12px, env(safe-area-inset-left));
+  }
+
+  .theme-gallery-layer .theme-gallery {
+    width: min(700px, calc(100vw - 24px)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .theme-gallery-layer {
+    place-items: end center;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right))
+      max(8px, env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+  }
+
+  .theme-gallery-layer .theme-gallery {
+    width: min(520px, calc(100vw - 16px)) !important;
+    max-height: min(82dvh, calc(100dvh - 16px), 720px) !important;
+    margin: 0 auto;
+  }
+}
+
+@supports not (height: 100dvh) {
+  .theme-gallery-layer .theme-gallery {
+    max-height: calc(100vh - 96px) !important;
+  }
+
+  @media (max-width: 760px) {
+    .theme-gallery-layer .theme-gallery {
+      max-height: min(82vh, calc(100vh - 16px), 720px) !important;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-gallery-backdrop {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
