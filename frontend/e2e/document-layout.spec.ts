@@ -5,10 +5,14 @@ for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(process.env.OCEANTWIN_LIVE_URL!);
+    await expect(page.locator(".ocean-workbench")).toBeVisible();
 
     const rootContract = await page.evaluate(() => {
-      const root = document.getElementById("root")!;
-      const shell = document.querySelector<HTMLElement>(".ocean-workbench")!;
+      const root = document.getElementById("root");
+      const shell = document.querySelector(".ocean-workbench");
+      if (!(root instanceof HTMLElement) || !(shell instanceof HTMLElement)) {
+        throw new Error("Ocean Canvas app shell was not ready for scroll-contract inspection.");
+      }
       return {
         htmlOverflowY: getComputedStyle(document.documentElement).overflowY,
         bodyOverflowY: getComputedStyle(document.body).overflowY,
