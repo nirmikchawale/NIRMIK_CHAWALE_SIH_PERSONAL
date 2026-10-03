@@ -1,6 +1,9 @@
+import { useEffect } from "react";
+
 import type { Catalog, ProfileSummary, ViewMode, VisualizationMode } from "../types";
 import { displayUnits } from "../units";
 import { TimelineScrubber } from "./TimelineScrubber";
+import { publishScientificWorkspaceContext } from "../scientific-context-runtime";
 
 const DEPTH_TRACK_MAX = 1000;
 const EPipelagic_END_M = 200;
@@ -121,6 +124,21 @@ export function ControlPanel({
   const surfaceOnly = catalog.capabilities.surface_only === true;
   const currentDepthZone = depthZone(depth);
   const selectedVariable = catalog.variables.find((item) => item.id === variable);
+
+  useEffect(() => {
+    const timestamp = catalog.coordinates.time[timeIndex] ?? null;
+    publishScientificWorkspaceContext({
+      sourceMode,
+      variable,
+      depthIndex: surfaceOnly ? null : depthIndex,
+      depthM: surfaceOnly ? null : depth,
+      timestamp,
+      timeIndex: timestamp ? timeIndex : null,
+      timeKind: timestamp ? "native" : "unavailable",
+      selectedProfileId: selectedProfileId || null,
+      origin: "explorer"
+    });
+  }, [catalog.coordinates.time, depth, depthIndex, selectedProfileId, sourceMode, surfaceOnly, timeIndex, variable]);
 
   const selectDepthFromTrack = (trackPosition: number) => {
     const physicalDepth = trackPositionToDepth(trackPosition, deepestVerifiedDepth);

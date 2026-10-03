@@ -1,0 +1,90 @@
+.scientific-context-bar {
+  margin: 12px 8px 8px;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--glass-border, rgba(255,255,255,.18)) 86%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--glass-bg, rgba(8,22,34,.72)) 84%, transparent);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .14);
+  backdrop-filter: blur(14px);
+}
+
+.scientific-context-kicker {
+  font-size: .61rem;
+  letter-spacing: .14em;
+  font-weight: 800;
+  opacity: .66;
+  margin-bottom: 6px;
+}
+
+.scientific-context-bar summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+}
+
+.scientific-context-bar summary::-webkit-details-marker { display: none; }
+.scientific-context-bar summary span { font-weight: 850; font-size: .82rem; overflow-wrap: anywhere; }
+.scientific-context-bar summary strong { font-size: .57rem; letter-spacing: .08em; opacity: .78; text-align: right; }
+
+.scientific-context-bar dl {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+
+.scientific-context-bar dl > div {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+
+.scientific-context-bar dt {
+  font-size: .62rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  opacity: .55;
+}
+
+.scientific-context-bar dd {
+  margin: 0;
+  font-size: .68rem;
+  line-height: 1.35;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.scientific-context-status {
+  margin-top: 10px;
+  padding: 9px;
+  border-radius: 10px;
+  border: 1px solid rgba(95, 224, 255, .22);
+  background: rgba(55, 202, 238, .07);
+  display: grid;
+  gap: 4px;
+}
+
+.scientific-context-status.planned {
+  border-color: rgba(255, 190, 80, .28);
+  background: rgba(255, 173, 51, .07);
+}
+
+.scientific-context-status strong { font-size: .68rem; }
+.scientific-context-status span { font-size: .62rem; line-height: 1.4; opacity: .75; }
+
+.scientific-context-return {
+  width: 100%;
+  margin-top: 9px;
+  min-height: 34px;
+  border-radius: 9px;
+  font-size: .66rem;
+  font-weight: 750;
+}
+
+@media (max-width: 768px) {
+  .scientific-context-bar { margin: 8px 6px; padding: 9px; }
+  .scientific-context-bar dl > div { grid-template-columns: 52px minmax(0, 1fr); }
+}
