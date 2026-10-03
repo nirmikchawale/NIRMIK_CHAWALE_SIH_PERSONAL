@@ -3,7 +3,15 @@ import { expect, test, type Page } from "@playwright/test";
 async function assertSeparateAreas(page: Page) {
   const collisions = await page.locator('.station-workspace').evaluate(root => {
     const areas = [...root.children].filter((e): e is HTMLElement => e instanceof HTMLElement)
-      .filter(e => getComputedStyle(e).display !== 'none' && getComputedStyle(e).visibility !== 'hidden' && e.getBoundingClientRect().height > 0)
+      .filter(e => {
+        const style = getComputedStyle(e);
+        // Fixed mobile trays/sheets are intentional overlays. The grid collision audit
+        // applies to normal workstation regions only.
+        return style.position !== 'fixed' &&
+          style.display !== 'none' &&
+          style.visibility !== 'hidden' &&
+          e.getBoundingClientRect().height > 0;
+      })
       .map(e => ({ name: e.className, r: e.getBoundingClientRect() }));
     const overlaps: string[] = [];
     for (let a = 0; a < areas.length; a++) for (let b = a + 1; b < areas.length; b++) {

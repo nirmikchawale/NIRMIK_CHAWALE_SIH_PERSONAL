@@ -1,0 +1,417 @@
+/*
+ * Ocean Canvas — Phase 1 scroll + viewport foundation.
+ *
+ * This file is intentionally imported after the legacy style stack. It owns
+ * viewport sizing and overflow only; it does not introduce the Phase 2 glass
+ * visual system and it does not alter scientific renderer values.
+ */
+
+/* The browser document is never an application scroll surface. */
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 100%;
+  overflow: hidden !important;
+}
+
+html,
+body {
+  overscroll-behavior: none;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  isolation: isolate;
+}
+
+/* One dynamic viewport for the complete application shell. */
+.ocean-workbench {
+  display: flex !important;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh !important;
+  height: 100svh !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  max-height: 100dvh;
+  overflow: hidden !important;
+}
+
+.ocean-workbench .app-header,
+.ocean-workbench .science-footer {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+/* The route frame receives exactly the viewport space left by header/footer. */
+.ocean-workbench .workspace-frame {
+  display: flex !important;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden !important;
+}
+
+/* Navigation may scroll horizontally, never vertically. */
+.ocean-workbench .feature-rail {
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ocean-workbench .workspace-frame > .workspace {
+  position: relative;
+  display: block !important;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: auto !important;
+  overflow: hidden !important;
+}
+
+/*
+ * Content routes own their own vertical scrolling. This replaces the old
+ * document-wheel redirect and keeps the header/navigation/footer stationary.
+ */
+.ocean-workbench:not([data-page="explore"]) .workspace > :is(
+  .feature-page,
+  .telemetry-page,
+  .comparison-page,
+  .anomaly-page,
+  .data-lab-page,
+  .info-page
+) {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100%;
+  height: auto !important;
+  min-width: 0;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: max(64px, calc(32px + env(safe-area-inset-bottom)));
+}
+
+/* Explorer remains inside the app viewport; it never relies on body scrolling. */
+.ocean-workbench[data-page="explore"] .workspace {
+  overflow: hidden !important;
+}
+
+.ocean-workbench .station-workspace {
+  position: relative;
+  width: 100%;
+  height: 100% !important;
+  min-width: 0;
+  min-height: 0 !important;
+  max-height: 100%;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Intentional desktop tool scrollers. */
+@media (min-width: 761px) {
+  .ocean-workbench .station-workspace > .control-panel,
+  .ocean-workbench .station-workspace > :is(.evidence-rail, .profile-panel, .analysis-split-panel) {
+    min-width: 0;
+    min-height: 0;
+    max-height: 100%;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Renderer surfaces are interaction surfaces, not page-scroll surfaces. */
+.ocean-workbench :is(
+  .visualization-stage,
+  .visualization-layer,
+  .globe-shell,
+  .cesium-host,
+  .water-column-canvas
+) {
+  min-width: 0;
+  min-height: 0;
+  overscroll-behavior: none;
+}
+
+/* Dedicated bounded scrollers stay local instead of chaining into a parent. */
+.ocean-workbench :is(
+  .comparison-table-wrap,
+  .telemetry-neighborhood-table-wrap,
+  .imported-observation-chips[data-expanded="true"] > div,
+  .renderer-tools
+) {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Provenance and the presentation guide are bounded overlays with local scroll. */
+.ocean-workbench .provenance-drawer {
+  position: absolute !important;
+  z-index: 90 !important;
+  top: 12px !important;
+  right: 12px !important;
+  bottom: 12px !important;
+  left: auto !important;
+  width: min(430px, calc(100% - 24px)) !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ocean-workbench .presentation-guide {
+  position: absolute !important;
+  z-index: 91 !important;
+  top: 12px !important;
+  right: max(12px, calc((100% - 720px) / 2)) !important;
+  bottom: auto !important;
+  left: max(12px, calc((100% - 720px) / 2)) !important;
+  width: auto !important;
+  max-width: 720px !important;
+  max-height: calc(100% - 24px) !important;
+  margin: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* The team-logo modal consumes pointer/touch scrolling; its dialog can scroll if needed. */
+.brand-logo-overlay {
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+.brand-logo-dialog {
+  max-height: calc(100dvh - 32px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile uses bounded bottom sheets instead of allowing the document to scroll. */
+@media (max-width: 760px) {
+  .ocean-workbench {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .ocean-workbench .workspace-frame,
+  .ocean-workbench .workspace-frame > .workspace {
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .ocean-workbench .feature-rail {
+    padding-left: max(7px, env(safe-area-inset-left));
+    padding-right: max(7px, env(safe-area-inset-right));
+    scroll-snap-type: x proximity;
+  }
+
+  .ocean-workbench .feature-rail button {
+    scroll-snap-align: start;
+  }
+
+  .ocean-workbench:not([data-page="explore"]) .workspace > :is(
+    .feature-page,
+    .telemetry-page,
+    .comparison-page,
+    .anomaly-page,
+    .data-lab-page,
+    .info-page
+  ) {
+    padding-right: max(16px, env(safe-area-inset-right));
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-bottom: max(56px, calc(32px + env(safe-area-inset-bottom)));
+  }
+
+  .ocean-workbench .station-workspace {
+    height: 100% !important;
+    max-height: 100%;
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
+    scrollbar-gutter: auto;
+  }
+
+  /* Restore the mobile quick tray that station.css intentionally hid. */
+  .ocean-workbench .station-workspace .mobile-explore-tray {
+    position: fixed !important;
+    z-index: 57 !important;
+    right: env(safe-area-inset-right) !important;
+    bottom: calc(28px + env(safe-area-inset-bottom)) !important;
+    left: env(safe-area-inset-left) !important;
+    display: grid !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ocean-workbench .station-workspace .mobile-explore-tray::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* The backdrop is rendered only while a mobile sheet is open. */
+  .ocean-workbench .station-workspace .mobile-sheet-backdrop {
+    position: fixed !important;
+    z-index: 58 !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overscroll-behavior: none;
+    touch-action: none;
+  }
+
+  /* Explorer controls become a viewport-bounded bottom sheet. */
+  .ocean-workbench .station-workspace > .control-panel {
+    position: fixed !important;
+    z-index: 60 !important;
+    top: auto !important;
+    right: env(safe-area-inset-right) !important;
+    bottom: calc(28px + env(safe-area-inset-bottom)) !important;
+    left: env(safe-area-inset-left) !important;
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: min(72dvh, calc(100dvh - 112px)) !important;
+    margin: 0 !important;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    -webkit-overflow-scrolling: touch;
+    transform: translateY(110%) !important;
+    visibility: hidden !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+    contain: layout paint;
+  }
+
+  .ocean-workbench .station-workspace > .control-panel[data-mobile-open="true"] {
+    transform: none !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  /* Observation/profile panels share the same deterministic sheet geometry. */
+  .ocean-workbench .station-workspace > .profile-panel {
+    position: fixed !important;
+    z-index: 60 !important;
+    top: auto !important;
+    right: env(safe-area-inset-right) !important;
+    bottom: calc(28px + env(safe-area-inset-bottom)) !important;
+    left: env(safe-area-inset-left) !important;
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: min(72dvh, calc(100dvh - 112px)) !important;
+    margin: 0 !important;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    -webkit-overflow-scrolling: touch;
+    transform: translateY(110%) !important;
+    visibility: hidden !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+    contain: layout paint;
+  }
+
+  .ocean-workbench .station-workspace > .profile-panel[data-mobile-open="true"],
+  .ocean-workbench .station-workspace > .profile-panel.mobile-open {
+    transform: none !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  /* Evidence inspector is also viewport bounded on phones. */
+  .ocean-workbench .station-workspace > .evidence-rail[data-open="true"] {
+    position: fixed !important;
+    z-index: 60 !important;
+    top: auto !important;
+    right: env(safe-area-inset-right) !important;
+    bottom: calc(28px + env(safe-area-inset-bottom)) !important;
+    left: env(safe-area-inset-left) !important;
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: min(72dvh, calc(100dvh - 112px)) !important;
+    margin: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    -webkit-overflow-scrolling: touch;
+    contain: layout paint;
+  }
+
+  .ocean-workbench .provenance-drawer {
+    top: max(8px, env(safe-area-inset-top)) !important;
+    right: max(8px, env(safe-area-inset-right)) !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    left: max(8px, env(safe-area-inset-left)) !important;
+    width: auto !important;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  .ocean-workbench .presentation-guide {
+    top: max(8px, env(safe-area-inset-top)) !important;
+    right: max(8px, env(safe-area-inset-right)) !important;
+    left: max(8px, env(safe-area-inset-left)) !important;
+    max-width: none !important;
+    max-height: calc(100% - 16px) !important;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Reduced-motion remains authoritative even for sheet transitions inherited elsewhere. */
+@media (prefers-reduced-motion: reduce) {
+  .ocean-workbench *,
+  .ocean-workbench *::before,
+  .ocean-workbench *::after {
+    scroll-behavior: auto !important;
+  }
+}

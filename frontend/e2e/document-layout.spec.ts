@@ -1,10 +1,33 @@
 import { expect, test } from "@playwright/test";
 
 for (const width of [1440, 390]) {
-  test(`document routes retain full usable page height at ${width}px`, async ({ page }) => {
+  test(`content routes own scrolling inside the app viewport at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(process.env.OCEANTWIN_LIVE_URL!);
+    await expect(page.locator(".ocean-workbench")).toBeVisible();
+
+    const rootContract = await page.evaluate(() => {
+      const root = document.getElementById("root");
+      const shell = document.querySelector(".ocean-workbench");
+      if (!(root instanceof HTMLElement) || !(shell instanceof HTMLElement)) {
+        throw new Error("Ocean Canvas app shell was not ready for scroll-contract inspection.");
+      }
+      return {
+        htmlOverflowY: getComputedStyle(document.documentElement).overflowY,
+        bodyOverflowY: getComputedStyle(document.body).overflowY,
+        rootOverflowY: getComputedStyle(root).overflowY,
+        shellOverflowY: getComputedStyle(shell).overflowY,
+        shellHeight: shell.getBoundingClientRect().height,
+        viewportHeight: window.innerHeight,
+      };
+    });
+    expect(rootContract.htmlOverflowY).toBe("hidden");
+    expect(rootContract.bodyOverflowY).toBe("hidden");
+    expect(rootContract.rootOverflowY).toBe("hidden");
+    expect(rootContract.shellOverflowY).toBe("hidden");
+    expect(Math.abs(rootContract.shellHeight - rootContract.viewportHeight)).toBeLessThanOrEqual(2);
+
     for (const [label, route] of [
       ["Telemetry", "telemetry"],
       ["Model vs Observation", "compare"],
@@ -15,40 +38,38 @@ for (const width of [1440, 390]) {
       await page.getByRole("button", { name: label, exact: true }).click();
       const content = page.locator(`main[data-page="${route}"]`);
       await expect(content).toBeVisible();
+
       const geometry = await content.evaluate(element => {
         const parent = element.parentElement!;
         const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
         return {
           height: rect.height,
           parentHeight: parent.getBoundingClientRect().height,
-          position: getComputedStyle(element).position,
-          clipped: element.scrollHeight > element.clientHeight + 2,
+          position: style.position,
+          overflowY: style.overflowY,
+          room: element.scrollHeight - element.clientHeight,
           width: rect.width,
           viewport: document.documentElement.clientWidth,
+          documentScrollTop: document.scrollingElement?.scrollTop ?? 0,
         };
       });
-      expect(geometry.position).not.toBe("absolute");
-      expect(geometry.height).toBeGreaterThan(600);
-      expect(geometry.parentHeight).toBeGreaterThanOrEqual(geometry.height - 2);
-      expect(geometry.clipped).toBe(false);
+
+      expect(geometry.position).toBe("absolute");
+      expect(["auto", "scroll"]).toContain(geometry.overflowY);
+      expect(geometry.height).toBeGreaterThan(200);
+      expect(geometry.height).toBeLessThanOrEqual(geometry.parentHeight + 2);
+      expect(geometry.room).toBeGreaterThan(0);
       expect(geometry.width).toBeLessThanOrEqual(geometry.viewport + 1);
-      // Programmatic scrollIntoView can scroll overflow:hidden boxes, so also prove that a
-      // real user can scroll the document (regression: #root was overflow:hidden above 760px).
-      const scrollable = await page.evaluate(() => {
-        const scroller = document.scrollingElement!;
-        const rootStyle = getComputedStyle(document.getElementById("root")!);
-        return { overflowY: rootStyle.overflowY, room: scroller.scrollHeight - scroller.clientHeight };
-      });
-      expect(scrollable.overflowY).not.toBe("hidden");
-      expect(scrollable.room).toBeGreaterThan(0);
-      await page.evaluate(() => window.scrollTo(0, 0));
-      // Wheel over the neutral app chrome: charts/canvases may legitimately consume wheel
-      // gestures for their own interaction, which must not be mistaken for a page-scroll failure.
-      await page.locator(".app-header").hover();
+      expect(geometry.documentScrollTop).toBe(0);
+
+      await content.evaluate(element => { element.scrollTop = 0; });
+      await content.locator("h2").first().hover();
       await page.mouse.wheel(0, 600);
-      await expect.poll(() => page.evaluate(() => document.scrollingElement?.scrollTop ?? 0)).toBeGreaterThan(0);
-      const footer = page.locator('.science-footer');
-      await footer.scrollIntoViewIfNeeded();
+      await expect.poll(() => content.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+      await expect.poll(() => page.evaluate(() => document.scrollingElement?.scrollTop ?? 0)).toBe(0);
+
+      const footer = page.locator(".science-footer");
       await expect(footer).toBeInViewport();
     }
   });

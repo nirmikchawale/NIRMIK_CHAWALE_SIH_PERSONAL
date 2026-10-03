@@ -1,0 +1,22 @@
+/* Final viewport ownership guard.
+   Explicit longhands and higher-specificity selectors keep the browser document
+   out of the scroll chain even if legacy/mobile CSS is concatenated later by the bundler. */
+html:root,
+html:root > body,
+html:root > body > #root {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+html:root > body {
+  margin: 0 !important;
+}
+
+html:root > body > #root {
+  isolation: isolate;
+}
