@@ -58,7 +58,7 @@ jobs:
 
       - name: Fetch verified Glider CTD BGC observation profiles
         run: |
-          python scripts/fetch_verified_observation_breadth.py --output frontend/public/observations/verified-profiles.json \
+          timeout 120s python scripts/fetch_verified_observation_breadth.py --output frontend/public/observations/verified-profiles.json \
             || bash scripts/restore_last_deployed.sh observations/verified-profiles.json frontend/public/observations/verified-profiles.json
 
       - name: Create browser NetCDF ingestion test fixture
