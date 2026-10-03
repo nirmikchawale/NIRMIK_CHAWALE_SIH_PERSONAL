@@ -73,6 +73,8 @@ Require:
 - scientific/backend/static-export suites unchanged and green;
 - GitHub Pages build/deploy/public HTTPS/live browser verification after merge.
 
+Browser acceptance must target the current production UI contract: use Appearance Lab presets for theme switching and exact labels for nested native-time controls. Obsolete theme-button or ambiguous selector assertions must not block a scientifically valid release.
+
 ## Definition of done
 Phase 5.0 is done when:
 1. all six pages expose one visible shared context surface;
