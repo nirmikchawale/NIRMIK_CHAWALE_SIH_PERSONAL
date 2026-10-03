@@ -10,6 +10,8 @@ import "./station.css";
 import "./ocean-motion.css";
 import "./interface-polish.css";
 import "./scroll-foundation.css";
+import "./glass-system.css";
+import "./glass-system-bridge.css";
 import "./viewport-lock.css";
 
 createRoot(document.getElementById("root")!).render(

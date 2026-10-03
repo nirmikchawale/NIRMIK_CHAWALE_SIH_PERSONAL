@@ -1,0 +1,47 @@
+/* Phase 2 integration bridge.
+   The legacy App.tsx still owns its historical binary theme button. Keep it hidden while the
+   non-destructive ThemePicker mounted beside RefreshControl becomes the user-facing control. */
+
+.header-status > button.theme-toggle:not(.theme-picker-trigger) {
+  display: none !important;
+}
+
+.header-status > .theme-picker {
+  display: inline-flex !important;
+  align-items: center;
+  min-width: 0;
+}
+
+.header-status > .theme-picker .theme-gallery {
+  color-scheme: inherit;
+}
+
+.ocean-workbench .refresh-control {
+  border-color: var(--glass-border) !important;
+  color: var(--glass-text) !important;
+  background: color-mix(in srgb, var(--glass-panel) 78%, transparent) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) * .72)) saturate(135%);
+  backdrop-filter: blur(calc(var(--glass-blur) * .72)) saturate(135%);
+}
+
+.ocean-workbench .refresh-control:hover,
+.ocean-workbench .refresh-control:focus-visible {
+  border-color: var(--glass-border-strong) !important;
+  color: var(--glass-accent) !important;
+}
+
+.theme-picker :is(button,[role="button"]):focus-visible {
+  outline: 2px solid var(--glass-accent) !important;
+  outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .header-status > .theme-picker {
+    order: 2;
+  }
+
+  .header-status > .theme-picker .theme-picker-trigger {
+    max-width: 132px;
+  }
+}
