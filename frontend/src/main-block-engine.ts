@@ -17,10 +17,10 @@ export interface MainBlockBounds {
   north: number;
 }
 
-export interface MainBlockTemporalCapability {
-  historicalDaily: boolean;
-  operationalSubDaily: boolean;
-  arbitraryTimeInterpolation: boolean;
+export interface MainBlockTemporalSchema {
+  historicalDailySlots: boolean;
+  operationalNativeTimeSlots: boolean;
+  interpolatedTimeDisclosure: boolean;
 }
 
 export interface OceanMainBlock extends MainBlockBounds {
@@ -31,7 +31,7 @@ export interface OceanMainBlock extends MainBlockBounds {
   materialization: MainBlockMaterialization;
   sourceProduct: string;
   variables: readonly ["thetao", "so", "currents"];
-  temporalCapability: MainBlockTemporalCapability;
+  temporalSchema: MainBlockTemporalSchema;
   availableDates: readonly string[];
   nativeTimesUtc: readonly string[];
 }
@@ -113,10 +113,10 @@ function buildTargetBlocks(): OceanMainBlock[] {
         materialization: "planned",
         sourceProduct: "Copernicus Marine GLORYS12V1 / operational companion when materialized",
         variables: ["thetao", "so", "currents"],
-        temporalCapability: {
-          historicalDaily: true,
-          operationalSubDaily: true,
-          arbitraryTimeInterpolation: true
+        temporalSchema: {
+          historicalDailySlots: true,
+          operationalNativeTimeSlots: true,
+          interpolatedTimeDisclosure: true
         },
         availableDates: [],
         nativeTimesUtc: []
