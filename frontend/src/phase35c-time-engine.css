@@ -1,0 +1,139 @@
+.phase35c-time-engine {
+  position: relative;
+}
+
+.phase35c-time-engine .timeline-now {
+  display: grid;
+  gap: 8px;
+}
+
+.phase35c-time-engine .timeline-now > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.phase35c-time-engine .timeline-now > div:first-child > span,
+.phase35c-time-picker label > span,
+.phase35c-time-context-note > span {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.phase35c-time-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.phase35c-time-kind,
+.phase35c-interpolation-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--panel, #08182a) 78%, transparent);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.phase35c-time-kind.native::before {
+  content: "●";
+  margin-right: 6px;
+  font-size: 0.58rem;
+}
+
+.phase35c-time-kind.interpolated {
+  border-style: dashed;
+}
+
+.phase35c-time-kind.unavailable {
+  opacity: 0.65;
+}
+
+.phase35c-time-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(150px, 0.9fr);
+  gap: 9px;
+  margin: 12px 0 9px;
+}
+
+.phase35c-time-picker label,
+.phase35c-time-context-note {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  padding: 9px;
+  border: 1px solid color-mix(in srgb, currentColor 13%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--panel, #08182a) 64%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.phase35c-time-picker select {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  border-radius: 9px;
+}
+
+.phase35c-time-picker select:disabled {
+  cursor: default;
+  opacity: 0.68;
+}
+
+.phase35c-time-context-note strong {
+  font-size: 0.9rem;
+}
+
+.phase35c-time-context-note small {
+  line-height: 1.35;
+  opacity: 0.72;
+}
+
+.phase35c-time-engine .timeline-transport button:disabled,
+.phase35c-time-engine .timeline-speed button:disabled,
+.phase35c-time-engine .timeline-track-shell input:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+@media (max-width: 900px) {
+  .phase35c-time-picker {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .phase35c-time-context-note {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 620px) {
+  .phase35c-time-picker {
+    grid-template-columns: 1fr;
+  }
+
+  .phase35c-time-context-note {
+    grid-column: auto;
+  }
+
+  .phase35c-time-badges {
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phase35c-time-engine *,
+  .phase35c-time-engine *::before,
+  .phase35c-time-engine *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+  }
+}
