@@ -283,7 +283,7 @@ function SectorMiniBlock({
 
 export function Phase3ArabianAtlas() {
   const [hash, setHash] = useState(() => window.location.hash);
-  const [open, setOpen] = useState(() => window.matchMedia("(min-width: 980px)").matches);
+  const [open, setOpen] = useState(false);
   const [variable, setVariable] = useState<AtlasVariable>("thetao");
   const [payload, setPayload] = useState<AtlasPayload | null>(null);
   const [loading, setLoading] = useState(false);
@@ -310,7 +310,7 @@ export function Phase3ArabianAtlas() {
     setPayload(null);
     setSelectedSectorId(null);
 
-    const request = variable === "currents"
+    const request: Promise<VolumeResponse | CurrentsVolumeResponse> = variable === "currents"
       ? api.currentsVolume(0)
       : api.volume(variable, 0);
 
