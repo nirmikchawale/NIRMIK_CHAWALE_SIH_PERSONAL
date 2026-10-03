@@ -10,6 +10,8 @@ import type {
   TelemetryTimeStat
 } from "../types";
 import { displayUnits } from "../units";
+import { resolveTimeIndex } from "../time-engine";
+import { publishScientificWorkspaceContext, readScientificWorkspaceContext } from "../scientific-context-runtime";
 
 interface Props {
   catalog: Catalog;
@@ -472,12 +474,32 @@ function downloadTelemetryCsv(telemetry: TelemetryResponse) {
 }
 
 export function TelemetryPage({ catalog, provenance }: Props) {
-  const [variable, setVariable] = useState<"thetao" | "so">("thetao");
-  const [depthIndex, setDepthIndex] = useState(() => Math.min(18, catalog.coordinates.depth.length - 1));
-  const [timeIndex, setTimeIndex] = useState(0);
+  const initialContext = useMemo(() => readScientificWorkspaceContext(), []);
+  const initialDepthIndex = Math.min(
+    Math.max(initialContext.depthIndex ?? 18, 0),
+    Math.max(0, catalog.coordinates.depth.length - 1)
+  );
+  const initialTimeIndex = resolveTimeIndex(catalog.coordinates.time, initialContext.timestamp) ?? 0;
+  const [variable, setVariable] = useState<"thetao" | "so">(initialContext.variable === "so" ? "so" : "thetao");
+  const [depthIndex, setDepthIndex] = useState(initialDepthIndex);
+  const [timeIndex, setTimeIndex] = useState(initialTimeIndex);
   const [telemetry, setTelemetry] = useState<TelemetryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const timestamp = catalog.coordinates.time[timeIndex] ?? null;
+    publishScientificWorkspaceContext({
+      sourceMode: "glorys",
+      variable,
+      depthIndex,
+      depthM: catalog.coordinates.depth[depthIndex] ?? null,
+      timestamp,
+      timeIndex: timestamp ? timeIndex : null,
+      timeKind: timestamp ? "native" : "unavailable",
+      origin: "telemetry"
+    });
+  }, [catalog.coordinates.depth, catalog.coordinates.time, depthIndex, timeIndex, variable]);
 
   useEffect(() => {
     let cancelled = false;

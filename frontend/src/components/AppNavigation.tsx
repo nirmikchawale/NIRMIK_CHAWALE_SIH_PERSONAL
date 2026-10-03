@@ -1,5 +1,6 @@
 import type { PageId } from "../navigation";
 import { PAGE_ITEMS } from "../navigation";
+import { ScientificContextBar } from "./ScientificContextBar";
 
 interface Props {
   page: PageId;
@@ -39,6 +40,7 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
           })}
         </div>
       ))}
+      <ScientificContextBar page={page} onNavigate={onNavigate} />
     </nav>
   );
 }

@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "../api";
 import type { AnomalyResponse, Catalog, ResidualAnomalyFlag, SpatialAnomalyFlag } from "../types";
 import { displayUnits } from "../units";
+import { resolveTimeIndex } from "../time-engine";
+import { publishScientificWorkspaceContext, readScientificWorkspaceContext } from "../scientific-context-runtime";
 
 interface Props { catalog: Catalog; }
 
@@ -44,23 +46,44 @@ function downloadScreeningEvidence(payload: AnomalyResponse) {
 }
 
 export function AnomalyPage({ catalog }: Props) {
-  const [variable, setVariable] = useState<"thetao" | "so">("thetao");
-  const [depthIndex, setDepthIndex] = useState(Math.min(18, catalog.coordinates.depth.length - 1));
+  const initialContext = useMemo(() => readScientificWorkspaceContext(), []);
+  const initialDepthIndex = Math.min(
+    Math.max(initialContext.depthIndex ?? 18, 0),
+    Math.max(0, catalog.coordinates.depth.length - 1)
+  );
+  const initialTimeIndex = resolveTimeIndex(catalog.coordinates.time, initialContext.timestamp) ?? 0;
+  const [variable, setVariable] = useState<"thetao" | "so">(initialContext.variable === "so" ? "so" : "thetao");
+  const [depthIndex, setDepthIndex] = useState(initialDepthIndex);
+  const [timeIndex, setTimeIndex] = useState(initialTimeIndex);
   const [payload, setPayload] = useState<AnomalyResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [focusScreen, setFocusScreen] = useState<FocusScreen>("spatial");
 
   useEffect(() => {
+    const timestamp = catalog.coordinates.time[timeIndex] ?? null;
+    publishScientificWorkspaceContext({
+      sourceMode: "glorys",
+      variable,
+      depthIndex,
+      depthM: catalog.coordinates.depth[depthIndex] ?? null,
+      timestamp,
+      timeIndex: timestamp ? timeIndex : null,
+      timeKind: timestamp ? "native" : "unavailable",
+      origin: "anomaly"
+    });
+  }, [catalog.coordinates.depth, catalog.coordinates.time, depthIndex, timeIndex, variable]);
+
+  useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError("");
-    api.anomalies(variable, 0, depthIndex)
+    api.anomalies(variable, timeIndex, depthIndex)
       .then((value) => { if (!cancelled) setPayload(value); })
       .catch((reason: Error) => { if (!cancelled) { setPayload(null); setError(reason.message); } })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [variable, depthIndex]);
+  }, [variable, timeIndex, depthIndex]);
 
   const depth = catalog.coordinates.depth[depthIndex] ?? 0;
   const spatial = useMemo(() => payload?.spatial_screen.flags.slice(0, 12) ?? [], [payload]);
@@ -97,7 +120,7 @@ export function AnomalyPage({ catalog }: Props) {
 
   return (
     <main className="anomaly-page" data-page="anomaly" data-variable={variable}
-      data-depth-index={depthIndex} data-residual-flags={payload?.residual_screen.flagged_count ?? 0}>
+      data-depth-index={depthIndex} data-time-index={timeIndex} data-residual-flags={payload?.residual_screen.flagged_count ?? 0}>
       <header className="anomaly-hero">
         <div>
           <span className="section-kicker">DIAGNOSTIC · EXPLAINABLE SCREENING</span>
@@ -124,10 +147,14 @@ export function AnomalyPage({ catalog }: Props) {
           <input aria-label="Anomaly depth" type="range" min={0} max={catalog.coordinates.depth.length - 1}
             value={depthIndex} onChange={(event) => setDepthIndex(Number(event.target.value))} />
         </label>
-        <div className="anomaly-time-control"><span>Timestamp</span>
-          <strong>{catalog.coordinates.time[0]?.replace("T00:00:00Z", "") ?? "Unavailable"}</strong>
-          <small>{catalog.coordinates.time.length} genuine timestamp(s)</small>
-        </div>
+        <label className="anomaly-time-control"><span>Genuine timestamp</span>
+          <strong>{catalog.coordinates.time[timeIndex]?.replace("T00:00:00Z", "") ?? "Unavailable"}</strong>
+          <input aria-label="Anomaly time" type="range" min={0}
+            max={Math.max(0, catalog.coordinates.time.length - 1)} value={timeIndex}
+            disabled={catalog.coordinates.time.length < 2}
+            onChange={(event) => setTimeIndex(Number(event.target.value))} />
+          <small>{catalog.coordinates.time.length} genuine timestamp(s) · native only</small>
+        </label>
       </section>
 
       {loading ? <div className="anomaly-state-card">Screening canonical verified evidence…</div> :

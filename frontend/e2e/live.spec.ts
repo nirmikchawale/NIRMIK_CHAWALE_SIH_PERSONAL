@@ -1,6 +1,18 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const liveUrl = process.env.OCEANTWIN_LIVE_URL;
+const GLASS_THEME_KEY = "oceantwin-glass-theme-v2";
+
+async function switchToLightGlassTheme(page: Page) {
+  const trigger = page.getByRole("button", { name: /Appearance: .*Open glass theme gallery/ });
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+  const gallery = page.getByRole("dialog", { name: "Glass appearance gallery" });
+  await expect(gallery).toBeVisible();
+  await gallery.getByRole("button", { name: /Lavender Haze/i }).click();
+  await expect.poll(() => page.locator("html").getAttribute("data-theme")).toBe("light");
+  await expect.poll(() => page.evaluate((key) => localStorage.getItem(key), GLASS_THEME_KEY)).toBe("lavender-haze");
+}
 
 async function revealCanvasTools(page: Page) {
   const shell = page.locator(".ocean-workbench").first();
@@ -62,9 +74,8 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
 
   const documentRoot = page.locator("html");
   await expect(documentRoot).toHaveAttribute("data-theme", "dark");
-  await page.getByRole("button", { name: "Switch to light theme" }).click();
+  await switchToLightGlassTheme(page);
   await expect(documentRoot).toHaveAttribute("data-theme", "light");
-  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("oceantwin-theme"))).toBe("light");
 
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: /Ocean Canvas/i })).toBeVisible();
@@ -303,7 +314,7 @@ test("live Ocean Canvas explorer and evidence flow works", async ({ page }) => {
 
   const documentRoot = page.locator("html");
   await expect(documentRoot).toHaveAttribute("data-theme", "dark");
-  await page.getByRole("button", { name: "Switch to light theme" }).click();
+  await switchToLightGlassTheme(page);
   await expect(documentRoot).toHaveAttribute("data-theme", "light");
   await expect(page.locator(".app-shell")).toHaveAttribute("data-page", "explore");
   await expect(page.locator(".cesium-host canvas")).toBeVisible();
