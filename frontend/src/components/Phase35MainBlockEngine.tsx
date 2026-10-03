@@ -83,7 +83,7 @@ export function Phase35MainBlockEngine() {
   };
 
   return (
-    <div className="phase35-block-engine-root" data-phase="3.5a" data-testid="phase35-main-block-engine">
+    <div className="phase35-block-engine-root" data-phase="3.5a+3.5c" data-testid="phase35-main-block-engine">
       {!open && (
         <button
           type="button"
@@ -95,7 +95,7 @@ export function Phase35MainBlockEngine() {
           <span className="phase35-engine-icon" aria-hidden="true">▦</span>
           <span>
             <strong>Indian Ocean Block Engine</strong>
-            <small>140 target main blocks · Phase 3.5A</small>
+            <small>140 target main blocks · Time engine active</small>
           </span>
         </button>
       )}
@@ -111,7 +111,7 @@ export function Phase35MainBlockEngine() {
           <aside className="phase35-block-panel" role="dialog" aria-modal="true" aria-label="Indian Ocean Main Block Engine">
             <header className="phase35-block-header">
               <div>
-                <span className="phase35-kicker">PHASE 3.5A · {MAIN_BLOCK_ENGINE_VERSION}</span>
+                <span className="phase35-kicker">PHASE 3.5A + 3.5C · {MAIN_BLOCK_ENGINE_VERSION}</span>
                 <h2>Indian Ocean Main Block Engine</h2>
                 <p>
                   A time-ready logical index for {TARGET_BLOCK_COUNT} future <strong>main blocks</strong> across {TARGET_DOMAIN.west}–{TARGET_DOMAIN.east}°E and {TARGET_DOMAIN.south}–{TARGET_DOMAIN.north}°N. These are target extraction regions, not subdivisions of the current GLORYS block.
@@ -138,8 +138,8 @@ export function Phase35MainBlockEngine() {
               </article>
               <article>
                 <small>TIME MODEL</small>
-                <strong>Ready</strong>
-                <span>date → native time → variable → depth</span>
+                <strong>3.5C ACTIVE</strong>
+                <span>native date/time · playback · URL context</span>
               </article>
             </section>
 
@@ -205,10 +205,11 @@ export function Phase35MainBlockEngine() {
                   <div><dt>Historical schema</dt><dd>Daily source frames</dd></div>
                   <div><dt>Operational schema</dt><dd>Native sub-daily timestamps when acquired</dd></div>
                   <div><dt>Interpolation</dt><dd>Reserved with mandatory INTERPOLATED disclosure</dd></div>
-                  <div><dt>Data status</dt><dd>No new values are bundled for this target in Phase 3.5A</dd></div>
+                  <div><dt>Time engine</dt><dd>Exact native timestamps are selectable, playable when multiple steps exist, and deep-linkable</dd></div>
+                  <div><dt>Data status</dt><dd>No new values are bundled for this target in Phase 3.5C</dd></div>
                 </dl>
 
-                <div className="phase35-time-schema" aria-label="Future temporal hierarchy">
+                <div className="phase35-time-schema" aria-label="Temporal hierarchy">
                   <span>BLOCK</span><i>→</i><span>DATE</span><i>→</i><span>TIME</span><i>→</i><span>VARIABLE</span><i>→</i><span>DEPTH</span>
                 </div>
 
@@ -223,14 +224,14 @@ export function Phase35MainBlockEngine() {
                     <li>{CURRENT_VERIFIED_BASELINE.depthLevels} verified depth levels</li>
                     <li>Temperature · Salinity · horizontal currents</li>
                   </ul>
-                  <small>The current verified block remains the only materialized GLORYS main volume in Phase 3.5A. Phase 3.5B will add genuinely different geographic blocks.</small>
+                  <small>The current verified block remains the only materialized GLORYS main volume. Phase 3.5C changes time architecture and interaction only; it does not fabricate additional GLORYS dates.</small>
                 </div>
               </aside>
             </div>
 
             <footer className="phase35-block-footer">
               <strong>SCIENTIFIC BOUNDARY</strong>
-              <span>The 140 cells shown here are a deployment-ready manifest and UI index. They are not claimed as downloaded or verified ocean volumes until Phase 3.5B materializes them from source data.</span>
+              <span>The 140 cells remain a deployment-ready manifest and UI index. Phase 3.5C adds the native-time engine but does not claim planned blocks or timestamps as downloaded evidence.</span>
             </footer>
           </aside>
         </>
