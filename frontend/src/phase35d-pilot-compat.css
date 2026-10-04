@@ -1,6 +1,56 @@
-/* Compatibility cleanup for the legacy baseline-only WaterColumn header.
-   The renderer itself is source-backed by the active pilot through api.ts; this
-   only suppresses the old hard-coded BASE-GLORYS-001 label when a pilot is live. */
-html[data-main-block-materialization="pilot"] .water-column-main-block-context {
+/* Compatibility cleanup for baseline-only copy that predates Phase 3.5B.
+   The renderer itself is source-backed by the active pilot through api.ts; these
+   selectors only suppress or replace hard-coded baseline labels when a pilot is live. */
+
+html[data-main-block-materialization="pilot"] .water-column-main-block-context,
+html[data-main-block-materialization="pilot"] .judge-summary {
   display: none !important;
+}
+
+html[data-main-block-materialization="pilot"] .globe-intro-status > * {
+  display: none !important;
+}
+
+html[data-main-block-materialization="pilot"] .globe-intro-status::before,
+html[data-main-block-materialization="pilot"] .globe-intro-status::after {
+  display: block;
+}
+
+html[data-main-block-materialization="pilot"] .globe-intro-status::before {
+  color: var(--glass-accent);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+html[data-main-block-materialization="pilot"] .globe-intro-status::after {
+  margin-top: 4px;
+  color: var(--glass-text);
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.35;
+}
+
+html[data-main-block-materialization="pilot"] .globe-intro-status[data-intro-phase="earth"]::before {
+  content: "01 · EARTH / ONE CONNECTED OCEAN";
+}
+html[data-main-block-materialization="pilot"] .globe-intro-status[data-intro-phase="earth"]::after {
+  content: "Start at planetary scale, then descend into the selected source-backed Indian Ocean pilot.";
+}
+
+html[data-main-block-materialization="pilot"] .globe-intro-status[data-intro-phase="india"]::before {
+  content: "02 · INDIA / REGIONAL CONTEXT";
+}
+html[data-main-block-materialization="pilot"] .globe-intro-status[data-intro-phase="india"]::after {
+  content: "National context resolves into the Indian Ocean main-block field without changing the active scientific source.";
+}
+
+html[data-main-block-materialization="pilot"] .globe-intro-status[data-intro-phase="flying"]::before,
+html[data-main-block-materialization="pilot"] .globe-intro-status[data-intro-phase="region"]::before {
+  content: "03 · INDIAN OCEAN / SOURCE-BACKED PILOT";
+}
+html[data-main-block-materialization="pilot"] .globe-intro-status[data-intro-phase="flying"]::after,
+html[data-main-block-materialization="pilot"] .globe-intro-status[data-intro-phase="region"]::after {
+  content: "The active main block now supplies genuine GLORYS12V1 temperature, salinity and horizontal-current evidence to the synchronized 3D workspaces.";
 }
