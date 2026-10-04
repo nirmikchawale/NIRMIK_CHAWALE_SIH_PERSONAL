@@ -5,6 +5,7 @@ import "cesium/Build/Cesium/Widgets/widgets.css";
 import App from "./App";
 import { Phase35MainBlockEngine } from "./components/Phase35MainBlockEngine";
 import { Phase3ArabianAtlas } from "./components/Phase3ArabianAtlas";
+import { PilotMainBlockRendererBridge } from "./components/PilotMainBlockRendererBridge";
 import "./styles.css";
 import "./feature-upgrades.css";
 import "./workbench.css";
@@ -23,6 +24,7 @@ import "./main-block-globe-integration.css";
 import "./phase35a-live-acceptance.css";
 import "./phase5-context-bridge.css";
 import "./phase5-integration-gate.css";
+import "./phase35d-pilot-sync.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -30,6 +32,7 @@ createRoot(document.getElementById("root")!).render(
       <App />
       <Phase35MainBlockEngine />
       <Phase3ArabianAtlas />
+      <PilotMainBlockRendererBridge />
     </>
   </StrictMode>
 );
