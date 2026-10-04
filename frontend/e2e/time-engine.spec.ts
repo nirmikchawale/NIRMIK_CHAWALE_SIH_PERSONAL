@@ -45,12 +45,15 @@ test("Phase 3.5C exposes native time provenance, transport and exact deep-link r
   await expect(restoredEngine).toBeVisible();
   await expect(restoredEngine.locator(".timeline-now strong").first()).toHaveText(selectedBeforeReload!);
 
+  // Phase 3.5D supersedes the older 3.5C-only launcher copy, but the block engine
+  // must still expose genuine native-date materialization and the multi-date pilots.
   const blockLauncher = page.getByTestId("phase35-block-launcher");
-  await expect(blockLauncher).toContainText("Time engine active");
+  await expect(blockLauncher).toContainText("source-backed pilots");
   await blockLauncher.click();
   const blockDialog = page.getByRole("dialog", { name: "Indian Ocean Main Block Engine" });
-  await expect(blockDialog).toContainText("3.5C ACTIVE");
-  await expect(blockDialog).toContainText("does not fabricate additional GLORYS dates");
+  await expect(blockDialog).toContainText("MULTI-DATE PILOTS");
+  await expect(blockDialog).toContainText("Native dates");
+  await expect(blockDialog).toContainText("no synthetic values");
 
   await blockDialog.getByRole("button", { name: "Close main block engine" }).click();
   await page.getByRole("button", { name: "GLORYS baseline" }).click();
