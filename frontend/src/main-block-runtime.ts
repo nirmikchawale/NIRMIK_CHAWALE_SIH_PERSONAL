@@ -7,6 +7,7 @@ import {
 
 export const ACTIVE_MAIN_BLOCK_STORAGE_KEY = "oceancanvas-active-main-block-v1";
 export const ACTIVE_MAIN_BLOCK_EVENT = "oceancanvas:active-main-block";
+export const ACTIVE_MAIN_BLOCK_QUERY_KEY = "block";
 
 export const PHASE35B_PILOT_IDS = [
   "IO-001", "IO-002", "IO-015", "IO-016", "IO-031", "IO-038",
@@ -53,7 +54,37 @@ export function resolveMainBlock(id: string | null | undefined): ActiveMainBlock
   };
 }
 
+function hashParams(hash = window.location.hash): URLSearchParams {
+  const query = hash.split("?")[1] ?? "";
+  return new URLSearchParams(query);
+}
+
+export function readMainBlockFromHash(hash = window.location.hash): string | null {
+  const requested = hashParams(hash).get(ACTIVE_MAIN_BLOCK_QUERY_KEY);
+  if (!requested) return null;
+
+  if (requested === CURRENT_VERIFIED_BASELINE.id) return requested;
+  const exact = INDIAN_OCEAN_MAIN_BLOCKS.find((candidate) => candidate.id === requested);
+  return exact?.id ?? null;
+}
+
+export function writeMainBlockToHash(id: string): void {
+  const requested = resolveMainBlock(id);
+  const hash = window.location.hash || "#/explore";
+  const [route, query = ""] = hash.split("?");
+  const params = new URLSearchParams(query);
+  params.set(ACTIVE_MAIN_BLOCK_QUERY_KEY, requested.id);
+  const nextQuery = params.toString();
+  const nextHash = `${route || "#/explore"}${nextQuery ? `?${nextQuery}` : ""}`;
+  if (nextHash !== window.location.hash) {
+    window.history.replaceState(window.history.state, "", nextHash);
+  }
+}
+
 export function readActiveMainBlockId(): string {
+  const linked = readMainBlockFromHash();
+  if (linked) return linked;
+
   try {
     const stored = window.localStorage.getItem(ACTIVE_MAIN_BLOCK_STORAGE_KEY);
     return resolveMainBlock(stored).id;
@@ -74,18 +105,21 @@ export function publishActiveMainBlockId(id: string): string {
   } catch {
     // Selection remains usable for this browser session when storage is unavailable.
   }
-  window.dispatchEvent(new CustomEvent<string>(ACTIVE_MAIN_BLOCK_EVENT, { detail: requested.id }));
+  writeMainBlockToHash(requested.id);
 
   // Switching into or out of a source-backed pilot changes the actual scientific
   // payload family. App.tsx builds its catalog once at startup, so perform one
-  // deterministic reload only for those source-context transitions. Planned ↔
-  // baseline geographic selections remain immediate and preserve the established
-  // "planning geometry + verified evidence" workflow.
+  // deterministic reload for those source-context transitions. Do not emit the
+  // in-session selection event before that reload: doing so would briefly advertise
+  // a new scientific block while the renderer still owns the previous payload family.
+  // Non-reloading geographic/baseline changes remain immediate.
   const sourceContextChanged =
     requested.id !== previous.id &&
     (requested.materialization === "pilot" || previous.materialization === "pilot");
   if (sourceContextChanged) {
     window.setTimeout(() => window.location.reload(), 40);
+  } else {
+    window.dispatchEvent(new CustomEvent<string>(ACTIVE_MAIN_BLOCK_EVENT, { detail: requested.id }));
   }
   return requested.id;
 }
