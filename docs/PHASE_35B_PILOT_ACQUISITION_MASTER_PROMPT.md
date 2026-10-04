@@ -11,9 +11,9 @@ Already merged on `main` at the start of this phase:
 - Phase 3.5A: 140 logical target cells across 60–100°E and 5–25°N.
 - Phase 3.5C: provenance-aware time architecture; no synthetic timestamps or enabled interpolation.
 - Phase 3.5A-G: all 140 logical shells integrated into the main Cesium Earth and Water Column workflow, while keeping planned shells scientifically empty.
-- Phase 3.5A-G live acceptance fixes: current production baseline `aa05b7faa4e92e800d137e30bf5b940a54020d98`.
+- Phase 3.5A-G live acceptance fixes: production baseline `aa05b7faa4e92e800d137e30bf5b940a54020d98` at the start of this phase.
 
-An independent Phase 5.0 Shared Scientific Context Bridge exists in open PR #122. It changes shared UI/context files but intentionally does not acquire new blocks or modify Cesium block geometry. Its browser acceptance is not fully green at the start of this phase. Therefore Phase 3.5B must remain data-pipeline-first and avoid modifying Phase 5.0 overlap files unless a later reconciliation explicitly requires it.
+An independent Phase 5.0 Shared Scientific Context Bridge exists in open PR #122. It changes shared UI/context files but intentionally does not acquire new blocks or modify Cesium block geometry. Phase 3.5B therefore remains data-pipeline-first and avoids those shared UI files. A changed-file comparison confirmed that Phase 3.5B and PR #122 own disjoint file sets.
 
 ## Scientific definition of success
 A Phase 3.5B pilot block is a separate geographic extract from a genuine GLORYS12V1 source field. It is not an `AS-xx` subdivision of the current 67–70°E × 12–14°N baseline and must not reuse translated/copied baseline values.
@@ -33,15 +33,17 @@ No vertical-current component may be invented. No missing values may be interpol
 ## Source policy
 Primary scientific identity: Copernicus Marine / Mercator Ocean GLORYS12V1 (`GLOBAL_MULTIYEAR_PHY_001_030`, 1/12° global reanalysis, 50 standard depth levels).
 
-For this reproducible pilot pipeline, a public NCAR GDEX THREDDS archive of MERCATOR GLORYS12V1 may be used as the transport/archive mirror. The UI/provenance must state the archive path and must not misrepresent NCAR as the originating numerical model centre.
+For this reproducible pilot pipeline, the public NCAR GDEX THREDDS archive of MERCATOR GLORYS12V1 is used as the transport/archive mirror. NCAR is the archive/transport provider, not the originating numerical model centre. Browser-ready provenance therefore retains both the originating GLORYS12V1 identity and the exact public archive service URL.
 
-The acquisition source must expose `thetao`, `so`, `uo`, `vo`, longitude, latitude, depth and the genuine daily timestamp.
+The verified acquisition path is **THREDDS OPeNDAP DAP2**, opened through `xarray`/`netCDF4`. Earlier NCSS whole-domain/chunked attempts were rejected or timed out on the public archive and were not used to produce the accepted assets. OPeNDAP transfers only the requested source array slices while preserving the underlying file metadata, coordinates and values.
+
+The acquisition source exposes `thetao`, `so`, `uo`, `vo`, longitude, latitude, depth and the genuine daily timestamp.
 
 ## Pilot strategy
 Do not download 140 full volumes in Phase 3.5B.
 
-1. Request one bounded Indian Ocean domain from 60–100°E, 5–25°N using a moderate horizontal stride suitable for browser visualization.
-2. Retain only genuine depth levels at or above the current MVP depth ceiling (nominally ≤500 m).
+1. Read the 60–100°E, 5–25°N surface temperature slice at a moderate horizontal stride through OPeNDAP.
+2. Retain only genuine depth levels at or above the current MVP depth ceiling (nominally ≤500 m) for full pilot payloads.
 3. Derive an ocean-relevance fraction per logical `IO-001…IO-140` cell from finite source surface temperature values.
 4. Classify each logical cell as:
    - `ocean`: strong finite-ocean coverage;
@@ -53,7 +55,7 @@ Do not download 140 full volumes in Phase 3.5B.
 8. Materialize a second genuine historical date for a smaller geographically distributed subset so the Phase 3.5C time engine has real future data to consume.
 
 ## Land-mask requirement
-The current 140-cell Cesium layer is a rectangular planning lattice, so some planned rectangles cross the Indian subcontinent. Phase 3.5B must produce authoritative per-cell `ocean_fraction` and `ocean_relevance` metadata from actual finite GLORYS water cells. Later Phase 4A rendering must consume these fields to suppress land-dominant cells and clip/represent coastal blocks honestly.
+The current 140-cell Cesium layer is a rectangular planning lattice, so some planned rectangles cross the Indian subcontinent. Phase 3.5B produces authoritative per-cell `ocean_fraction` and `ocean_relevance` metadata from actual finite GLORYS water cells. Later Phase 4A rendering must consume these fields to suppress land-dominant cells and clip/represent coastal blocks honestly.
 
 Do not solve the land problem by manually deleting arbitrary IDs or drawing a hand-estimated India polygon.
 
@@ -92,13 +94,13 @@ Speed is a transparent derived quantity; `uo` and `vo` remain the source compone
 Phase 3.5B does not yet replace the primary App loader. Phase 4B is the controlled point where selected materialized blocks become the active Water Column volume. Keeping that boundary avoids conflicts with the independent Phase 5.0 workstream.
 
 ## Automation
-Create an isolated GitHub Actions materialization workflow on branch `data/phase-35b-pilot-acquisition` that:
-1. installs the minimal scientific dependencies;
-2. fetches the two declared source days from the public THREDDS NetCDF Subset Service;
-3. validates source identity and coordinates;
-4. generates coast-aware manifest + pilot payloads;
-5. runs a strict verification pass;
-6. commits generated `frontend/public/main-blocks/**` assets back to the phase branch only when they changed.
+The isolated GitHub Actions materialization workflow on branch `data/phase-35b-pilot-acquisition` must:
+1. install the minimal scientific dependencies;
+2. open the two declared GLORYS12V1 source days from the public NCAR GDEX THREDDS OPeNDAP service;
+3. validate source identity, timestamps and coordinates;
+4. generate the coast-aware manifest and pilot payloads;
+5. run a strict verification pass;
+6. commit generated `frontend/public/main-blocks/**` assets back to the phase branch only when they changed.
 
 The workflow must not deploy Pages and must not write to `main`.
 
@@ -117,8 +119,25 @@ Phase 3.5B is complete only when all of the following are true:
 - TypeScript loader compiles against current `types.ts`;
 - existing scientific, React/Cesium and static-host acceptance remain green after generated assets are present.
 
+## Verified execution outcome
+The acquisition workflow completed successfully on GitHub Actions and committed the generated evidence back to the phase branch.
+
+Verified result:
+- **140** logical planning cells classified by source-derived ocean relevance;
+- **24** genuine materialized pilot blocks;
+- **6** pilots with a second genuine historical date;
+- **30** checksum-addressed browser-ready payloads in total;
+- **0** land-dominant cells materialized;
+- primary source day: `2004-03-15`;
+- secondary source day: `2004-07-28`;
+- source files report the genuine daily timestamp at `12:00:00Z` for the accepted slices;
+- **31** genuine source depth levels retained from approximately 0.494 m to 453.938 m;
+- no synthetic measurements, timestamps, coordinates, depths or vertical-current component.
+
+The manifest and every payload are now also guarded by an offline regression test that rechecks counts, source identity, per-payload checksums, depth limits, scientific-integrity flags and variable evidence.
+
 ## Parallel-workstream rule
-Do not merge Phase 3.5B while an overlapping branch is unresolved without first comparing changes. PR #122 currently owns shared scientific context/UI integration. Phase 3.5B should own acquisition scripts, generated block assets, manifest schema, loader adapters and coast/ocean relevance metadata. Reconcile after both branches are individually green.
+Do not merge Phase 3.5B while an overlapping branch is unresolved without first comparing changes. PR #122 owns shared scientific context/UI integration. Phase 3.5B owns acquisition scripts, generated block assets, manifest schema, loader adapters and coast/ocean relevance metadata. At the time of Phase 3.5B completion, the file sets are disjoint, so the two branches can be validated independently and reconciled without silently mixing scientific acquisition with shared UI state work.
 
 ## Rollback
 Start SHA: `aa05b7faa4e92e800d137e30bf5b940a54020d98`.
