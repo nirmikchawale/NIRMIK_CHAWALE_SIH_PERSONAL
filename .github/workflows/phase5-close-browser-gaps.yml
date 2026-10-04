@@ -25,20 +25,10 @@ jobs:
 
           water_path = Path('frontend/src/components/WaterColumn3D.tsx')
           water = water_path.read_text()
-          marker = '''  useEffect(() => () => {
-            if (zoomAnimationRef.current != null) window.cancelAnimationFrame(zoomAnimationRef.current);
-          }, []);
-
-          const smoothWaterZoomTo = (targetZoom: number) => {'''
-          native_touch = '''  useEffect(() => () => {
-            if (zoomAnimationRef.current != null) window.cancelAnimationFrame(zoomAnimationRef.current);
-          }, []);
-
-          // Use a native non-passive touch listener in addition to React's pointer path.
-          // Real mobile browsers can emit TouchEvents and PointerEvents in different orders,
-          // while Chromium automation may deliver only the native touch stream. Keeping the
-          // listener on the scientific canvas makes two-finger zoom deterministic without
-          // allowing the page itself to consume the gesture.
+          insertion_point = '  const smoothWaterZoomTo = (targetZoom: number) => {'
+          native_touch = '''  // Native non-passive touch handling complements the pointer path. Chromium
+          // automation and some mobile WebViews can dispatch a real TouchEvent stream
+          // without two usable PointerEvents, so the scientific camera must accept both.
           useEffect(() => {
             const canvas = canvasRef.current;
             if (!canvas) return;
@@ -70,7 +60,10 @@ jobs:
               touchPinchActiveRef.current = true;
               const previous = nativePinchDistance ?? pinchDistanceRef.current;
               if (previous && distance > 0) {
-                setOrbit((current) => ({ ...current, zoom: clamp(current.zoom * distance / previous, 0.62, 1.9) }));
+                setOrbit((current) => ({
+                  ...current,
+                  zoom: clamp(current.zoom * distance / previous, 0.62, 1.9)
+                }));
               }
               nativePinchDistance = distance;
               pinchDistanceRef.current = distance;
@@ -101,29 +94,23 @@ jobs:
             };
           }, [activeMainBlockId, volume, currentsVolume]);
 
-          const smoothWaterZoomTo = (targetZoom: number) => {'''
-          if 'Use a native non-passive touch listener' not in water:
-              if marker not in water:
-                  raise SystemExit('WaterColumn native-touch insertion marker not found')
-              water = water.replace(marker, native_touch, 1)
+          '''
+          if 'Native non-passive touch handling complements the pointer path' not in water:
+              if insertion_point not in water:
+                  raise SystemExit('WaterColumn zoom insertion point not found')
+              water = water.replace(insertion_point, native_touch + insertion_point, 1)
               water_path.write_text(water)
 
           css_path = Path('frontend/src/phase5-integration-gate.css')
-          css_path.write_text('''/* Phase 5.0 integration-gate fixes.
-             Keep the 140-block controls interactive without allowing them to cover
-             canonical journey/profile controls or mobile workstation trays. */
-
-          /* During Earth -> India -> ocean orientation the geographic HUD is context,
-             not the primary action. Removing it from hit-testing keeps Skip usable. */
+          css_path.write_text('''/* Phase 5.0 integration-gate fixes. */
           .main-block-globe-hud[data-intro-ready="false"] {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
           }
 
-          /* The globe shell is a two-row grid: scientific canvas first, renderer tools
-             second. Make the integrated block HUD a real grid item in the canvas row
-             instead of estimating toolbar height with a fixed bottom offset. */
+          /* The globe shell is a two-row grid. Own row 1 directly so the block HUD
+             can never drift into the variable-height renderer toolbar in row 2. */
           .station-workspace .main-block-globe-hud {
             position: relative;
             grid-row: 1;
@@ -148,22 +135,15 @@ jobs:
             z-index: 30;
           }
 
-          /* Journey/entry actions are primary orientation controls whenever visible. */
           .ocean-workbench .ocean-journey,
           .ocean-workbench .field-entry-actions {
             z-index: 32;
           }
 
-          /* Water-column gestures own the renderer surface. This prevents the browser's
-             page-zoom/scroll gesture from consuming a two-finger interaction before the
-             renderer's touch/pointer handlers can update its scientific camera. */
           .ocean-workbench .water-column-canvas {
             touch-action: none;
           }
 
-          /* The station owns mobile interaction layout. Legacy floating trays and the
-             older standalone atlas/block launchers duplicate controls and can obscure
-             the renderer toolbar on small screens. The integrated HUD remains available. */
           @media (max-width: 760px) {
             .ocean-workbench .station-workspace .mobile-explore-tray,
             .ocean-workbench .station-workspace .mobile-sheet-backdrop {
@@ -183,7 +163,6 @@ jobs:
               max-width: calc(100% - 20px);
               max-height: min(176px, calc(100% - 20px));
               padding: 9px;
-              overscroll-behavior: contain;
             }
           }
 
@@ -196,25 +175,21 @@ jobs:
 
           live_path = Path('frontend/e2e/live.spec.ts')
           live = live_path.read_text()
-          old = '''  await expect(anomalyPage.getByRole("button", { name: "Download screening evidence" })).toBeEnabled();
-            await expect(anomalyPage.locator(".anomaly-flag-map svg")).toBeVisible();
-            await anomalyPage.getByRole("button", { name: "Argo residual" }).click();'''
-          new = '''  await expect(anomalyPage.getByRole("button", { name: "Download screening evidence" })).toBeEnabled();
-            // Phase 5 intentionally inherits Telemetry's selected salinity/depth context.
-            // That exact layer may truthfully contain zero spatial threshold crossings, so
-            // acceptance must require the real context-aware state rather than force a map.
-            await expect(anomalyPage).toHaveAttribute("data-variable", "so");
-            const spatialState = anomalyPage.locator(".anomaly-context-card").locator(".anomaly-flag-map svg, .anomaly-empty");
-            await expect(spatialState).toBeVisible();
-            const spatialEmpty = anomalyPage.locator(".anomaly-context-card .anomaly-empty");
-            if (await spatialEmpty.isVisible()) {
-              await expect(spatialEmpty).toContainText("No flagged model cells at this depth");
-            }
-            await anomalyPage.getByRole("button", { name: "Argo residual" }).click();'''
-          if 'acceptance must require the real context-aware state' not in live:
-              if old not in live:
-                  raise SystemExit('Anomaly acceptance replacement marker not found')
-              live = live.replace(old, new, 1)
+          obsolete = '  await expect(anomalyPage.locator(".anomaly-flag-map svg")).toBeVisible();'
+          replacement = '''  // Phase 5 inherits Telemetry's selected salinity/depth context. That exact
+          // scientific slice may truthfully have zero threshold crossings, so accept the
+          // real spatial map or the explicit zero-flag evidence state.
+          await expect(anomalyPage).toHaveAttribute("data-variable", "so");
+          const spatialState = anomalyPage.locator(".anomaly-context-card").locator(".anomaly-flag-map svg, .anomaly-empty");
+          await expect(spatialState).toBeVisible();
+          const spatialEmpty = anomalyPage.locator(".anomaly-context-card .anomaly-empty");
+          if (await spatialEmpty.isVisible()) {
+            await expect(spatialEmpty).toContainText("No flagged model cells at this depth");
+          }'''
+          if 'scientific slice may truthfully have zero threshold crossings' not in live:
+              if obsolete not in live:
+                  raise SystemExit('Obsolete anomaly map assertion not found')
+              live = live.replace(obsolete, replacement, 1)
               live_path.write_text(live)
           PY
 
