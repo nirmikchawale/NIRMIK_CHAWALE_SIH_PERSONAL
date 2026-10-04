@@ -83,7 +83,18 @@ export function writeMainBlockToHash(id: string): void {
 
 export function readActiveMainBlockId(): string {
   const linked = readMainBlockFromHash();
-  if (linked) return linked;
+  if (linked) {
+    // A valid scientific/geographic deep link becomes the session's active block
+    // so normal workspace navigation may clean the URL without silently resetting
+    // the selected block. This persists only the existing block identity; planned
+    // cells remain planned and never gain scientific payload status.
+    try {
+      window.localStorage.setItem(ACTIVE_MAIN_BLOCK_STORAGE_KEY, linked);
+    } catch {
+      // The linked selection remains valid for the current URL when storage is blocked.
+    }
+    return linked;
+  }
 
   try {
     const stored = window.localStorage.getItem(ACTIVE_MAIN_BLOCK_STORAGE_KEY);
