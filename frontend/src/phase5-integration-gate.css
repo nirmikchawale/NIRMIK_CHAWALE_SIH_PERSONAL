@@ -1,0 +1,59 @@
+/* Phase 5.0 integration-gate fixes.
+   Keep the 140-block controls interactive without allowing them to cover
+   canonical journey/profile controls or mobile workstation trays. */
+
+/* During Earth -> India -> ocean orientation the geographic HUD is context,
+   not the primary action. Removing it from hit-testing keeps Skip usable. */
+.main-block-globe-hud[data-intro-ready="false"] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* The station layout gives renderer tools their own second grid row. Constrain
+   the absolute 140-block HUD to the map row so it cannot sit over those tools. */
+.station-workspace .main-block-globe-hud {
+  top: 12px;
+  right: 12px;
+  bottom: 166px;
+  max-height: calc(100% - 178px);
+  overflow: auto;
+  z-index: 20;
+}
+
+.station-workspace .renderer-tools {
+  position: relative;
+  z-index: 30;
+}
+
+/* Journey/entry actions are primary orientation controls whenever visible. */
+.ocean-workbench .ocean-journey,
+.ocean-workbench .field-entry-actions {
+  z-index: 32;
+}
+
+/* The station owns mobile interaction layout. Legacy floating trays and the
+   older standalone atlas/block launchers duplicate controls and can obscure
+   the renderer toolbar on small screens. The integrated HUD remains available. */
+@media (max-width: 760px) {
+  .ocean-workbench .station-workspace .mobile-explore-tray,
+  .ocean-workbench .station-workspace .mobile-sheet-backdrop {
+    display: none !important;
+    pointer-events: none !important;
+  }
+
+  body:has(.ocean-workbench[data-page="explore"]) .phase35-block-launcher,
+  body:has(.ocean-workbench[data-page="explore"]) .phase3-atlas-launcher {
+    display: none !important;
+    pointer-events: none !important;
+  }
+
+  .station-workspace .main-block-globe-hud {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 166px;
+    width: auto;
+    max-height: calc(100% - 176px);
+  }
+}
