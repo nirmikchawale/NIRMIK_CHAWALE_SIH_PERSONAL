@@ -9,11 +9,12 @@ import {
 export type ScientificSourceMode = "glorys" | "incois" | "chlorophyll";
 export type ScientificWorkspaceVariable = "thetao" | "so" | "currents" | "chlorophyll";
 export type ScientificContextOrigin = "explorer" | "telemetry" | "anomaly" | "system";
+export type ScientificBlockMaterialization = "verified-baseline" | "pilot" | "planned";
 
 export interface ScientificWorkspaceContext {
   blockId: string;
   blockRegion: string;
-  blockMaterialization: "verified-baseline" | "planned";
+  blockMaterialization: ScientificBlockMaterialization;
   sourceMode: ScientificSourceMode;
   variable: ScientificWorkspaceVariable;
   depthIndex: number | null;
@@ -139,9 +140,13 @@ export function subscribeScientificWorkspaceContext(listener: (context: Scientif
   };
 }
 
-export function sourceLabel(source: ScientificSourceMode): string {
+export function sourceLabel(
+  source: ScientificSourceMode,
+  blockMaterialization?: ScientificBlockMaterialization
+): string {
   if (source === "incois") return "INCOIS operational";
   if (source === "chlorophyll") return "INCOIS chlorophyll";
+  if (blockMaterialization === "pilot") return "GLORYS12V1 pilot block";
   return "GLORYS baseline";
 }
 

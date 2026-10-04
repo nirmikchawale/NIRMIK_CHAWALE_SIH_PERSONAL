@@ -1,4 +1,4 @@
-export type MainBlockMaterialization = "verified-baseline" | "planned";
+export type MainBlockMaterialization = "verified-baseline" | "pilot" | "planned";
 export type MainBlockRegion =
   | "Western Arabian Sea"
   | "Central Arabian Sea"
@@ -48,7 +48,7 @@ export interface VerifiedBaselineBlock extends MainBlockBounds {
   materialization: "verified-baseline";
 }
 
-export const MAIN_BLOCK_ENGINE_VERSION = "phase-3.5a-v1";
+export const MAIN_BLOCK_ENGINE_VERSION = "phase-3.5d-v1";
 export const TARGET_BLOCK_COUNT = 140;
 export const TARGET_DOMAIN = {
   west: 60,
