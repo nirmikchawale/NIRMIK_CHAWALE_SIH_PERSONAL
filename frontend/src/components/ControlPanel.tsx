@@ -15,7 +15,7 @@ function depthToTrackPosition(depthM: number, deepestVerifiedM: number) {
     return (Math.max(0, depthM) / EPipelagic_END_M) * 400;
   }
   if (depthM <= MESOPELAGIC_END_M) {
-    return 400 + ((depthM - EPipelagic_END_M) / (MESOPELAGIC_END_M - EPipelAGIC_END_M)) * 350;
+    return 400 + ((depthM - EPipelagic_END_M) / (MESOPELAGIC_END_M - EPipelagic_END_M)) * 350;
   }
   const deepExtent = Math.max(DEEP_REFERENCE_M, deepestVerifiedM);
   return 750 + ((Math.min(depthM, deepExtent) - MESOPELAGIC_END_M) / (deepExtent - MESOPELAGIC_END_M)) * 250;
