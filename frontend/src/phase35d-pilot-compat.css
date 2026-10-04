@@ -1,0 +1,6 @@
+/* Compatibility cleanup for the legacy baseline-only WaterColumn header.
+   The renderer itself is source-backed by the active pilot through api.ts; this
+   only suppresses the old hard-coded BASE-GLORYS-001 label when a pilot is live. */
+html[data-main-block-materialization="pilot"] .water-column-main-block-context {
+  display: none !important;
+}
