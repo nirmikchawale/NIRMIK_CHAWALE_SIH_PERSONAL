@@ -26,6 +26,8 @@ import "./phase5-context-bridge.css";
 import "./phase5-integration-gate.css";
 import "./phase35d-pilot-sync.css";
 import "./phase35d-pilot-compat.css";
+import "./rui-shell.css";
+import "./rui-shell-compat.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

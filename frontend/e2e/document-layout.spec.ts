@@ -35,6 +35,13 @@ for (const width of [1440, 390]) {
       ["Data Lab", "data-lab"],
       ["Science & System", "about"],
     ]) {
+      if (width <= 900) {
+        const mobileTrigger = page.getByRole("button", { name: "Open workspace navigation" });
+        await expect(mobileTrigger).toBeVisible();
+        await mobileTrigger.click();
+        await expect(page.getByRole("navigation", { name: "Ocean Canvas workspaces" })).toBeVisible();
+      }
+
       await page.getByRole("button", { name: label, exact: true }).click();
       const content = page.locator(`main[data-page="${route}"]`);
       await expect(content).toBeVisible();
