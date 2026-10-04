@@ -72,7 +72,7 @@ Do not in RUI-01:
 2. Give navigation-local UI state—desktop collapse and mobile drawer ownership—to `AppNavigation`; do not add it to the scientific state inside `App.tsx`.
 3. Persist only the non-scientific desktop collapse preference in local storage.
 4. Keep ScientificContextBar mounted even when the mobile drawer is visually closed so its existing context bridge/listeners continue to operate.
-5. Add `rui-shell.css` as the final stylesheet layer. It owns only shell/navigation composition and intentionally avoids rewriting the accumulated renderer/page CSS in this phase.
+5. Add `rui-shell.css` as the final shell composition layer and `rui-shell-compat.css` immediately after it as a narrow legacy-cascade guard. The compatibility file only neutralizes historical generic `.feature-rail` selectors inside the new sidebar; it does not own page or renderer styling.
 6. On desktop, use an auto-sized sidebar column plus a `minmax(0, 1fr)` workspace column.
 7. On compact/mobile layouts, convert the sidebar to an off-canvas drawer and provide a small dock that always communicates the active workspace.
 8. When the Explorer enters existing focus mode, remove RUI navigation chrome from the active layout without changing renderer state.
