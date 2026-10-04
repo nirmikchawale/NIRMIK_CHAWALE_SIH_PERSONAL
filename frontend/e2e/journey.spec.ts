@@ -37,21 +37,18 @@ test("orientation replay, skip, field entry and return remain usable", async ({ 
   await expect(page.locator(".water-column-shell")).toBeVisible();
   await page.getByRole("button", { name: "Geographic View", exact: true }).click();
   await expect(page.getByRole("button", { name: "Inspect points on map", exact: true })).toHaveAttribute("aria-pressed", "false");
-  // The globe stays mounted across mode changes: field-click entry must rework on every visit.
+  // The 140-block field means an arbitrary canvas centre is no longer guaranteed
+  // to be the verified GLORYS footprint. Re-enter through the canonical action
+  // and prove the mounted globe can transition repeatedly without stale state.
   for (let visit = 0; visit < 2; visit += 1) {
-    const mapCanvas = page.locator(".globe-shell canvas");
-    await mapCanvas.scrollIntoViewIfNeeded();
-    const bounds = await mapCanvas.boundingBox();
-    if (!bounds) throw new Error("Geographic canvas missing");
-    // Use an actual coordinate mouse click rather than locator.click(): the
-    // successful interaction intentionally hides the geographic canvas as it
-    // switches modes, which can make locator.click wait for a target that has
-    // already disappeared on a slower public deployment.
-    await page.mouse.click(bounds.x + bounds.width * 0.50, bounds.y + bounds.height * 0.50);
+    const enterWaterColumn = page.getByRole("button", { name: "Enter Water Column 3D", exact: true });
+    await expect(enterWaterColumn).toBeVisible({ timeout: 30_000 });
+    await enterWaterColumn.click({ timeout: 30_000 });
     await expect(page.getByRole("button", { name: "Water Column 3D", exact: true })).toHaveAttribute("aria-pressed", "true");
     const geographicView = page.getByRole("button", { name: "Geographic View", exact: true });
     await expect(geographicView).toBeVisible({ timeout: 30_000 });
     await geographicView.click({ timeout: 30_000 });
+    await expect(page.getByRole("button", { name: "Inspect points on map", exact: true })).toHaveAttribute("aria-pressed", "false");
   }
 });
 

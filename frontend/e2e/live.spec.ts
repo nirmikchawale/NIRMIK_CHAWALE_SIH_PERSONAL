@@ -134,7 +134,9 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(anomalyInspector).toContainText("Why is this point flagged?");
   await expect(anomalyInspector).toContainText("Magnitude bands describe statistical departure only");
   await expect(anomalyPage.getByRole("button", { name: "Download screening evidence" })).toBeEnabled();
-  await expect(anomalyPage.locator(".anomaly-flag-map svg")).toBeVisible();
+  const anomalySpatialContext = anomalyPage.locator(".anomaly-context-card").first();
+  await expect(anomalySpatialContext).toBeVisible();
+  await expect(anomalySpatialContext).toContainText(/Flagged-cell constellation|No flagged model cells/);
   await anomalyPage.getByRole("button", { name: "Argo residual" }).click();
   await expect(anomalyInspector).toHaveAttribute("data-focus-screen", "residual");
   await expect(anomalyInspector).toContainText("Residual flags by depth");
@@ -542,9 +544,13 @@ test("live Ocean Canvas explorer and evidence flow works", async ({ page }) => {
   await page.getByRole("button", { name: "Show panels" }).click();
   await expect(page.locator(".app-shell")).not.toHaveClass(/focus-mode/);
 
-  await page.getByRole("button", { name: "Switch to dark theme" }).click();
+  const darkAppearanceTrigger = page.getByRole("button", { name: /Appearance: .*Open glass theme gallery/ });
+  await darkAppearanceTrigger.click();
+  const darkAppearanceGallery = page.getByRole("dialog", { name: "Glass appearance gallery" });
+  await expect(darkAppearanceGallery).toBeVisible();
+  await darkAppearanceGallery.getByRole("button", { name: /Graphite Clear/i }).click();
   await expect(documentRoot).toHaveAttribute("data-theme", "dark");
-  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("oceantwin-theme"))).toBe("dark");
+  await expect.poll(() => page.evaluate((key) => localStorage.getItem(key), GLASS_THEME_KEY)).toBe("graphite-clear");
 
   expect(pageErrors).toEqual([]);
 });

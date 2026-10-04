@@ -49,7 +49,8 @@ test("planned target enters the same Water Column 3D workflow without fabricated
   const verified = page.locator('.water-column-visualization-layer.active .water-column-shell[data-main-block-id="BASE-GLORYS-001"]');
   await expect(verified).toBeVisible();
   await expect(verified).toHaveAttribute("data-materialization", "verified-baseline");
-  await expect(verified.getByText("SCIENTIFIC WATER-COLUMN 3D", { exact: true })).toBeVisible();
+  await expect(verified).toHaveAttribute("data-depth-count", "31");
+  await expect(verified.locator(".water-column-canvas")).toBeVisible();
 });
 
 for (const viewport of [

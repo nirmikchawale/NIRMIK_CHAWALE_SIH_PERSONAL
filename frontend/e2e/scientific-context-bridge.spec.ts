@@ -5,7 +5,7 @@ const liveUrl = process.env.OCEANTWIN_LIVE_URL;
 async function openExplore(page: import("@playwright/test").Page) {
   if (!liveUrl) throw new Error("OCEANTWIN_LIVE_URL is required for live browser verification.");
   await page.goto(liveUrl, { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("heading", { name: /Ocean Canvas/i })).toBeVisible();
+  await expect(page.locator(".ocean-workbench").first()).toBeVisible();
   const skip = page.getByRole("button", { name: "Skip journey" });
   if (await skip.isVisible().catch(() => false)) await skip.click();
 }
