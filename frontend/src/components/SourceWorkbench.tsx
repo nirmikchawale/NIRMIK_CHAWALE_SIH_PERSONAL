@@ -1,9 +1,21 @@
+import { useEffect } from "react";
+
+import { readScientificWorkspaceContext } from "../scientific-context-runtime";
+
 type Source = "glorys" | "incois" | "chlorophyll";
 
 export function SourceWorkbench({ source, operationalAvailable, chlorophyllAvailable, onSource, onOverview, onCompare, onData }: {
   source: Source; operationalAvailable: boolean; chlorophyllAvailable: boolean;
   onSource: (source: Source) => void; onOverview: () => void; onCompare: () => void; onData: () => void;
 }) {
+  useEffect(() => {
+    const requestedSource = readScientificWorkspaceContext().sourceMode;
+    if (requestedSource === source) return;
+    if (requestedSource === "incois" && !operationalAvailable) return;
+    if (requestedSource === "chlorophyll" && !chlorophyllAvailable) return;
+    onSource(requestedSource);
+  }, [chlorophyllAvailable, onSource, operationalAvailable, source]);
+
   return <section className="source-workbench" aria-label="Scientific source workspace">
     <div className="source-workbench-title"><span>OCEAN INTELLIGENCE</span><h2>Choose your ocean.</h2></div>
     <div className="source-workbench-choices" aria-label="Explore scientific source">
