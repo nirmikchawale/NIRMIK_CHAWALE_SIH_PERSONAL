@@ -1,0 +1,60 @@
+name: phase5-last-two-repair
+
+on:
+  push:
+    branches:
+      - ui/phase-5-shared-scientific-context
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ui/phase-5-shared-scientific-context
+          fetch-depth: 0
+      - name: Repair authoritative touch pinch and smallest mobile HUD
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          water = Path("frontend/src/components/WaterColumn3D.tsx")
+          text = water.read_text()
+
+          old_refs = '''  const pointersRef = useRef(new Map<number, { x: number; y: number }>());\n  const pinchDistanceRef = useRef<number | null>(null);\n  const dragRef = useRef({ active: false, x: 0, y: 0 });'''
+          new_refs = '''  const pointersRef = useRef(new Map<number, { x: number; y: number }>());\n  const pinchDistanceRef = useRef<number | null>(null);\n  const touchPinchActiveRef = useRef(false);\n  const dragRef = useRef({ active: false, x: 0, y: 0 });'''
+          if old_refs not in text:
+              raise SystemExit("WaterColumn3D refs anchor not found")
+          text = text.replace(old_refs, new_refs, 1)
+
+          old_move = '''  const onPointerMove = (event: ReactPointerEvent<HTMLCanvasElement>) => {\n    if (!dragRef.current.active) {'''
+          new_move = '''  const onPointerMove = (event: ReactPointerEvent<HTMLCanvasElement>) => {\n    // When a browser emits both TouchEvents and PointerEvents for the same\n    // two-finger gesture, the native touch path owns pinch scaling. Pointer\n    // handling remains the fallback for environments that emit pointers only.\n    if (event.pointerType === "touch" && touchPinchActiveRef.current) return;\n    if (!dragRef.current.active) {'''
+          if old_move not in text:
+              raise SystemExit("WaterColumn3D pointer move anchor not found")
+          text = text.replace(old_move, new_move, 1)
+
+          old_touch = '''  const onTouchStart = (event: ReactTouchEvent<HTMLCanvasElement>) => {\n    if (event.touches.length < 2 || pointersRef.current.size >= 2) return;\n    event.preventDefault();\n    if (zoomAnimationRef.current != null) window.cancelAnimationFrame(zoomAnimationRef.current);\n    zoomAnimationRef.current = null;\n    const a = event.touches[0];\n    const b = event.touches[1];\n    pinchDistanceRef.current = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);\n    setHover(null);\n  };\n\n  const onTouchMove = (event: ReactTouchEvent<HTMLCanvasElement>) => {\n    if (event.touches.length < 2 || pointersRef.current.size >= 2) return;\n    event.preventDefault();\n    const a = event.touches[0];\n    const b = event.touches[1];\n    const distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);\n    const previous = pinchDistanceRef.current;\n    if (previous && distance > 0) {\n      setOrbit((current) => ({ ...current, zoom: clamp(current.zoom * distance / previous, 0.62, 1.9) }));\n    }\n    pinchDistanceRef.current = distance;\n  };\n\n  const onTouchEnd = (event: ReactTouchEvent<HTMLCanvasElement>) => {\n    if (pointersRef.current.size >= 2) return;\n    if (event.touches.length < 2) pinchDistanceRef.current = null;\n  };'''
+          new_touch = '''  const onTouchStart = (event: ReactTouchEvent<HTMLCanvasElement>) => {\n    if (event.touches.length < 2) return;\n    event.preventDefault();\n    touchPinchActiveRef.current = true;\n    if (zoomAnimationRef.current != null) window.cancelAnimationFrame(zoomAnimationRef.current);\n    zoomAnimationRef.current = null;\n    const a = event.touches[0];\n    const b = event.touches[1];\n    pinchDistanceRef.current = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);\n    setHover(null);\n  };\n\n  const onTouchMove = (event: ReactTouchEvent<HTMLCanvasElement>) => {\n    if (event.touches.length < 2) return;\n    event.preventDefault();\n    touchPinchActiveRef.current = true;\n    const a = event.touches[0];\n    const b = event.touches[1];\n    const distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);\n    const previous = pinchDistanceRef.current;\n    if (previous && distance > 0) {\n      setOrbit((current) => ({ ...current, zoom: clamp(current.zoom * distance / previous, 0.62, 1.9) }));\n    }\n    pinchDistanceRef.current = distance;\n  };\n\n  const onTouchEnd = (event: ReactTouchEvent<HTMLCanvasElement>) => {\n    if (event.touches.length < 2) {\n      touchPinchActiveRef.current = false;\n      pinchDistanceRef.current = null;\n    }\n  };'''
+          if old_touch not in text:
+              raise SystemExit("WaterColumn3D touch block anchor not found")
+          water.write_text(text.replace(old_touch, new_touch, 1))
+
+          css = Path("frontend/src/phase5-integration-gate.css")
+          css_text = css.read_text()
+          old_height = '''    width: auto;\n    max-height: calc(100% - 176px);\n  }'''
+          new_height = '''    width: auto;\n    /* The 390px judge viewport needs a compact, internally scrollable HUD.\n       Preserve the station-row constraint while preventing the glass panel\n       from extending beneath the mobile viewport. */\n    max-height: min(38dvh, 320px, calc(100% - 176px));\n    overscroll-behavior: contain;\n  }'''
+          if old_height not in css_text:
+              raise SystemExit("Phase 5 mobile HUD height anchor not found")
+          css.write_text(css_text.replace(old_height, new_height, 1))
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/components/WaterColumn3D.tsx frontend/src/phase5-integration-gate.css
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: finalize mobile pinch and compact block HUD"
+          git push origin HEAD:ui/phase-5-shared-scientific-context
