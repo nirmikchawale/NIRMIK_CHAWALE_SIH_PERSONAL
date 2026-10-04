@@ -48,6 +48,13 @@ test("Phase 6B INCOIS deep link waits for genuine source availability before hyd
   await expect(timeline).toBeVisible();
   await expect(timeline.locator(".timeline-now strong").first()).toHaveText("2026-07-30 · 00:00 UTC");
   await expect(timeline).toHaveAttribute("data-time-kind", "native");
+
+  // Re-selecting the already active scientific source is intentionally idempotent:
+  // it must not reset a deep-linked/restored native timestamp back to frame zero.
+  await incoisButton.click();
+  await expect(timeline.locator(".timeline-now strong").first()).toHaveText("2026-07-30 · 00:00 UTC");
+  await expect(contextBar).toHaveAttribute("data-source-mode", "incois");
+  await expect(contextBar).toHaveAttribute("data-variable", "so");
 });
 
 test("Phase 6B keeps a deep-linked pilot block active when navigation cleans the route", async ({ page }) => {
