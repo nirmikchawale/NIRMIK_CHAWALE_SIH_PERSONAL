@@ -1,0 +1,76 @@
+/* RUI-01 compatibility guard.
+   Neutralizes legacy generic `.feature-rail button` rules inside the new sidebar without changing page or renderer styles. */
+.ocean-workbench .rui-sidebar .rui-nav-short {
+  display: grid;
+  place-items: center;
+  min-width: 34px;
+  height: 32px;
+  padding-inline: 4px;
+  font-size: 9px;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.ocean-workbench .rui-sidebar .rui-nav-copy strong {
+  display: block;
+  overflow: hidden;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ocean-workbench .rui-sidebar .rui-nav-copy small {
+  display: block;
+  overflow: hidden;
+  color: var(--wb-muted);
+  font-size: 9px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ocean-workbench .rui-sidebar-context .scientific-context-bar button {
+  width: auto;
+  min-width: 0;
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--wb-line) 88%, transparent);
+  border-radius: 9px;
+  color: var(--wb-text);
+  background: color-mix(in srgb, var(--wb-panel) 88%, transparent);
+  box-shadow: none;
+  transform: none;
+  cursor: pointer;
+  text-align: center;
+}
+
+.ocean-workbench .rui-sidebar-context .scientific-context-bar button:hover:not(:disabled),
+.ocean-workbench .rui-sidebar-context .scientific-context-bar button:focus-visible {
+  border-color: var(--wb-accent);
+  color: var(--wb-accent);
+  background: var(--wb-raised);
+  transform: none;
+}
+
+.ocean-workbench .rui-sidebar-context .scientific-context-stepper button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  min-width: 32px;
+  padding: 0;
+}
+
+.ocean-workbench .rui-sidebar-context .scientific-context-actions > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.ocean-workbench .rui-sidebar-context .scientific-context-bar button:disabled {
+  opacity: .34;
+  cursor: not-allowed;
+}
