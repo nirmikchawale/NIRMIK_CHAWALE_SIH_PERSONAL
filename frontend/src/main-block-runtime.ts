@@ -26,7 +26,7 @@ const PILOT_SECONDARY_DATE = "2004-07-28";
 
 export type ActiveMainBlock = OceanMainBlock | VerifiedBaselineBlock;
 
-export function isPhase35bPilotId(id: string | null | undefined): boolean {
+export function isPhase35bPilotId(id: string | null | undefined): id is string {
   return typeof id === "string" && PILOT_ID_SET.has(id);
 }
 
@@ -115,9 +115,11 @@ export function activeMainBlockRegion(block: ActiveMainBlock): string {
  * used this function as their "may render scientific volume" gate. Phase 3.5D keeps the
  * exported name to avoid a high-risk renderer rewrite, but now returns true for either
  * the original verified baseline or a source-backed pilot. Callers that need to
- * distinguish them must inspect block.materialization directly.
+ * distinguish them must inspect block.materialization directly. The type-guard shape is
+ * retained only so the legacy WaterColumn planned-shell branch continues to narrow safely;
+ * no pilot-specific logic relies on baseline-only fields after the guard.
  */
-export function isVerifiedBaseline(block: ActiveMainBlock): boolean {
+export function isVerifiedBaseline(block: ActiveMainBlock): block is VerifiedBaselineBlock {
   return block.materialization === "verified-baseline" || block.materialization === "pilot";
 }
 
