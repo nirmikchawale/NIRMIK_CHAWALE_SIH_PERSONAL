@@ -184,12 +184,12 @@ export function publishScientificWorkspaceContext(patch: ScientificWorkspaceCont
     // The context remains live in-memory through the custom event when storage is unavailable.
   }
 
-  // Explorer owns the canonical scientific selection and therefore keeps its
-  // route self-describing. Document workspaces keep legacy clean route hashes
-  // when reached through normal navigation, but continue updating an existing
-  // scientific query when opened through a deep link or block selector.
+  // Normal navigation keeps established clean route hashes such as #/explore.
+  // Once a scientific query is explicitly active (deep link, block selector or
+  // native-time URL), subsequent compatible workspace changes keep that query
+  // synchronized instead of silently dropping its context.
   const hashAlreadyCarriesContext = window.location.hash.includes("?");
-  if (next.origin === "explorer" || hashAlreadyCarriesContext) {
+  if (hashAlreadyCarriesContext) {
     writeScientificContextToHash(next);
   }
   window.dispatchEvent(new CustomEvent<ScientificWorkspaceContext>(SCIENTIFIC_WORKSPACE_CONTEXT_EVENT, {
