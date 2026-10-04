@@ -28,6 +28,10 @@ for (const width of [1440, 390]) {
     expect(rootContract.shellOverflowY).toBe("hidden");
     expect(Math.abs(rootContract.shellHeight - rootContract.viewportHeight)).toBeLessThanOrEqual(2);
 
+    const contextHeader = page.getByTestId("scientific-context-header");
+    await expect(contextHeader).toBeInViewport();
+    await expect(page.locator(".science-footer")).not.toBeVisible();
+
     for (const [label, route] of [
       ["Telemetry", "telemetry"],
       ["Model vs Observation", "compare"],
@@ -76,8 +80,7 @@ for (const width of [1440, 390]) {
       await expect.poll(() => content.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
       await expect.poll(() => page.evaluate(() => document.scrollingElement?.scrollTop ?? 0)).toBe(0);
 
-      const footer = page.locator(".science-footer");
-      await expect(footer).toBeInViewport();
+      await expect(contextHeader).toBeInViewport();
     }
   });
 }
