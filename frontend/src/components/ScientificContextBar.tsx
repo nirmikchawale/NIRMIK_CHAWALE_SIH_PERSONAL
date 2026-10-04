@@ -51,7 +51,15 @@ export function ScientificContextBar({ page, onNavigate }: Props) {
   }, []);
 
   useEffect(() => {
-    if (detailsRef.current) detailsRef.current.open = page !== "explore";
+    const details = detailsRef.current;
+    if (!details) return;
+    const mobileQuery = window.matchMedia("(max-width: 760px)");
+    const syncDisclosure = () => {
+      details.open = !mobileQuery.matches && page !== "explore";
+    };
+    syncDisclosure();
+    mobileQuery.addEventListener?.("change", syncDisclosure);
+    return () => mobileQuery.removeEventListener?.("change", syncDisclosure);
   }, [page]);
 
   useEffect(() => {
@@ -109,89 +117,91 @@ export function ScientificContextBar({ page, onNavigate }: Props) {
           <span>{context.blockId}</span>
           <strong>{statusLabel}</strong>
         </summary>
-        <dl>
-          <div><dt>Region</dt><dd>{context.blockRegion}</dd></div>
-          <div><dt>Source</dt><dd>{sourceLabel(context.sourceMode, context.blockMaterialization)}</dd></div>
-          <div><dt>Time</dt><dd>{timeLabel(context)}</dd></div>
-          <div><dt>Variable</dt><dd>{variableLabel(context.variable)}</dd></div>
-          <div><dt>Depth</dt><dd>{context.depthM == null ? (context.variable === "chlorophyll" ? "Surface only" : "Not selected") : `${context.depthM.toFixed(2)} m`}</dd></div>
-        </dl>
+        <div className="scientific-context-panel">
+          <dl>
+            <div><dt>Region</dt><dd>{context.blockRegion}</dd></div>
+            <div><dt>Source</dt><dd>{sourceLabel(context.sourceMode, context.blockMaterialization)}</dd></div>
+            <div><dt>Time</dt><dd>{timeLabel(context)}</dd></div>
+            <div><dt>Variable</dt><dd>{variableLabel(context.variable)}</dd></div>
+            <div><dt>Depth</dt><dd>{context.depthM == null ? (context.variable === "chlorophyll" ? "Surface only" : "Not selected") : `${context.depthM.toFixed(2)} m`}</dd></div>
+          </dl>
 
-        <div className="scientific-context-materialized-control" data-testid="scientific-context-materialized-control">
-          <label htmlFor="scientific-context-block-select">
-            <span>Scientific block</span>
-            <select
-              id="scientific-context-block-select"
-              aria-label="Active materialized scientific block"
-              value={context.blockId}
-              onChange={(event) => publishActiveMainBlockId(event.target.value)}
-            >
-              {planned && (
-                <option value={context.blockId} disabled>
-                  {context.blockId} · planned geography only
-                </option>
-              )}
-              <option value={CURRENT_VERIFIED_BASELINE.id}>BASE-GLORYS-001 · verified baseline</option>
-              {PHASE35B_PILOT_IDS.map((id) => (
-                <option key={id} value={id}>{id} · source-backed pilot</option>
-              ))}
-            </select>
-          </label>
-          <div className="scientific-context-stepper" role="group" aria-label="Materialized block navigation">
+          <div className="scientific-context-materialized-control" data-testid="scientific-context-materialized-control">
+            <label htmlFor="scientific-context-block-select">
+              <span>Scientific block</span>
+              <select
+                id="scientific-context-block-select"
+                aria-label="Active materialized scientific block"
+                value={context.blockId}
+                onChange={(event) => publishActiveMainBlockId(event.target.value)}
+              >
+                {planned && (
+                  <option value={context.blockId} disabled>
+                    {context.blockId} · planned geography only
+                  </option>
+                )}
+                <option value={CURRENT_VERIFIED_BASELINE.id}>BASE-GLORYS-001 · verified baseline</option>
+                {PHASE35B_PILOT_IDS.map((id) => (
+                  <option key={id} value={id}>{id} · source-backed pilot</option>
+                ))}
+              </select>
+            </label>
+            <div className="scientific-context-stepper" role="group" aria-label="Materialized block navigation">
+              <button
+                type="button"
+                aria-label="Previous materialized scientific block"
+                disabled={!canStepMaterialized}
+                onClick={() => stepMaterialized(-1)}
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                aria-label="Next materialized scientific block"
+                disabled={!canStepMaterialized}
+                onClick={() => stepMaterialized(1)}
+              >
+                →
+              </button>
+            </div>
+          </div>
+
+          <div className={`scientific-context-status ${planned ? "planned" : pilot ? "pilot" : "verified"}`}>
+            <strong>
+              {planned
+                ? "Geographic selection only"
+                : pilot
+                  ? "Source-backed pilot volume active"
+                  : "Source-backed scientific context"}
+            </strong>
+            <span>
+              {planned
+                ? "This block has no materialized scientific volume yet. Analysis workspaces remain anchored to verified source evidence until genuine block data is available."
+                : pilot
+                  ? "This main block is rendered from genuine Phase 3.5B GLORYS12V1 payloads. Geographic and Water Column 3D views use the same block, native time, variable and depth context; no synthetic values are introduced."
+                  : "Block, time, variable and depth can travel between compatible Ocean Canvas workspaces."}
+            </span>
+          </div>
+
+          <div className="scientific-context-actions">
+            {page !== "explore" && (
+              <button type="button" className="scientific-context-return" onClick={() => onNavigate("explore")}>
+                Open context in 3D Explorer
+              </button>
+            )}
             <button
               type="button"
-              aria-label="Previous materialized scientific block"
-              disabled={!canStepMaterialized}
-              onClick={() => stepMaterialized(-1)}
+              className="scientific-context-copy"
+              aria-label="Copy shareable scientific context link"
+              onClick={copyDeepLink}
             >
-              ←
-            </button>
-            <button
-              type="button"
-              aria-label="Next materialized scientific block"
-              disabled={!canStepMaterialized}
-              onClick={() => stepMaterialized(1)}
-            >
-              →
+              {copyState === "copied" ? "Context link copied" : copyState === "error" ? "Copy unavailable" : "Copy context link"}
             </button>
           </div>
+          <p className="scientific-context-link-note">
+            The context link records the active block, source, variable, depth, native time and selected profile when available.
+          </p>
         </div>
-
-        <div className={`scientific-context-status ${planned ? "planned" : pilot ? "pilot" : "verified"}`}>
-          <strong>
-            {planned
-              ? "Geographic selection only"
-              : pilot
-                ? "Source-backed pilot volume active"
-                : "Source-backed scientific context"}
-          </strong>
-          <span>
-            {planned
-              ? "This block has no materialized scientific volume yet. Analysis workspaces remain anchored to verified source evidence until genuine block data is available."
-              : pilot
-                ? "This main block is rendered from genuine Phase 3.5B GLORYS12V1 payloads. Geographic and Water Column 3D views use the same block, native time, variable and depth context; no synthetic values are introduced."
-                : "Block, time, variable and depth can travel between compatible Ocean Canvas workspaces."}
-          </span>
-        </div>
-
-        <div className="scientific-context-actions">
-          {page !== "explore" && (
-            <button type="button" className="scientific-context-return" onClick={() => onNavigate("explore")}>
-              Open context in 3D Explorer
-            </button>
-          )}
-          <button
-            type="button"
-            className="scientific-context-copy"
-            aria-label="Copy shareable scientific context link"
-            onClick={copyDeepLink}
-          >
-            {copyState === "copied" ? "Context link copied" : copyState === "error" ? "Copy unavailable" : "Copy context link"}
-          </button>
-        </div>
-        <p className="scientific-context-link-note">
-          The context link records the active block, source, variable, depth, native time and selected profile when available.
-        </p>
       </details>
     </section>
   );
