@@ -18,8 +18,8 @@ test("Phase 3.5C exposes native time provenance, transport and exact deep-link r
   await expect(timeEngine).toHaveAttribute("data-time-kind", "native");
   await expect(timeEngine).toContainText("NATIVE SOURCE TIME");
   await expect(timeEngine).toContainText("INTERPOLATION OFF");
-  await expect(timeEngine.getByLabel("Native date")).toBeVisible();
-  await expect(timeEngine.getByLabel("Native UTC time")).toBeVisible();
+  await expect(timeEngine.getByLabel("Native date", { exact: true })).toBeVisible();
+  await expect(timeEngine.getByLabel("Native UTC time", { exact: true })).toBeVisible();
   await expect(timeEngine).toContainText("URL CONTEXT");
   await expect(timeEngine).toContainText("Synced");
 
