@@ -1,0 +1,45 @@
+/* RUI-02 validation hotfix.
+   On compact layouts, explicitly anchor the three shell bands so legacy flex/grid
+   ownership cannot collapse the route workspace. Scientific state/renderers are untouched. */
+@media (max-width: 900px) {
+  .ocean-workbench[data-rui-context-header="true"] .workspace-frame {
+    position: relative;
+    display: block !important;
+  }
+
+  .ocean-workbench[data-rui-context-header="true"] .app-navigation-root,
+  .ocean-workbench[data-rui-context-header="true"] .app-navigation-root[data-collapsed="true"] {
+    position: absolute;
+    z-index: 44;
+    top: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: var(--rui-mobile-nav-height);
+  }
+
+  .ocean-workbench[data-rui-context-header="true"] .workspace-frame > .scientific-context-header {
+    position: absolute;
+    z-index: 43;
+    top: var(--rui-mobile-nav-height);
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: var(--rui-mobile-context-height);
+  }
+
+  .ocean-workbench[data-rui-context-header="true"] .workspace-frame > .workspace {
+    position: absolute !important;
+    top: calc(var(--rui-mobile-nav-height) + var(--rui-mobile-context-height));
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .ocean-workbench.focus-mode[data-rui-context-header="true"] .workspace-frame > .workspace {
+    top: 0;
+  }
+}
