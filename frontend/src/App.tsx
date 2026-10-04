@@ -30,6 +30,7 @@ import argoLogo3b from "./assets/exact-logo-03b.b64?raw";
 import argoLogo4a from "./assets/exact-logo-04a.b64?raw";
 import argoLogo4b from "./assets/exact-logo-04b.b64?raw";
 import { PAGE_ITEMS, routeFromHash, type PageId } from "./navigation";
+import { readScientificWorkspaceContext } from "./scientific-context-runtime";
 import {
   buildIncoisChlorophyllCatalog,
   buildIncoisChlorophyllField,
@@ -435,9 +436,14 @@ export default function App() {
         }
 
         if (profilesResult.status === "fulfilled") {
-          setProfiles(profilesResult.value.profiles);
-          if (profilesResult.value.profiles.length > 0) {
-            setSelectedProfileId(profilesResult.value.profiles[0].profile_id);
+          const nextProfiles = profilesResult.value.profiles;
+          setProfiles(nextProfiles);
+          if (nextProfiles.length > 0) {
+            const requestedProfileId = readScientificWorkspaceContext().selectedProfileId;
+            const requestedProfileExists = requestedProfileId
+              ? nextProfiles.some((profile) => profile.profile_id === requestedProfileId)
+              : false;
+            setSelectedProfileId(requestedProfileExists ? requestedProfileId! : nextProfiles[0].profile_id);
           } else {
             setDegradedWarnings((current) => current.includes("No eligible Argo comparison profiles") ? current : [...current, "No eligible Argo comparison profiles"]);
           }
