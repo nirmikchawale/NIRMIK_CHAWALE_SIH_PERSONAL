@@ -120,6 +120,12 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
         </div>
       </div>
 
+      {mobileLayout && !focusMode && (
+        <div className="mobile-scientific-context" data-testid="mobile-scientific-context">
+          <ScientificContextBar page={page} onNavigate={navigateFromSidebar} />
+        </div>
+      )}
+
       {mobileLayout && mobileOpen && (
         <button
           type="button"
@@ -196,9 +202,11 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
           ))}
         </div>
 
-        <div className="rui-sidebar-context" data-testid="rui-sidebar-context-slot">
-          <ScientificContextBar page={page} onNavigate={navigateFromSidebar} />
-        </div>
+        {!mobileLayout && (
+          <div className="rui-sidebar-context" data-testid="rui-sidebar-context-slot">
+            <ScientificContextBar page={page} onNavigate={navigateFromSidebar} />
+          </div>
+        )}
       </nav>
     </div>
   );
