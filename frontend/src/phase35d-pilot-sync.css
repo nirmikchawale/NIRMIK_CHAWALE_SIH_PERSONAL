@@ -1,0 +1,309 @@
+/* Phase 3.5D — source-backed pilot renderer synchronization.
+   Pilot status is additive; scientific colours and Cesium canvas rendering are unchanged. */
+
+.phase35-block-summary article.materialized {
+  border-color: color-mix(in srgb, var(--glass-accent) 58%, var(--glass-border));
+  background: color-mix(in srgb, var(--glass-accent) 10%, var(--glass-panel));
+}
+
+.phase35-block-cell.materialized {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--glass-accent) 68%, var(--glass-border));
+  color: var(--glass-accent);
+  background: color-mix(in srgb, var(--glass-accent) 8%, var(--glass-panel));
+}
+
+.phase35-block-cell.materialized strong {
+  color: var(--glass-accent);
+}
+
+.phase35-block-cell.materialized span {
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.phase35-inspector-status.materialized {
+  border-color: color-mix(in srgb, var(--glass-accent) 60%, var(--glass-border));
+  background: color-mix(in srgb, var(--glass-accent) 10%, var(--glass-panel));
+}
+
+.phase35-manifest-warning {
+  margin: 8px 20px 0;
+  padding: 9px 11px;
+  border: 1px solid color-mix(in srgb, #ffb66b 52%, var(--glass-border));
+  border-radius: 10px;
+  color: var(--glass-text);
+  background: color-mix(in srgb, #ff9b4a 8%, var(--glass-panel));
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.phase35-activate-block,
+.phase35-baseline-return {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--glass-accent) 55%, var(--glass-border));
+  border-radius: 10px;
+  color: var(--glass-text);
+  background: color-mix(in srgb, var(--glass-accent) 12%, var(--glass-panel-strong));
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.phase35-activate-block:hover:not(:disabled),
+.phase35-activate-block:focus-visible,
+.phase35-baseline-return:hover:not(:disabled),
+.phase35-baseline-return:focus-visible {
+  border-color: var(--glass-accent);
+  background: color-mix(in srgb, var(--glass-accent) 18%, var(--glass-panel-strong));
+}
+
+.phase35-activate-block:disabled,
+.phase35-baseline-return:disabled {
+  cursor: default;
+  opacity: .62;
+}
+
+.phase35-activation-note {
+  display: block;
+  margin-top: 7px;
+  color: var(--glass-muted);
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.phase35-planned-lock {
+  margin-top: 12px;
+  padding: 9px;
+  border: 1px dashed var(--glass-border-strong);
+  border-radius: 9px;
+  color: var(--glass-muted);
+  background: color-mix(in srgb, var(--glass-panel) 72%, transparent);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  line-height: 1.45;
+}
+
+.scientific-context-status.pilot {
+  border-color: color-mix(in srgb, var(--glass-accent) 52%, var(--glass-border));
+  background: color-mix(in srgb, var(--glass-accent) 8%, var(--glass-panel));
+}
+
+.scientific-context-status.pilot strong {
+  color: var(--glass-accent);
+}
+
+.pilot-renderer-bridge {
+  position: fixed;
+  z-index: 179;
+  top: max(78px, calc(env(safe-area-inset-top) + 70px));
+  right: 18px;
+  width: min(330px, calc(100vw - 36px));
+  display: grid;
+  gap: 8px;
+  padding: 11px 12px;
+  border: 1px solid color-mix(in srgb, var(--glass-accent) 58%, var(--glass-border-strong));
+  border-radius: 15px;
+  color: var(--glass-text);
+  background:
+    radial-gradient(circle at 90% -20%, color-mix(in srgb, var(--glass-accent) 17%, transparent), transparent 44%),
+    color-mix(in srgb, var(--glass-panel-strong) 94%, transparent);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+}
+
+.pilot-renderer-bridge-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pilot-renderer-bridge-heading > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pilot-renderer-bridge-heading span {
+  color: var(--glass-accent);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .1em;
+}
+
+.pilot-renderer-bridge-heading strong {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.pilot-renderer-bridge-heading small {
+  color: var(--glass-muted);
+  font-size: 9px;
+}
+
+.pilot-renderer-bridge-heading b {
+  flex: 0 0 auto;
+  padding: 4px 6px;
+  border: 1px solid color-mix(in srgb, var(--glass-accent) 45%, var(--glass-border));
+  border-radius: 999px;
+  color: var(--glass-accent);
+  background: color-mix(in srgb, var(--glass-accent) 8%, transparent);
+  font-size: 8px;
+}
+
+.pilot-renderer-bridge-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 7px;
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--glass-panel) 78%, transparent);
+}
+
+.pilot-renderer-bridge-status span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--glass-muted);
+  font-size: 8px;
+}
+
+.pilot-renderer-bridge-status i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--glass-accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--glass-accent) 70%, transparent);
+}
+
+.pilot-renderer-bridge-status strong {
+  margin-left: auto;
+  color: var(--glass-accent);
+  font-size: 8px;
+  letter-spacing: .08em;
+}
+
+.pilot-renderer-bridge dl {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+}
+
+.pilot-renderer-bridge dl > div {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 7px;
+}
+
+.pilot-renderer-bridge dt,
+.pilot-renderer-bridge dd {
+  margin: 0;
+  font-size: 8px;
+  line-height: 1.35;
+}
+
+.pilot-renderer-bridge dt { color: var(--glass-muted); }
+.pilot-renderer-bridge dd { color: var(--glass-text); }
+
+.pilot-renderer-bridge p {
+  margin: 0;
+  color: var(--glass-muted);
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.pilot-renderer-bridge button {
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid var(--glass-border-strong);
+  border-radius: 9px;
+  color: var(--glass-text);
+  background: color-mix(in srgb, var(--glass-panel) 82%, transparent);
+  font: inherit;
+  font-size: 9px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.pilot-renderer-bridge button:hover,
+.pilot-renderer-bridge button:focus-visible {
+  border-color: var(--glass-accent);
+  color: var(--glass-accent);
+}
+
+/* OceanGlobe still contains pre-acquisition labels from the planning-only phase.
+   Hide only those stale status fragments when a real pilot is active; keep the
+   selector, fit controls and Water Column entry available. */
+html[data-main-block-materialization="pilot"] .main-block-status-pill,
+html[data-main-block-materialization="pilot"] .main-block-globe-stats,
+html[data-main-block-materialization="pilot"] .main-block-grid-key,
+html[data-main-block-materialization="pilot"] .main-block-globe-boundary-note {
+  display: none !important;
+}
+
+html[data-main-block-materialization="pilot"] .main-block-globe-hud {
+  top: 284px;
+}
+
+@media (max-width: 1100px) {
+  .pilot-renderer-bridge {
+    top: 82px;
+    width: min(310px, calc(100vw - 28px));
+  }
+
+  .pilot-renderer-bridge dl,
+  .pilot-renderer-bridge p {
+    display: none;
+  }
+
+  html[data-main-block-materialization="pilot"] .main-block-globe-hud {
+    top: 188px;
+  }
+}
+
+@media (max-width: 760px) {
+  .pilot-renderer-bridge {
+    position: absolute;
+    z-index: 26;
+    top: 72px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    padding: 9px 10px;
+  }
+
+  .pilot-renderer-bridge-heading small,
+  .pilot-renderer-bridge button {
+    display: none;
+  }
+
+  .pilot-renderer-bridge-status {
+    padding: 5px 6px;
+  }
+
+  html[data-main-block-materialization="pilot"] .main-block-globe-hud {
+    top: 168px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phase35-activate-block,
+  .phase35-baseline-return,
+  .pilot-renderer-bridge button {
+    transition: none !important;
+  }
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .pilot-renderer-bridge {
+    background: var(--glass-panel-strong);
+  }
+}
