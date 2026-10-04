@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import type { Catalog, ProfileSummary, ViewMode, VisualizationMode } from "../types";
 import { displayUnits } from "../units";
 import { TimelineScrubber } from "./TimelineScrubber";
-import { publishScientificWorkspaceContext } from "../scientific-context-runtime";
+import { publishScientificWorkspaceContext, readScientificWorkspaceContext } from "../scientific-context-runtime";
 
 const DEPTH_TRACK_MAX = 1000;
 const EPipelagic_END_M = 200;
@@ -124,8 +124,53 @@ export function ControlPanel({
   const surfaceOnly = catalog.capabilities.surface_only === true;
   const currentDepthZone = depthZone(depth);
   const selectedVariable = catalog.variables.find((item) => item.id === variable);
+  const initialContextHydrated = useRef(false);
 
   useEffect(() => {
+    if (!initialContextHydrated.current) {
+      const requested = readScientificWorkspaceContext();
+
+      // Source hydration is owned by SourceWorkbench because INCOIS/chlorophyll
+      // availability is asynchronous. Do not publish GLORYS defaults while that
+      // source handoff is still pending.
+      if (requested.sourceMode !== sourceMode) return;
+
+      let changed = false;
+      const requestedVariable = catalog.variables.find((item) => item.id === requested.variable);
+      if (requestedVariable && requested.variable !== variable) {
+        onVariableChange(requested.variable);
+        changed = true;
+      }
+
+      if (!surfaceOnly && requested.depthM != null && depths.length > 0) {
+        const requestedDepthIndex = nearestDepthIndex(depths, requested.depthM);
+        if (requestedDepthIndex !== depthIndex) {
+          onDepthChange(requestedDepthIndex);
+          changed = true;
+        }
+      }
+
+      if (requested.timestamp) {
+        const requestedTimeIndex = catalog.coordinates.time.findIndex((timestamp) => timestamp === requested.timestamp);
+        if (requestedTimeIndex >= 0 && requestedTimeIndex !== timeIndex) {
+          onTimeChange(requestedTimeIndex);
+          changed = true;
+        }
+      }
+
+      if (
+        requested.selectedProfileId &&
+        requested.selectedProfileId !== selectedProfileId &&
+        profiles.some((profile) => profile.profile_id === requested.selectedProfileId)
+      ) {
+        onProfileChange(requested.selectedProfileId);
+        changed = true;
+      }
+
+      initialContextHydrated.current = true;
+      if (changed) return;
+    }
+
     const timestamp = catalog.coordinates.time[timeIndex] ?? null;
     publishScientificWorkspaceContext({
       sourceMode,
@@ -138,7 +183,22 @@ export function ControlPanel({
       selectedProfileId: selectedProfileId || null,
       origin: "explorer"
     });
-  }, [catalog.coordinates.time, depth, depthIndex, selectedProfileId, sourceMode, surfaceOnly, timeIndex, variable]);
+  }, [
+    catalog,
+    depth,
+    depthIndex,
+    depths,
+    onDepthChange,
+    onProfileChange,
+    onTimeChange,
+    onVariableChange,
+    profiles,
+    selectedProfileId,
+    sourceMode,
+    surfaceOnly,
+    timeIndex,
+    variable
+  ]);
 
   const selectDepthFromTrack = (trackPosition: number) => {
     const physicalDepth = trackPositionToDepth(trackPosition, deepestVerifiedDepth);
@@ -177,7 +237,6 @@ export function ControlPanel({
           Close
         </button>
       </div>
-
       <nav className="control-section-nav" aria-label="Jump to exploration controls">
         {[["Variables", "explore-variables"], ["Depth", "explore-depth"], ["Time", "explore-time"], ["Observations", "explore-observations"]].map(([label, id]) =>
           <button key={id} type="button" onClick={() => document.getElementById(id)?.scrollIntoView({ block: "nearest", behavior: "auto" })}>{label}</button>
