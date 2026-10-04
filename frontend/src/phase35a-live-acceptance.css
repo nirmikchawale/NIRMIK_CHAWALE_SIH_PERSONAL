@@ -41,6 +41,16 @@
 }
 
 @media (max-width: 760px) {
+  /* The quick tray owns the bottom 72px of the mobile workspace. Reserve that
+     space instead of overlaying it on the Cesium station/tool rows. */
+  .station-workspace .visualization-stage {
+    bottom: 76px !important;
+  }
+
+  .station-workspace .mobile-explore-tray {
+    z-index: 12;
+  }
+
   .station-workspace .main-block-globe-hud {
     top: 10px;
     right: 10px;
