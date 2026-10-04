@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { PageId } from "../navigation";
 import { PAGE_ITEMS } from "../navigation";
-import { ScientificContextBar } from "./ScientificContextBar";
 
 interface Props {
   page: PageId;
@@ -120,12 +119,6 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
         </div>
       </div>
 
-      {mobileLayout && !focusMode && (
-        <div className="mobile-scientific-context" data-testid="mobile-scientific-context">
-          <ScientificContextBar page={page} onNavigate={navigateFromSidebar} />
-        </div>
-      )}
-
       {mobileLayout && mobileOpen && (
         <button
           type="button"
@@ -201,12 +194,6 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
             </div>
           ))}
         </div>
-
-        {!mobileLayout && (
-          <div className="rui-sidebar-context" data-testid="rui-sidebar-context-slot">
-            <ScientificContextBar page={page} onNavigate={navigateFromSidebar} />
-          </div>
-        )}
       </nav>
     </div>
   );
