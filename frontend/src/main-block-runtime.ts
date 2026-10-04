@@ -106,18 +106,20 @@ export function publishActiveMainBlockId(id: string): string {
     // Selection remains usable for this browser session when storage is unavailable.
   }
   writeMainBlockToHash(requested.id);
-  window.dispatchEvent(new CustomEvent<string>(ACTIVE_MAIN_BLOCK_EVENT, { detail: requested.id }));
 
   // Switching into or out of a source-backed pilot changes the actual scientific
   // payload family. App.tsx builds its catalog once at startup, so perform one
-  // deterministic reload only for those source-context transitions. Planned ↔
-  // baseline geographic selections remain immediate and preserve the established
-  // "planning geometry + verified evidence" workflow.
+  // deterministic reload for those source-context transitions. Do not emit the
+  // in-session selection event before that reload: doing so would briefly advertise
+  // a new scientific block while the renderer still owns the previous payload family.
+  // Non-reloading geographic/baseline changes remain immediate.
   const sourceContextChanged =
     requested.id !== previous.id &&
     (requested.materialization === "pilot" || previous.materialization === "pilot");
   if (sourceContextChanged) {
     window.setTimeout(() => window.location.reload(), 40);
+  } else {
+    window.dispatchEvent(new CustomEvent<string>(ACTIVE_MAIN_BLOCK_EVENT, { detail: requested.id }));
   }
   return requested.id;
 }
