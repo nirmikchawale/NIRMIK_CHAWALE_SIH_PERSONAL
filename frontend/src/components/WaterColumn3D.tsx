@@ -315,6 +315,7 @@ export function WaterColumn3D({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchDistanceRef = useRef<number | null>(null);
+  const touchPinchActiveRef = useRef(false);
   const dragRef = useRef({ active: false, x: 0, y: 0 });
   const zoomAnimationRef = useRef<number | null>(null);
   const projectedRef = useRef<ProjectedPoint[]>([]);
@@ -720,6 +721,10 @@ export function WaterColumn3D({
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+    // When a browser emits both TouchEvents and PointerEvents for the same
+    // two-finger gesture, the native touch path owns pinch scaling. Pointer
+    // handling remains the fallback for environments that emit pointers only.
+    if (event.pointerType === "touch" && touchPinchActiveRef.current) return;
     if (!dragRef.current.active) {
       inspectNearest(event.clientX, event.clientY);
       return;
@@ -765,8 +770,9 @@ export function WaterColumn3D({
   // fewer than two pointers reached that path. touch-action:none on the canvas
   // prevents browser page zoom/scroll from stealing the scientific camera gesture.
   const onTouchStart = (event: ReactTouchEvent<HTMLCanvasElement>) => {
-    if (event.touches.length < 2 || pointersRef.current.size >= 2) return;
+    if (event.touches.length < 2) return;
     event.preventDefault();
+    touchPinchActiveRef.current = true;
     if (zoomAnimationRef.current != null) window.cancelAnimationFrame(zoomAnimationRef.current);
     zoomAnimationRef.current = null;
     const a = event.touches[0];
@@ -776,8 +782,9 @@ export function WaterColumn3D({
   };
 
   const onTouchMove = (event: ReactTouchEvent<HTMLCanvasElement>) => {
-    if (event.touches.length < 2 || pointersRef.current.size >= 2) return;
+    if (event.touches.length < 2) return;
     event.preventDefault();
+    touchPinchActiveRef.current = true;
     const a = event.touches[0];
     const b = event.touches[1];
     const distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
@@ -789,8 +796,10 @@ export function WaterColumn3D({
   };
 
   const onTouchEnd = (event: ReactTouchEvent<HTMLCanvasElement>) => {
-    if (pointersRef.current.size >= 2) return;
-    if (event.touches.length < 2) pinchDistanceRef.current = null;
+    if (event.touches.length < 2) {
+      touchPinchActiveRef.current = false;
+      pinchDistanceRef.current = null;
+    }
   };
 
   const onWheel = (event: WheelEvent<HTMLCanvasElement>) => {

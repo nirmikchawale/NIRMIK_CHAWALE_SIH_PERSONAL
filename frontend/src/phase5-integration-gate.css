@@ -61,6 +61,10 @@
     right: 10px;
     bottom: 166px;
     width: auto;
-    max-height: calc(100% - 176px);
+    /* The 390px judge viewport needs a compact, internally scrollable HUD.
+       Preserve the station-row constraint while preventing the glass panel
+       from extending beneath the mobile viewport. */
+    max-height: min(38dvh, 320px, calc(100% - 176px));
+    overscroll-behavior: contain;
   }
 }
