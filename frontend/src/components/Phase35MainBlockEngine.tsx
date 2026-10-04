@@ -12,10 +12,16 @@ import {
   type MainBlockRegion,
   type OceanMainBlock
 } from "../main-block-engine";
+import {
+  fetchPilotMainBlockManifest,
+  type PilotBlockManifest,
+  type PilotBlockManifestEntry
+} from "../pilot-main-block-loader";
 
 const PREVIEW_STORAGE_KEY = "oceancanvas-main-block-preview-v1";
 
 type RegionFilter = "all" | MainBlockRegion;
+type ManifestState = "loading" | "ready" | "error";
 
 function initialPreviewId(): string {
   try {
@@ -30,29 +36,88 @@ function formatTargetCount(value: number): string {
   return value.toLocaleString("en-IN");
 }
 
+function validateManifest(manifest: PilotBlockManifest): PilotBlockManifest {
+  const valid =
+    manifest.phase === "3.5B" &&
+    manifest.target_domain.logical_block_count === TARGET_BLOCK_COUNT &&
+    manifest.blocks.length === TARGET_BLOCK_COUNT &&
+    manifest.integrity.logical_block_count === TARGET_BLOCK_COUNT &&
+    manifest.integrity.pilot_block_count === 24 &&
+    manifest.integrity.multi_date_pilot_count === 6 &&
+    manifest.integrity.land_blocks_materialized === 0 &&
+    manifest.integrity.synthetic_measurements === false &&
+    manifest.integrity.synthetic_timestamps === false &&
+    manifest.integrity.synthetic_coordinates === false &&
+    manifest.integrity.synthetic_depths === false &&
+    manifest.integrity.vertical_component_available === false;
+  if (!valid) throw new Error("Phase 3.5B evidence manifest failed the expected 140 / 24 / 6 integrity contract.");
+  return manifest;
+}
+
+function evidenceStatus(evidence: PilotBlockManifestEntry | undefined): string {
+  if (!evidence) return "EVIDENCE STATUS UNAVAILABLE";
+  if (evidence.materialization === "pilot") return "SOURCE-BACKED PILOT · RENDERER ACTIVATION PENDING 4B";
+  if (evidence.ocean_relevance === "land") return "LAND-DOMINANT · NOT MATERIALIZED";
+  if (evidence.ocean_relevance === "coastal") return "COASTAL TARGET · NOT MATERIALIZED";
+  return "OCEAN TARGET · NOT MATERIALIZED";
+}
+
 export function Phase35MainBlockEngine() {
   const [hash, setHash] = useState(() => window.location.hash);
   const [open, setOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(initialPreviewId);
   const [regionFilter, setRegionFilter] = useState<RegionFilter>("all");
   const [query, setQuery] = useState("");
+  const [manifest, setManifest] = useState<PilotBlockManifest | null>(null);
+  const [manifestState, setManifestState] = useState<ManifestState>("loading");
 
   const onExploreRoute = hash === "" || hash === "#" || hash.startsWith("#/explore");
   const selected = INDIAN_OCEAN_MAIN_BLOCKS.find((block) => block.id === selectedId) ?? INDIAN_OCEAN_MAIN_BLOCKS[0];
+  const evidenceById = useMemo(
+    () => new Map((manifest?.blocks ?? []).map((block) => [block.id, block])),
+    [manifest]
+  );
+  const selectedEvidence = evidenceById.get(selected.id);
 
   const visibleBlocks = useMemo(() => {
     const cleanQuery = query.trim().toLowerCase();
     return INDIAN_OCEAN_MAIN_BLOCKS.filter((block) => {
       const regionMatch = regionFilter === "all" || block.region === regionFilter;
-      const textMatch = !cleanQuery || `${block.id} ${block.region} ${blockBoundsLabel(block)}`.toLowerCase().includes(cleanQuery);
+      const evidence = evidenceById.get(block.id);
+      const evidenceText = evidence
+        ? `${evidence.ocean_relevance} ${evidence.materialization} ${evidence.available_dates.join(" ")}`
+        : "";
+      const textMatch =
+        !cleanQuery ||
+        `${block.id} ${block.region} ${blockBoundsLabel(block)} ${evidenceText}`.toLowerCase().includes(cleanQuery);
       return regionMatch && textMatch;
     });
-  }, [query, regionFilter]);
+  }, [query, regionFilter, evidenceById]);
 
   useEffect(() => {
     const syncHash = () => setHash(window.location.hash);
     window.addEventListener("hashchange", syncHash);
     return () => window.removeEventListener("hashchange", syncHash);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setManifestState("loading");
+    fetchPilotMainBlockManifest()
+      .then(validateManifest)
+      .then((nextManifest) => {
+        if (cancelled) return;
+        setManifest(nextManifest);
+        setManifestState("ready");
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setManifest(null);
+        setManifestState("error");
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -82,8 +147,20 @@ export function Phase35MainBlockEngine() {
     setSelectedId(block.id);
   };
 
+  const pilotCount = manifest?.integrity.pilot_block_count;
+  const multiDateCount = manifest?.integrity.multi_date_pilot_count;
+  const landPilotCount = manifest?.integrity.land_blocks_materialized;
+  const statusLabel = evidenceStatus(selectedEvidence);
+  const selectedDates = selectedEvidence?.available_dates ?? [];
+  const oceanPercent = selectedEvidence ? `${(selectedEvidence.ocean_fraction * 100).toFixed(1)}%` : "—";
+
   return (
-    <div className="phase35-block-engine-root" data-phase="3.5a+3.5c" data-testid="phase35-main-block-engine">
+    <div
+      className="phase35-block-engine-root"
+      data-phase="4a-source-aware-geography"
+      data-manifest-state={manifestState}
+      data-testid="phase35-main-block-engine"
+    >
       {!open && (
         <button
           type="button"
@@ -95,7 +172,13 @@ export function Phase35MainBlockEngine() {
           <span className="phase35-engine-icon" aria-hidden="true">▦</span>
           <span>
             <strong>Indian Ocean Block Engine</strong>
-            <small>140 target main blocks · Time engine active</small>
+            <small>
+              {manifestState === "ready"
+                ? `${pilotCount} source-backed pilots · ${TARGET_BLOCK_COUNT} logical cells`
+                : manifestState === "error"
+                  ? "140 logical cells · evidence manifest unavailable"
+                  : "140 logical cells · loading source evidence…"}
+            </small>
           </span>
         </button>
       )}
@@ -111,35 +194,42 @@ export function Phase35MainBlockEngine() {
           <aside className="phase35-block-panel" role="dialog" aria-modal="true" aria-label="Indian Ocean Main Block Engine">
             <header className="phase35-block-header">
               <div>
-                <span className="phase35-kicker">PHASE 3.5A + 3.5C · {MAIN_BLOCK_ENGINE_VERSION}</span>
+                <span className="phase35-kicker">PHASE 4A · SOURCE-AWARE GEOGRAPHY · {MAIN_BLOCK_ENGINE_VERSION}</span>
                 <h2>Indian Ocean Main Block Engine</h2>
                 <p>
-                  A time-ready logical index for {TARGET_BLOCK_COUNT} future <strong>main blocks</strong> across {TARGET_DOMAIN.west}–{TARGET_DOMAIN.east}°E and {TARGET_DOMAIN.south}–{TARGET_DOMAIN.north}°N. These are target extraction regions, not subdivisions of the current GLORYS block.
+                  A source-aware index of {TARGET_BLOCK_COUNT} logical cells across {TARGET_DOMAIN.west}–{TARGET_DOMAIN.east}°E and {TARGET_DOMAIN.south}–{TARGET_DOMAIN.north}°N. Phase 3.5B evidence now distinguishes materialized GLORYS12V1 pilots, planned ocean/coastal targets and land-dominant cells without copying the current baseline.
                 </p>
               </div>
               <button type="button" className="phase35-block-close" onClick={() => setOpen(false)} aria-label="Close main block engine">×</button>
             </header>
 
+            {manifestState === "error" && (
+              <div className="phase4a-manifest-alert" role="alert">
+                <strong>Evidence manifest unavailable.</strong>
+                <span>The planning catalog remains usable, but Ocean Canvas will not infer pilot or ocean/land status until the verified manifest loads.</span>
+              </div>
+            )}
+
             <section className="phase35-block-summary" aria-label="Block engine status">
               <article>
-                <small>LOGICAL TARGETS</small>
+                <small>LOGICAL CELLS</small>
                 <strong>{formatTargetCount(TARGET_BLOCK_COUNT)}</strong>
-                <span>future main-block positions</span>
+                <span>complete geographic audit grid</span>
+              </article>
+              <article className="materialized">
+                <small>SOURCE-BACKED PILOTS</small>
+                <strong>{pilotCount ?? "—"}</strong>
+                <span>genuine GLORYS12V1 geographic extracts</span>
               </article>
               <article>
-                <small>NEWLY MATERIALIZED</small>
-                <strong>0</strong>
-                <span>Phase 3.5B acquires real new blocks</span>
+                <small>MULTI-DATE PILOTS</small>
+                <strong>{multiDateCount ?? "—"}</strong>
+                <span>two genuine historical daily fields</span>
               </article>
               <article className="verified">
-                <small>CURRENT VERIFIED BASELINE</small>
-                <strong>1</strong>
-                <span>{blockBoundsLabel(CURRENT_VERIFIED_BASELINE)}</span>
-              </article>
-              <article>
-                <small>TIME MODEL</small>
-                <strong>3.5C ACTIVE</strong>
-                <span>native date/time · playback · URL context</span>
+                <small>LAND PILOTS / BASELINE</small>
+                <strong>{landPilotCount ?? "—"} / 1</strong>
+                <span>no land materialized · baseline kept separate</span>
               </article>
             </section>
 
@@ -154,8 +244,8 @@ export function Phase35MainBlockEngine() {
                     </select>
                   </label>
                   <label>
-                    <span>Find block</span>
-                    <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="IO-047 or Bay of Bengal" />
+                    <span>Find block or status</span>
+                    <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="IO-001, Bay of Bengal, pilot, coastal…" />
                   </label>
                   <div className="phase35-block-result-count" aria-live="polite">
                     <strong>{visibleBlocks.length}</strong>
@@ -164,27 +254,37 @@ export function Phase35MainBlockEngine() {
                 </div>
 
                 <div className="phase35-grid-note">
-                  <span>Schematic 14 × 10 planning grid</span>
-                  <span>Highlighted outline = target cell intersects the current verified baseline footprint</span>
+                  <span>14 × 10 logical audit grid · land cells remain inspectable here</span>
+                  <span>Pilot = source payload exists · renderer activation intentionally waits for Phase 4B</span>
                 </div>
 
                 <div className="phase35-block-grid" role="group" aria-label="140 logical Indian Ocean main blocks">
                   {visibleBlocks.map((block) => {
                     const active = block.id === selected.id;
                     const overlapsCurrent = intersectsBaseline(block);
+                    const evidence = evidenceById.get(block.id);
+                    const pilot = evidence?.materialization === "pilot";
+                    const relevance = evidence?.ocean_relevance;
+                    const materialization = evidence ? evidence.materialization : "unknown";
+                    const label = evidence
+                      ? pilot
+                        ? `${block.id}, ${block.region}, ${blockBoundsLabel(block)}, source-backed pilot, ${evidence.available_dates.length} genuine date${evidence.available_dates.length === 1 ? "" : "s"}`
+                        : `${block.id}, ${block.region}, ${blockBoundsLabel(block)}, ${relevance} target, not materialized`
+                      : `${block.id}, ${block.region}, ${blockBoundsLabel(block)}, evidence status unavailable`;
                     return (
                       <button
                         key={block.id}
                         type="button"
-                        className={`phase35-block-cell ${active ? "active" : ""} ${overlapsCurrent ? "baseline-overlap" : ""}`}
+                        className={`phase35-block-cell ${active ? "active" : ""} ${overlapsCurrent ? "baseline-overlap" : ""} ${pilot ? "pilot" : ""} ${relevance ?? "unknown"}`}
                         aria-pressed={active}
-                        aria-label={`${block.id}, ${block.region}, ${blockBoundsLabel(block)}, planned main block`}
+                        aria-label={label}
                         data-block-id={block.id}
-                        data-materialization="planned"
+                        data-materialization={materialization}
+                        data-ocean-relevance={relevance ?? "unknown"}
                         onClick={() => selectBlock(block)}
                       >
                         <strong>{block.id.replace("IO-", "")}</strong>
-                        <span>{block.west}–{block.east}E</span>
+                        <span>{pilot ? "PILOT" : relevance === "land" ? "LAND" : relevance === "coastal" ? "COAST" : `${block.west}–${block.east}E`}</span>
                       </button>
                     );
                   })}
@@ -192,21 +292,21 @@ export function Phase35MainBlockEngine() {
               </section>
 
               <aside className="phase35-block-inspector" aria-label="Selected block details">
-                <div className="phase35-inspector-status planned">
-                  <span>LOGICAL TARGET · NOT YET DOWNLOADED</span>
+                <div className={`phase35-inspector-status ${selectedEvidence?.materialization === "pilot" ? "pilot" : selectedEvidence?.ocean_relevance ?? "unknown"}`}>
+                  <span>{statusLabel}</span>
                   <strong>{selected.id}</strong>
                 </div>
                 <h3>{selected.region}</h3>
                 <p className="phase35-selected-bounds">{blockBoundsLabel(selected)}</p>
 
                 <dl className="phase35-block-facts">
-                  <div><dt>Source plan</dt><dd>GLORYS12V1 historical + verified operational companion</dd></div>
-                  <div><dt>Variables</dt><dd>Temperature · Salinity · Currents</dd></div>
-                  <div><dt>Historical schema</dt><dd>Daily source frames</dd></div>
-                  <div><dt>Operational schema</dt><dd>Native sub-daily timestamps when acquired</dd></div>
-                  <div><dt>Interpolation</dt><dd>Reserved with mandatory INTERPOLATED disclosure</dd></div>
-                  <div><dt>Time engine</dt><dd>Exact native timestamps are selectable, playable when multiple steps exist, and deep-linkable</dd></div>
-                  <div><dt>Data status</dt><dd>No new values are bundled for this target in Phase 3.5C</dd></div>
+                  <div><dt>Ocean relevance</dt><dd>{selectedEvidence ? `${selectedEvidence.ocean_relevance} · ${oceanPercent} finite surface-water coverage` : "Unavailable until evidence manifest loads"}</dd></div>
+                  <div><dt>Materialization</dt><dd>{selectedEvidence?.materialization === "pilot" ? "Genuine browser-ready GLORYS12V1 payload available" : selectedEvidence ? "No scientific field payload for this logical target" : "Unknown — no status inferred"}</dd></div>
+                  <div><dt>Available dates</dt><dd>{selectedDates.length ? selectedDates.join(" · ") : "None materialized"}</dd></div>
+                  <div><dt>Variables</dt><dd>{selectedEvidence?.materialization === "pilot" ? "thetao · so · uo · vo (horizontal current only)" : "Temperature · Salinity · Currents planned by schema"}</dd></div>
+                  <div><dt>Source</dt><dd>{selectedEvidence?.materialization === "pilot" ? "Copernicus Marine / Mercator Ocean GLORYS12V1" : "GLORYS12V1 target architecture"}</dd></div>
+                  <div><dt>Archive transport</dt><dd>{selectedEvidence?.materialization === "pilot" ? manifest?.source.archive_provider ?? "Recorded in manifest" : "—"}</dd></div>
+                  <div><dt>Water Column 3D</dt><dd>{selectedEvidence?.materialization === "pilot" ? "Source evidence ready; active renderer wiring is deliberately deferred to Phase 4B" : "Logical target shell only until source materialization"}</dd></div>
                 </dl>
 
                 <div className="phase35-time-schema" aria-label="Temporal hierarchy">
@@ -215,7 +315,7 @@ export function Phase35MainBlockEngine() {
 
                 <div className="phase35-baseline-card">
                   <div>
-                    <span className="phase35-baseline-badge">VERIFIED NOW</span>
+                    <span className="phase35-baseline-badge">ACTIVE LEGACY RENDERER BASELINE</span>
                     <strong>{CURRENT_VERIFIED_BASELINE.id}</strong>
                   </div>
                   <p>{blockBoundsLabel(CURRENT_VERIFIED_BASELINE)}</p>
@@ -224,14 +324,14 @@ export function Phase35MainBlockEngine() {
                     <li>{CURRENT_VERIFIED_BASELINE.depthLevels} verified depth levels</li>
                     <li>Temperature · Salinity · horizontal currents</li>
                   </ul>
-                  <small>The current verified block remains the only materialized GLORYS main volume. Phase 3.5C changes time architecture and interaction only; it does not fabricate additional GLORYS dates.</small>
+                  <small>Phase 3.5B has materialized {pilotCount ?? "source-backed"} additional geographic pilot payloads. Phase 4A maps that evidence honestly; Phase 4B is the controlled step that will make a selected pilot replace this baseline in the active Water Column renderer.</small>
                 </div>
               </aside>
             </div>
 
             <footer className="phase35-block-footer">
-              <strong>SCIENTIFIC BOUNDARY</strong>
-              <span>The 140 cells remain a deployment-ready manifest and UI index. Phase 3.5C adds the native-time engine but does not claim planned blocks or timestamps as downloaded evidence.</span>
+              <strong>PHASE 4A SCIENTIFIC BOUNDARY</strong>
+              <span>Source-backed pilot evidence is real and checksummed. Geographic availability is active now; pilot Water Column values are not activated until Phase 4B, so no baseline values are copied or relabelled as pilot science.</span>
             </footer>
           </aside>
         </>
