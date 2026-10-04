@@ -4,6 +4,7 @@ import {
   buildScientificTimeModel,
   formatScientificTimestamp,
   publishScientificTimeContext,
+  readScientificTimeContext,
   readTimeFromHash,
   resolveTimeIndex,
   writeTimeToHash,
@@ -80,8 +81,23 @@ export function TimelineScrubber({
   useEffect(() => {
     if (restoredForTimeKey.current === timeKey) return;
     restoredForTimeKey.current = timeKey;
-    const requestedTimestamp = readTimeFromHash();
-    const requestedIndex = resolveTimeIndex(times, requestedTimestamp);
+
+    // Prefer an exact timestamp carried by the URL when it belongs to this source.
+    // If another source rendered briefly during reload and replaced that query value,
+    // fall back to the last genuine time-engine snapshot only when it is exactly
+    // available in this source. This preserves Phase 3.5C deep-link/session restore
+    // without inventing or interpolating timestamps.
+    const linkedTimestamp = readTimeFromHash();
+    const storedTimestamp = readScientificTimeContext()?.timestamp ?? null;
+    const linkedIndex = resolveTimeIndex(times, linkedTimestamp);
+    const storedIndex = resolveTimeIndex(times, storedTimestamp);
+    const requestedTimestamp = linkedIndex != null
+      ? linkedTimestamp
+      : storedIndex != null
+        ? storedTimestamp
+        : null;
+    const requestedIndex = linkedIndex ?? storedIndex;
+
     if (requestedTimestamp && requestedIndex != null && requestedIndex !== index) {
       pendingRestoreTimestamp.current = requestedTimestamp;
       onIndexChange(requestedIndex);
