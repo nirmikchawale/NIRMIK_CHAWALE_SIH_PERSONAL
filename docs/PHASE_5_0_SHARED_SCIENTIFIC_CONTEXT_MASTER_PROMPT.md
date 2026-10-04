@@ -75,6 +75,9 @@ Require:
 
 Browser acceptance must target the current production UI contract: use Appearance Lab presets for theme switching and exact labels for nested native-time controls. Obsolete theme-button or ambiguous selector assertions must not block a scientifically valid release.
 
+## Integration note
+Phase 5.0 is reconciled on top of the Phase 3.5A live-HUD acceptance repair from PR #123. The final integration preserves that repair's current browser semantics and `phase35a-live-acceptance.css`, while retaining the Phase 5 shared-context styles, mobile Water Column pinch handling, and compact integrated block-HUD safeguards. No scientific payload, manifest materialization, backend source value, or planned-block science is introduced by this reconciliation.
+
 ## Definition of done
 Phase 5.0 is done when:
 1. all six pages expose one visible shared context surface;
