@@ -35,6 +35,8 @@ export function ScientificContextBar({ page, onNavigate }: Props) {
   }, [page]);
 
   const planned = context.blockMaterialization === "planned";
+  const pilot = context.blockMaterialization === "pilot";
+  const statusLabel = planned ? "PLANNED TARGET" : pilot ? "MATERIALIZED PILOT" : "VERIFIED BASELINE";
 
   return (
     <section
@@ -50,21 +52,29 @@ export function ScientificContextBar({ page, onNavigate }: Props) {
       <details ref={detailsRef}>
         <summary>
           <span>{context.blockId}</span>
-          <strong>{planned ? "PLANNED TARGET" : "VERIFIED CONTEXT"}</strong>
+          <strong>{statusLabel}</strong>
         </summary>
         <dl>
           <div><dt>Region</dt><dd>{context.blockRegion}</dd></div>
-          <div><dt>Source</dt><dd>{sourceLabel(context.sourceMode)}</dd></div>
+          <div><dt>Source</dt><dd>{sourceLabel(context.sourceMode, context.blockMaterialization)}</dd></div>
           <div><dt>Time</dt><dd>{timeLabel(context)}</dd></div>
           <div><dt>Variable</dt><dd>{variableLabel(context.variable)}</dd></div>
           <div><dt>Depth</dt><dd>{context.depthM == null ? (context.variable === "chlorophyll" ? "Surface only" : "Not selected") : `${context.depthM.toFixed(2)} m`}</dd></div>
         </dl>
-        <div className={`scientific-context-status ${planned ? "planned" : "verified"}`}>
-          <strong>{planned ? "Geographic selection only" : "Source-backed scientific context"}</strong>
+        <div className={`scientific-context-status ${planned ? "planned" : pilot ? "pilot" : "verified"}`}>
+          <strong>
+            {planned
+              ? "Geographic selection only"
+              : pilot
+                ? "Source-backed pilot volume active"
+                : "Source-backed scientific context"}
+          </strong>
           <span>
             {planned
               ? "This block has no materialized scientific volume yet. Analysis workspaces remain anchored to verified source evidence until genuine block data is available."
-              : "Block, time, variable and depth can now travel between compatible Ocean Canvas workspaces."}
+              : pilot
+                ? "This main block is rendered from genuine Phase 3.5B GLORYS12V1 payloads. Geographic and Water Column 3D views use the same block, native time, variable and depth context; no synthetic values are introduced."
+                : "Block, time, variable and depth can now travel between compatible Ocean Canvas workspaces."}
           </span>
         </div>
         {page !== "explore" && (
