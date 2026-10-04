@@ -109,8 +109,16 @@ export function activeMainBlockRegion(block: ActiveMainBlock): string {
   return "region" in block ? block.region : "Verified GLORYS baseline";
 }
 
-export function isVerifiedBaseline(block: ActiveMainBlock): block is VerifiedBaselineBlock {
-  return block.id === CURRENT_VERIFIED_BASELINE.id;
+/**
+ * Legacy compatibility guard used by the pre-3.5B WaterColumn/OceanGlobe components.
+ * Historically "verified baseline" was the only materialized state, so those renderers
+ * used this function as their "may render scientific volume" gate. Phase 3.5D keeps the
+ * exported name to avoid a high-risk renderer rewrite, but now returns true for either
+ * the original verified baseline or a source-backed pilot. Callers that need to
+ * distinguish them must inspect block.materialization directly.
+ */
+export function isVerifiedBaseline(block: ActiveMainBlock): boolean {
+  return block.materialization === "verified-baseline" || block.materialization === "pilot";
 }
 
 export function isMaterializedMainBlock(block: ActiveMainBlock): boolean {
