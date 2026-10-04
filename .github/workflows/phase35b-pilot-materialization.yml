@@ -1,0 +1,72 @@
+name: phase35b-pilot-materialization
+
+on:
+  push:
+    branches:
+      - data/phase-35b-pilot-acquisition
+    paths:
+      - scripts/materialize_phase35b_pilots.py
+      - frontend/src/pilot-main-block-loader.ts
+      - docs/PHASE_35B_PILOT_ACQUISITION_MASTER_PROMPT.md
+      - .github/workflows/phase35b-pilot-materialization.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: phase35b-pilot-materialization
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout isolated Phase 3.5B branch
+        uses: actions/checkout@v4
+        with:
+          ref: data/phase-35b-pilot-acquisition
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install acquisition dependencies
+        run: python -m pip install --upgrade "numpy>=2.2,<3" "xarray>=2025.1,<2027" "netCDF4>=1.7,<2"
+
+      - name: Materialize coast-aware genuine GLORYS12V1 pilots
+        run: python scripts/materialize_phase35b_pilots.py --output frontend/public/main-blocks
+
+      - name: Independently verify generated pilot evidence
+        run: python scripts/materialize_phase35b_pilots.py --verify-only --output frontend/public/main-blocks
+
+      - name: Summarize materialization
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path("frontend/public/main-blocks/manifest.json").read_text())
+          print("Logical cells:", manifest["integrity"]["logical_block_count"])
+          print("Genuine pilot blocks:", manifest["integrity"]["pilot_block_count"])
+          print("Multi-date pilots:", manifest["integrity"]["multi_date_pilot_count"])
+          print("Land blocks materialized:", manifest["integrity"]["land_blocks_materialized"])
+          print("Pilot IDs:", ", ".join(manifest["pilot_ids"]))
+          PY
+
+      - name: Commit generated source-backed pilot assets to phase branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/public/main-blocks
+          if git diff --cached --quiet; then
+            echo "Generated pilot assets are unchanged."
+            exit 0
+          fi
+          git commit -m "data: materialize genuine Phase 3.5B GLORYS pilot blocks"
+          git push origin HEAD:data/phase-35b-pilot-acquisition
