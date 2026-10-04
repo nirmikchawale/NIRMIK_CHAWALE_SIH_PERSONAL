@@ -1,4 +1,5 @@
 import { activeMainBlockRegion, readActiveMainBlockId, resolveMainBlock } from "./main-block-runtime";
+import type { PageId } from "./navigation";
 import {
   SCIENTIFIC_TIME_CONTEXT_EVENT,
   readScientificTimeContext,
@@ -8,7 +9,7 @@ import {
 
 export type ScientificSourceMode = "glorys" | "incois" | "chlorophyll";
 export type ScientificWorkspaceVariable = "thetao" | "so" | "currents" | "chlorophyll";
-export type ScientificContextOrigin = "explorer" | "telemetry" | "anomaly" | "system";
+export type ScientificContextOrigin = "explorer" | "telemetry" | "compare" | "anomaly" | "data-lab" | "system";
 export type ScientificBlockMaterialization = "verified-baseline" | "pilot" | "planned";
 
 export interface ScientificWorkspaceContext {
@@ -33,6 +34,15 @@ export type ScientificWorkspaceContextPatch = Partial<Omit<ScientificWorkspaceCo
 export const SCIENTIFIC_WORKSPACE_CONTEXT_EVENT = "oceancanvas:scientific-workspace-context";
 export const SCIENTIFIC_WORKSPACE_CONTEXT_STORAGE_KEY = "oceancanvas-scientific-workspace-context-v1";
 
+const QUERY_KEYS = {
+  block: "block",
+  source: "source",
+  variable: "variable",
+  depth: "depth",
+  time: "time",
+  profile: "profile"
+} as const;
+
 const DEFAULT_CONTEXT: Omit<ScientificWorkspaceContext, "blockId" | "blockRegion" | "blockMaterialization"> = {
   sourceMode: "glorys",
   variable: "thetao",
@@ -52,6 +62,34 @@ function validSource(value: unknown): value is ScientificSourceMode {
 
 function validVariable(value: unknown): value is ScientificWorkspaceVariable {
   return value === "thetao" || value === "so" || value === "currents" || value === "chlorophyll";
+}
+
+function hashParams(hash = window.location.hash): URLSearchParams {
+  const query = hash.split("?")[1] ?? "";
+  return new URLSearchParams(query);
+}
+
+function finiteDepth(value: string | null): number | null {
+  if (value == null || value.trim() === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+
+function readLinkedContext(): Partial<ScientificWorkspaceContext> {
+  const params = hashParams();
+  const source = params.get(QUERY_KEYS.source);
+  const variable = params.get(QUERY_KEYS.variable);
+  const timestamp = params.get(QUERY_KEYS.time);
+  const profile = params.get(QUERY_KEYS.profile);
+  const depthM = finiteDepth(params.get(QUERY_KEYS.depth));
+
+  return {
+    ...(validSource(source) ? { sourceMode: source } : {}),
+    ...(validVariable(variable) ? { variable } : {}),
+    ...(depthM != null ? { depthM } : {}),
+    ...(timestamp ? { timestamp, timeKind: "native" as const } : {}),
+    ...(profile ? { selectedProfileId: profile } : {})
+  };
 }
 
 function readStoredContext(): Partial<ScientificWorkspaceContext> | null {
@@ -75,26 +113,55 @@ function timeIsNewer(time: ScientificTimeContextSnapshot | null, context: Partia
   return timeUpdated > contextUpdated;
 }
 
+function writeScientificContextToHash(context: ScientificWorkspaceContext): void {
+  const hash = window.location.hash || "#/explore";
+  const [route, query = ""] = hash.split("?");
+  const params = new URLSearchParams(query);
+
+  params.set(QUERY_KEYS.block, context.blockId);
+  params.set(QUERY_KEYS.source, context.sourceMode);
+  params.set(QUERY_KEYS.variable, context.variable);
+
+  if (context.depthM == null) params.delete(QUERY_KEYS.depth);
+  else params.set(QUERY_KEYS.depth, String(context.depthM));
+
+  if (context.timestamp) params.set(QUERY_KEYS.time, context.timestamp);
+  else params.delete(QUERY_KEYS.time);
+
+  if (context.selectedProfileId) params.set(QUERY_KEYS.profile, context.selectedProfileId);
+  else params.delete(QUERY_KEYS.profile);
+
+  const nextQuery = params.toString();
+  const nextHash = `${route || "#/explore"}${nextQuery ? `?${nextQuery}` : ""}`;
+  if (nextHash !== window.location.hash) {
+    window.history.replaceState(window.history.state, "", nextHash);
+  }
+}
+
 export function readScientificWorkspaceContext(): ScientificWorkspaceContext {
   const stored = readStoredContext();
+  const linked = readLinkedContext();
   const timeContext = readScientificTimeContext();
   const activeBlock = resolveMainBlock(readActiveMainBlockId());
-  const useTimeContext = timeIsNewer(timeContext, stored);
+  const useTimeContext = timeIsNewer(timeContext, stored) && !linked.timestamp;
 
-  const sourceMode = validSource(stored?.sourceMode) ? stored.sourceMode : DEFAULT_CONTEXT.sourceMode;
-  const variable = validVariable(stored?.variable) ? stored.variable : DEFAULT_CONTEXT.variable;
+  const linkedOrStoredSource = linked.sourceMode ?? stored?.sourceMode;
+  const linkedOrStoredVariable = linked.variable ?? stored?.variable;
+  const sourceMode = validSource(linkedOrStoredSource) ? linkedOrStoredSource : DEFAULT_CONTEXT.sourceMode;
+  const variable = validVariable(linkedOrStoredVariable) ? linkedOrStoredVariable : DEFAULT_CONTEXT.variable;
 
   return {
     ...DEFAULT_CONTEXT,
     ...stored,
+    ...linked,
     sourceMode,
     variable,
     blockId: activeBlock.id,
     blockRegion: activeMainBlockRegion(activeBlock),
     blockMaterialization: activeBlock.materialization,
-    timestamp: useTimeContext ? timeContext?.timestamp ?? null : stored?.timestamp ?? null,
+    timestamp: linked.timestamp ?? (useTimeContext ? timeContext?.timestamp ?? null : stored?.timestamp ?? null),
     timeIndex: useTimeContext ? timeContext?.timeIndex ?? null : stored?.timeIndex ?? null,
-    timeKind: useTimeContext ? timeContext?.timeKind ?? "unavailable" : stored?.timeKind ?? "unavailable",
+    timeKind: linked.timestamp ? "native" : useTimeContext ? timeContext?.timeKind ?? "unavailable" : stored?.timeKind ?? "unavailable",
     updatedAtUtc: useTimeContext ? timeContext?.updatedAtUtc ?? new Date().toISOString() : stored?.updatedAtUtc ?? DEFAULT_CONTEXT.updatedAtUtc
   };
 }
@@ -117,10 +184,27 @@ export function publishScientificWorkspaceContext(patch: ScientificWorkspaceCont
     // The context remains live in-memory through the custom event when storage is unavailable.
   }
 
+  writeScientificContextToHash(next);
   window.dispatchEvent(new CustomEvent<ScientificWorkspaceContext>(SCIENTIFIC_WORKSPACE_CONTEXT_EVENT, {
     detail: next
   }));
   return next;
+}
+
+export function buildScientificContextDeepLink(
+  page: PageId,
+  context: ScientificWorkspaceContext = readScientificWorkspaceContext()
+): string {
+  const params = new URLSearchParams();
+  params.set(QUERY_KEYS.block, context.blockId);
+  params.set(QUERY_KEYS.source, context.sourceMode);
+  params.set(QUERY_KEYS.variable, context.variable);
+  if (context.depthM != null) params.set(QUERY_KEYS.depth, String(context.depthM));
+  if (context.timestamp) params.set(QUERY_KEYS.time, context.timestamp);
+  if (context.selectedProfileId) params.set(QUERY_KEYS.profile, context.selectedProfileId);
+
+  const base = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+  return `${base}#/${page}?${params.toString()}`;
 }
 
 export function subscribeScientificWorkspaceContext(listener: (context: ScientificWorkspaceContext) => void): () => void {
