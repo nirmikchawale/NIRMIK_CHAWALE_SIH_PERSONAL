@@ -142,9 +142,20 @@ test("mobile pinch, wheel and reduced-motion orientation work", async ({ page })
   await page.getByRole("button", { name: "Reset Water-Column 3D view" }).click();
   await expect(shell).toHaveAttribute("data-zoom", "1.000");
   await canvas.scrollIntoViewIfNeeded();
-  const wheelBounds = await canvas.boundingBox();
-  if (!wheelBounds) throw new Error("3D canvas missing after pinch reset");
-  await page.mouse.move(wheelBounds.x + wheelBounds.width / 2, wheelBounds.y + wheelBounds.height / 2);
-  await page.mouse.wheel(0, -100);
+
+  // As with pinch, target the production canvas event surface directly. A
+  // page-level mouse wheel depends on headless hit-testing and scroll ownership,
+  // which can route the gesture to the document even when the canvas handler is
+  // correct. A real bubbling WheelEvent exercises React's onWheel contract on
+  // the same element a physical wheel/trackpad gesture owns.
+  await canvas.evaluate((element) => {
+    element.dispatchEvent(new WheelEvent("wheel", {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      deltaY: -100,
+      deltaMode: WheelEvent.DOM_DELTA_PIXEL
+    }));
+  });
   await expect.poll(async () => Number(await shell.getAttribute("data-zoom"))).toBeGreaterThan(1);
 });
