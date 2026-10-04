@@ -90,6 +90,10 @@ test("mobile pinch, wheel and reduced-motion orientation work", async ({ page, c
   const x = bounds.x + bounds.width / 2;
   const y = bounds.y + bounds.height / 2;
   const client = await context.newCDPSession(page);
+  // The shared desktop Playwright context does not advertise touch hardware.
+  // Enable Chromium touch emulation so CDP touch input follows the same pointer
+  // path used by real mobile browsers rather than becoming a no-op in CI.
+  await client.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 2 });
   await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: x - 30, y, id: 1 }, { x: x + 30, y, id: 2 }] });
   await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: x - 50, y, id: 1 }, { x: x + 50, y, id: 2 }] });
   await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
@@ -101,5 +105,6 @@ test("mobile pinch, wheel and reduced-motion orientation work", async ({ page, c
   await page.mouse.move(wheelBounds!.x + wheelBounds!.width / 2, wheelBounds!.y + wheelBounds!.height / 2);
   await page.mouse.wheel(0, -100);
   await expect.poll(async () => Number(await shell.getAttribute("data-zoom"))).toBeGreaterThan(1);
+  await client.send("Emulation.setTouchEmulationEnabled", { enabled: false });
   await client.detach();
 });
