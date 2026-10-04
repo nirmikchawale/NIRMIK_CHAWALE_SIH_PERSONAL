@@ -61,6 +61,9 @@ test("Phase 6 context controls remain contained on a phone viewport", async ({ p
 
   const bar = page.getByTestId("scientific-context-bar");
   await expect(bar).toBeVisible();
+  await expect(bar.locator("details")).not.toHaveAttribute("open", "");
+  await bar.locator("summary").click();
+
   const control = page.getByTestId("scientific-context-materialized-control");
   await expect(control).toBeVisible();
   await control.scrollIntoViewIfNeeded();
