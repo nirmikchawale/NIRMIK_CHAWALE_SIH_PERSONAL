@@ -1,0 +1,62 @@
+/* Phase 3.5A-G live acceptance fix.
+   Keep the integrated 140-block controller inside the scientific canvas so it never
+   steals pointer events from the station tool row, journey controls, Argo callouts,
+   or the mobile quick tray. Scientific rendering/data are intentionally untouched. */
+
+.station-workspace .main-block-globe-hud {
+  top: 12px;
+  right: 12px;
+  left: auto;
+  width: min(320px, calc(100% - 24px));
+  max-height: min(210px, calc(100% - 24px));
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  z-index: 8;
+}
+
+/* During Earth → India → ocean orientation, keep only a quiet summary strip visible.
+   The journey and Skip/Replay controls remain the sole interaction owner. */
+.station-workspace .main-block-globe-hud[data-intro-ready="false"] {
+  max-height: 52px;
+  overflow: hidden;
+  opacity: 0.52;
+  pointer-events: none;
+}
+
+.station-workspace .main-block-globe-hud[data-intro-ready="false"] :is(button, select, label) {
+  pointer-events: none;
+}
+
+/* The tool row is a separate grid row. Keep it above any future canvas adornment. */
+.station-workspace .renderer-tools {
+  position: relative;
+  z-index: 20;
+}
+
+.station-workspace .renderer-tools .argo-billboard-callout {
+  position: relative !important;
+  z-index: 24;
+}
+
+@media (max-width: 760px) {
+  .station-workspace .main-block-globe-hud {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-height: 176px;
+    padding: 9px;
+  }
+
+  .station-workspace .main-block-globe-hud[data-intro-ready="false"] {
+    max-height: 46px;
+  }
+}
+
+@media (max-width: 430px) {
+  .station-workspace .main-block-globe-hud {
+    max-height: 158px;
+  }
+}
