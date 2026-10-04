@@ -32,6 +32,13 @@
   z-index: 32;
 }
 
+/* Water-column gestures own the renderer surface. This prevents the browser's
+   page-zoom/scroll gesture from consuming a two-finger interaction before the
+   renderer's pointer handlers can update its scientific camera. */
+.ocean-workbench .water-column-canvas {
+  touch-action: none;
+}
+
 /* The station owns mobile interaction layout. Legacy floating trays and the
    older standalone atlas/block launchers duplicate controls and can obscure
    the renderer toolbar on small screens. The integrated HUD remains available. */
