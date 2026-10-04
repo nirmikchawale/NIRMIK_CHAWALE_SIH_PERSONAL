@@ -20,6 +20,7 @@ import "./phase35c-time-engine.css";
 import "./viewport-lock.css";
 import "./theme-gallery-alignment.css";
 import "./main-block-globe-integration.css";
+import "./phase35a-live-acceptance.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

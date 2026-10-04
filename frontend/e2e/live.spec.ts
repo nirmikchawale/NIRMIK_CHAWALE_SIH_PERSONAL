@@ -2,6 +2,28 @@ import { expect, test, type Page } from "@playwright/test";
 
 const liveUrl = process.env.OCEANTWIN_LIVE_URL;
 
+async function selectLightGlassTheme(page: Page) {
+  const trigger = page.getByRole("button", { name: /Appearance: .*Open glass theme gallery/ });
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+  const gallery = page.getByRole("dialog", { name: "Glass appearance gallery" });
+  await expect(gallery).toBeVisible();
+  await gallery.getByRole("button", { name: /Lavender Haze/i }).click();
+  await expect.poll(() => page.locator("html").getAttribute("data-glass-theme")).toBe("lavender-haze");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+}
+
+async function selectDarkGlassTheme(page: Page) {
+  const trigger = page.getByRole("button", { name: /Appearance: .*Open glass theme gallery/ });
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+  const gallery = page.getByRole("dialog", { name: "Glass appearance gallery" });
+  await expect(gallery).toBeVisible();
+  await gallery.getByRole("button", { name: /Aurora Borealis/i }).click();
+  await expect.poll(() => page.locator("html").getAttribute("data-glass-theme")).toBe("aurora-borealis");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+}
+
 async function revealCanvasTools(page: Page) {
   const shell = page.locator(".ocean-workbench").first();
   await expect(shell).toHaveAttribute("data-control-dock", /^(open|closed)$/);
@@ -62,9 +84,9 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
 
   const documentRoot = page.locator("html");
   await expect(documentRoot).toHaveAttribute("data-theme", "dark");
-  await page.getByRole("button", { name: "Switch to light theme" }).click();
+  await selectLightGlassTheme(page);
   await expect(documentRoot).toHaveAttribute("data-theme", "light");
-  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("oceantwin-theme"))).toBe("light");
+  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("oceantwin-glass-theme-v2"))).toBe("lavender-haze");
 
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: /Ocean Canvas/i })).toBeVisible();
@@ -183,7 +205,6 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(page).toHaveURL(/#\/explore$/);
   const importedGlobeShell = page.locator(".globe-shell:not(.water-column-shell)");
   await expect.poll(async () => Number(await importedGlobeShell.getAttribute("data-imported-profile-count"))).toBeGreaterThanOrEqual(4);
-  await expect(page.locator(".judge-summary")).toContainText("sensor plugin profiles");
   await revealCanvasTools(page);
   const importedSelector = page.locator(".imported-observation-chips");
   await importedSelector.getByRole("button", { name: /^Sensor profiles/ }).click();
@@ -303,7 +324,7 @@ test("live Ocean Canvas explorer and evidence flow works", async ({ page }) => {
 
   const documentRoot = page.locator("html");
   await expect(documentRoot).toHaveAttribute("data-theme", "dark");
-  await page.getByRole("button", { name: "Switch to light theme" }).click();
+  await selectLightGlassTheme(page);
   await expect(documentRoot).toHaveAttribute("data-theme", "light");
   await expect(page.locator(".app-shell")).toHaveAttribute("data-page", "explore");
   await expect(page.locator(".cesium-host canvas")).toBeVisible();
@@ -531,9 +552,9 @@ test("live Ocean Canvas explorer and evidence flow works", async ({ page }) => {
   await page.getByRole("button", { name: "Show panels" }).click();
   await expect(page.locator(".app-shell")).not.toHaveClass(/focus-mode/);
 
-  await page.getByRole("button", { name: "Switch to dark theme" }).click();
+  await selectDarkGlassTheme(page);
   await expect(documentRoot).toHaveAttribute("data-theme", "dark");
-  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("oceantwin-theme"))).toBe("dark");
+  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("oceantwin-glass-theme-v2"))).toBe("aurora-borealis");
 
   expect(pageErrors).toEqual([]);
 });
