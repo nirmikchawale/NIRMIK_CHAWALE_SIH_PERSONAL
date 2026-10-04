@@ -1,0 +1,61 @@
+name: phase5-final-browser-repair
+
+on:
+  push:
+    branches:
+      - ui/phase-5-shared-scientific-context
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ui/phase-5-shared-scientific-context
+          fetch-depth: 0
+      - name: Repair final mobile browser acceptance gaps
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          water = Path("frontend/src/components/WaterColumn3D.tsx")
+          text = water.read_text()
+
+          old_import = '''  type KeyboardEvent,\n  type PointerEvent as ReactPointerEvent,\n  type WheelEvent\n} from "react";'''
+          new_import = '''  type KeyboardEvent,\n  type PointerEvent as ReactPointerEvent,\n  type TouchEvent as ReactTouchEvent,\n  type WheelEvent\n} from "react";'''
+          if old_import not in text:
+              raise SystemExit("WaterColumn3D import anchor not found")
+          text = text.replace(old_import, new_import, 1)
+
+          pointer_anchor = '''  const onPointerUp = (event: ReactPointerEvent<HTMLCanvasElement>) => {\n    pointersRef.current.delete(event.pointerId);\n    pinchDistanceRef.current = null;\n    const remaining = pointersRef.current.values().next().value;\n    dragRef.current = remaining ? { active: true, ...remaining } : { active: false, x: 0, y: 0 };\n    if (event.currentTarget.hasPointerCapture(event.pointerId)) {\n      event.currentTarget.releasePointerCapture(event.pointerId);\n    }\n    if (!remaining && event.type !== "pointercancel") inspectNearest(event.clientX, event.clientY);\n  };\n\n  const onWheel = (event: WheelEvent<HTMLCanvasElement>) => {'''
+          touch_block = '''  const onPointerUp = (event: ReactPointerEvent<HTMLCanvasElement>) => {\n    pointersRef.current.delete(event.pointerId);\n    pinchDistanceRef.current = null;\n    const remaining = pointersRef.current.values().next().value;\n    dragRef.current = remaining ? { active: true, ...remaining } : { active: false, x: 0, y: 0 };\n    if (event.currentTarget.hasPointerCapture(event.pointerId)) {\n      event.currentTarget.releasePointerCapture(event.pointerId);\n    }\n    if (!remaining && event.type !== "pointercancel") inspectNearest(event.clientX, event.clientY);\n  };\n\n  // Some mobile WebViews and Chromium automation surfaces deliver TouchEvents\n  // without synthesizing the two PointerEvents required by the primary pinch\n  // path. Keep Pointer Events canonical, but provide a touch-only fallback when\n  // fewer than two pointers reached that path. touch-action:none on the canvas\n  // prevents browser page zoom/scroll from stealing the scientific camera gesture.\n  const onTouchStart = (event: ReactTouchEvent<HTMLCanvasElement>) => {\n    if (event.touches.length < 2 || pointersRef.current.size >= 2) return;\n    event.preventDefault();\n    if (zoomAnimationRef.current != null) window.cancelAnimationFrame(zoomAnimationRef.current);\n    zoomAnimationRef.current = null;\n    const a = event.touches[0];\n    const b = event.touches[1];\n    pinchDistanceRef.current = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);\n    setHover(null);\n  };\n\n  const onTouchMove = (event: ReactTouchEvent<HTMLCanvasElement>) => {\n    if (event.touches.length < 2 || pointersRef.current.size >= 2) return;\n    event.preventDefault();\n    const a = event.touches[0];\n    const b = event.touches[1];\n    const distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);\n    const previous = pinchDistanceRef.current;\n    if (previous && distance > 0) {\n      setOrbit((current) => ({ ...current, zoom: clamp(current.zoom * distance / previous, 0.62, 1.9) }));\n    }\n    pinchDistanceRef.current = distance;\n  };\n\n  const onTouchEnd = (event: ReactTouchEvent<HTMLCanvasElement>) => {\n    if (pointersRef.current.size >= 2) return;\n    if (event.touches.length < 2) pinchDistanceRef.current = null;\n  };\n\n  const onWheel = (event: WheelEvent<HTMLCanvasElement>) => {'''
+          if pointer_anchor not in text:
+              raise SystemExit("WaterColumn3D pointer anchor not found")
+          text = text.replace(pointer_anchor, touch_block, 1)
+
+          canvas_anchor = '''        onPointerUp={onPointerUp}\n        onPointerCancel={onPointerUp}\n        onPointerLeave={() => {'''
+          canvas_new = '''        onPointerUp={onPointerUp}\n        onPointerCancel={onPointerUp}\n        onTouchStart={onTouchStart}\n        onTouchMove={onTouchMove}\n        onTouchEnd={onTouchEnd}\n        onTouchCancel={onTouchEnd}\n        onPointerLeave={() => {'''
+          if canvas_anchor not in text:
+              raise SystemExit("WaterColumn3D canvas anchor not found")
+          text = text.replace(canvas_anchor, canvas_new, 1)
+          water.write_text(text)
+
+          spec = Path("frontend/e2e/main-block-engine.spec.ts")
+          spec_text = spec.read_text()
+          hud_anchor = '''    const hud = page.locator(".main-block-globe-hud");\n    await expect(hud).toBeVisible();\n    const box = await hud.boundingBox();'''
+          hud_new = '''    const hud = page.locator(".main-block-globe-hud");\n    await expect(hud).toBeVisible();\n    // Explorer owns vertical scrolling on mobile. Bring the canonical HUD into\n    // the viewport before measuring its viewport safety; its own max-height and\n    // overflow still remain under test.\n    await hud.scrollIntoViewIfNeeded();\n    const box = await hud.boundingBox();'''
+          if hud_anchor not in spec_text:
+              raise SystemExit("Main-block mobile HUD anchor not found")
+          spec.write_text(spec_text.replace(hud_anchor, hud_new, 1))
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/src/components/WaterColumn3D.tsx frontend/e2e/main-block-engine.spec.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: complete mobile Water Column and block HUD acceptance"
+          git push origin HEAD:ui/phase-5-shared-scientific-context
