@@ -42,14 +42,23 @@ for (const viewport of [
   { width: 390, height: 844 },
   { width: 430, height: 932 }
 ]) {
-  test(`Phase 3.5A dialog remains viewport-bounded on ${viewport.width}x${viewport.height}`, async ({ page }) => {
+  test(`Phase 3.5A legacy launcher yields to the integrated mobile block HUD on ${viewport.width}x${viewport.height}`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.goto(process.env.OCEANTWIN_LIVE_URL!);
-    await page.getByTestId("phase35-block-launcher").click();
 
-    const dialog = page.getByRole("dialog", { name: "Indian Ocean Main Block Engine" });
-    await expect(dialog).toBeVisible();
-    const box = await dialog.boundingBox();
+    // Phase 5 integrates block selection into the primary Explorer on mobile.
+    // The older fixed launcher is deliberately suppressed so it cannot cover
+    // journey/profile controls; the integrated HUD is the canonical surface.
+    await expect(page.getByTestId("phase35-block-launcher")).toBeHidden();
+    const globe = page.locator(".globe-shell[data-journey-phase]");
+    await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 30_000 });
+    const hud = page.locator(".main-block-globe-hud");
+    await expect(hud).toBeVisible();
+    // Explorer owns vertical scrolling on mobile. Bring the canonical HUD into
+    // the viewport before measuring its viewport safety; its own max-height and
+    // overflow still remain under test.
+    await hud.scrollIntoViewIfNeeded();
+    const box = await hud.boundingBox();
     expect(box).not.toBeNull();
     expect(box!.x).toBeGreaterThanOrEqual(0);
     expect(box!.y).toBeGreaterThanOrEqual(0);

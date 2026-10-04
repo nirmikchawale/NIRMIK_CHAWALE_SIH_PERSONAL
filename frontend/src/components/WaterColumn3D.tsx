@@ -5,6 +5,7 @@ import {
   useState,
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
+  type TouchEvent as ReactTouchEvent,
   type WheelEvent
 } from "react";
 
@@ -314,6 +315,7 @@ export function WaterColumn3D({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const pinchDistanceRef = useRef<number | null>(null);
+  const touchPinchActiveRef = useRef(false);
   const dragRef = useRef({ active: false, x: 0, y: 0 });
   const zoomAnimationRef = useRef<number | null>(null);
   const projectedRef = useRef<ProjectedPoint[]>([]);
@@ -608,6 +610,74 @@ export function WaterColumn3D({
     if (zoomAnimationRef.current != null) window.cancelAnimationFrame(zoomAnimationRef.current);
   }, []);
 
+  // Native non-passive touch handling complements the pointer path. Chromium
+// automation and some mobile WebViews can dispatch a real TouchEvent stream
+// without two usable PointerEvents, so the scientific camera must accept both.
+useEffect(() => {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+
+  let nativePinchDistance: number | null = null;
+  const distanceOf = (touches: TouchList) => {
+    if (touches.length < 2) return null;
+    const a = touches[0];
+    const b = touches[1];
+    return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+  };
+
+  const handleTouchStart = (event: TouchEvent) => {
+    const distance = distanceOf(event.touches);
+    if (distance == null) return;
+    event.preventDefault();
+    touchPinchActiveRef.current = true;
+    if (zoomAnimationRef.current != null) window.cancelAnimationFrame(zoomAnimationRef.current);
+    zoomAnimationRef.current = null;
+    nativePinchDistance = distance;
+    pinchDistanceRef.current = distance;
+    setHover(null);
+  };
+
+  const handleTouchMove = (event: TouchEvent) => {
+    const distance = distanceOf(event.touches);
+    if (distance == null) return;
+    event.preventDefault();
+    touchPinchActiveRef.current = true;
+    const previous = nativePinchDistance ?? pinchDistanceRef.current;
+    if (previous && distance > 0) {
+      setOrbit((current) => ({
+        ...current,
+        zoom: clamp(current.zoom * distance / previous, 0.62, 1.9)
+      }));
+    }
+    nativePinchDistance = distance;
+    pinchDistanceRef.current = distance;
+  };
+
+  const handleTouchEnd = (event: TouchEvent) => {
+    const distance = distanceOf(event.touches);
+    if (distance == null) {
+      touchPinchActiveRef.current = false;
+      nativePinchDistance = null;
+      pinchDistanceRef.current = null;
+      return;
+    }
+    nativePinchDistance = distance;
+    pinchDistanceRef.current = distance;
+  };
+
+  canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+  canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+  canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+  canvas.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+
+  return () => {
+    canvas.removeEventListener('touchstart', handleTouchStart);
+    canvas.removeEventListener('touchmove', handleTouchMove);
+    canvas.removeEventListener('touchend', handleTouchEnd);
+    canvas.removeEventListener('touchcancel', handleTouchEnd);
+  };
+}, [activeMainBlockId, volume, currentsVolume]);
+
   const smoothWaterZoomTo = (targetZoom: number) => {
     if (zoomAnimationRef.current != null) {
       window.cancelAnimationFrame(zoomAnimationRef.current);
@@ -719,6 +789,10 @@ export function WaterColumn3D({
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLCanvasElement>) => {
+    // When a browser emits both TouchEvents and PointerEvents for the same
+    // two-finger gesture, the native touch path owns pinch scaling. Pointer
+    // handling remains the fallback for environments that emit pointers only.
+    if (event.pointerType === "touch" && touchPinchActiveRef.current) return;
     if (!dragRef.current.active) {
       inspectNearest(event.clientX, event.clientY);
       return;
@@ -756,6 +830,44 @@ export function WaterColumn3D({
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
     if (!remaining && event.type !== "pointercancel") inspectNearest(event.clientX, event.clientY);
+  };
+
+  // Some mobile WebViews and Chromium automation surfaces deliver TouchEvents
+  // without synthesizing the two PointerEvents required by the primary pinch
+  // path. Keep Pointer Events canonical, but provide a touch-only fallback when
+  // fewer than two pointers reached that path. touch-action:none on the canvas
+  // prevents browser page zoom/scroll from stealing the scientific camera gesture.
+  const onTouchStart = (event: ReactTouchEvent<HTMLCanvasElement>) => {
+    if (event.touches.length < 2) return;
+    event.preventDefault();
+    touchPinchActiveRef.current = true;
+    if (zoomAnimationRef.current != null) window.cancelAnimationFrame(zoomAnimationRef.current);
+    zoomAnimationRef.current = null;
+    const a = event.touches[0];
+    const b = event.touches[1];
+    pinchDistanceRef.current = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    setHover(null);
+  };
+
+  const onTouchMove = (event: ReactTouchEvent<HTMLCanvasElement>) => {
+    if (event.touches.length < 2) return;
+    event.preventDefault();
+    touchPinchActiveRef.current = true;
+    const a = event.touches[0];
+    const b = event.touches[1];
+    const distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    const previous = pinchDistanceRef.current;
+    if (previous && distance > 0) {
+      setOrbit((current) => ({ ...current, zoom: clamp(current.zoom * distance / previous, 0.62, 1.9) }));
+    }
+    pinchDistanceRef.current = distance;
+  };
+
+  const onTouchEnd = (event: ReactTouchEvent<HTMLCanvasElement>) => {
+    if (event.touches.length < 2) {
+      touchPinchActiveRef.current = false;
+      pinchDistanceRef.current = null;
+    }
   };
 
   const onWheel = (event: WheelEvent<HTMLCanvasElement>) => {
@@ -836,6 +948,10 @@ export function WaterColumn3D({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onTouchCancel={onTouchEnd}
         onPointerLeave={() => {
           if (!dragRef.current.active) setHover(null);
         }}

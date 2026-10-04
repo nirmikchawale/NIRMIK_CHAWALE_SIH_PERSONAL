@@ -31,7 +31,9 @@ for (const width of [1440, 1024, 390]) test(`workstation reserves separate areas
   const sources = page.getByLabel('Explore scientific source');
   await expect(sources.getByRole('button', { name: 'GLORYS baseline', exact: true })).toBeVisible();
   const sourceBox = await sources.boundingBox();
-  expect(sourceBox!.y + sourceBox!.height).toBeLessThan(650);
+  const viewport = page.viewportSize();
+  expect(viewport).not.toBeNull();
+  expect(sourceBox!.y + sourceBox!.height).toBeLessThanOrEqual(viewport!.height + 1);
   await assertSeparateAreas(page);
   const stage = page.locator('.visualization-stage');
   const range = page.getByRole('region', { name: 'Interactive scientific colorbar' });

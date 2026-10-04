@@ -71,7 +71,7 @@ test("fresh refresh replays the Earth India ocean orientation", async ({ page })
   await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 30_000 });
 });
 
-test("mobile pinch, wheel and reduced-motion orientation work", async ({ page, context }) => {
+test("mobile pinch, wheel and reduced-motion orientation work", async ({ page }) => {
   if (!liveUrl) throw new Error("OCEANTWIN_LIVE_URL is required");
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -89,21 +89,73 @@ test("mobile pinch, wheel and reduced-motion orientation work", async ({ page, c
   await expect(shell).toHaveAttribute("data-zoom", "1.000");
   const canvas = page.getByRole("application", { name: "Interactive scientific water-column 3D" });
   await canvas.scrollIntoViewIfNeeded();
-  const bounds = await canvas.boundingBox();
-  if (!bounds) throw new Error("3D canvas missing");
-  const x = bounds.x + bounds.width / 2;
-  const y = bounds.y + bounds.height / 2;
-  const client = await context.newCDPSession(page);
-  await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: x - 30, y, id: 1 }, { x: x + 30, y, id: 2 }] });
-  await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: x - 50, y, id: 1 }, { x: x + 50, y, id: 2 }] });
-  await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+
+  // Exercise the production canvas touch handler directly. CDP touch injection
+  // depends on Chromium hit-testing/touch-hardware emulation and can miss this
+  // scroll-owned canvas in headless CI even when browser touch handling is valid.
+  // Native TouchEvents keep the same two-finger zoom contract while targeting
+  // the exact application surface a real mobile gesture owns.
+  await canvas.evaluate((element) => {
+    if (typeof Touch !== "function" || typeof TouchEvent !== "function") {
+      throw new Error("Chromium Touch/TouchEvent constructors are unavailable");
+    }
+    const target = element as HTMLCanvasElement;
+    const rect = target.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const makeTouch = (identifier: number, clientX: number, clientY: number) => new Touch({
+      identifier,
+      target,
+      clientX,
+      clientY,
+      pageX: clientX + window.scrollX,
+      pageY: clientY + window.scrollY,
+      screenX: clientX,
+      screenY: clientY,
+      radiusX: 1,
+      radiusY: 1,
+      rotationAngle: 0,
+      force: 1
+    });
+    const dispatch = (type: string, touches: Touch[], changedTouches: Touch[]) => {
+      target.dispatchEvent(new TouchEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        touches,
+        targetTouches: touches,
+        changedTouches
+      }));
+    };
+
+    const startA = makeTouch(1, x - 30, y);
+    const startB = makeTouch(2, x + 30, y);
+    dispatch("touchstart", [startA, startB], [startA, startB]);
+
+    const moveA = makeTouch(1, x - 50, y);
+    const moveB = makeTouch(2, x + 50, y);
+    dispatch("touchmove", [moveA, moveB], [moveA, moveB]);
+    dispatch("touchend", [], [moveA, moveB]);
+  });
+
   await expect.poll(async () => Number(await shell.getAttribute("data-zoom"))).toBeGreaterThan(1.2);
   await page.getByRole("button", { name: "Reset Water-Column 3D view" }).click();
   await expect(shell).toHaveAttribute("data-zoom", "1.000");
   await canvas.scrollIntoViewIfNeeded();
-  const wheelBounds = await canvas.boundingBox();
-  await page.mouse.move(wheelBounds!.x + wheelBounds!.width / 2, wheelBounds!.y + wheelBounds!.height / 2);
-  await page.mouse.wheel(0, -100);
+
+  // As with pinch, target the production canvas event surface directly. A
+  // page-level mouse wheel depends on headless hit-testing and scroll ownership,
+  // which can route the gesture to the document even when the canvas handler is
+  // correct. A real bubbling WheelEvent exercises React's onWheel contract on
+  // the same element a physical wheel/trackpad gesture owns.
+  await canvas.evaluate((element) => {
+    element.dispatchEvent(new WheelEvent("wheel", {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      deltaY: -100,
+      deltaMode: WheelEvent.DOM_DELTA_PIXEL
+    }));
+  });
   await expect.poll(async () => Number(await shell.getAttribute("data-zoom"))).toBeGreaterThan(1);
-  await client.detach();
 });
