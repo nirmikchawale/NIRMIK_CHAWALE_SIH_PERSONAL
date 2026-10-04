@@ -8,6 +8,7 @@ import {
 import type { PageId } from "../navigation";
 import {
   buildScientificContextDeepLink,
+  publishScientificWorkspaceContext,
   readScientificWorkspaceContext,
   sourceLabel,
   subscribeScientificWorkspaceContext,
@@ -49,6 +50,26 @@ export function ScientificContextBar({ page, onNavigate }: Props) {
     setContext(readScientificWorkspaceContext());
     return subscribeScientificWorkspaceContext(setContext);
   }, []);
+
+  useEffect(() => {
+    if (page !== "compare") return;
+
+    // ComparisonPage intentionally stays focused on evidence rendering. The shared
+    // context bridge listens only to its verified-profile selector so a judge's
+    // profile choice can travel back to Explorer without coupling comparison math,
+    // downloads or diagnostics to global navigation state.
+    const syncCompareProfile = (event: Event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLSelectElement)) return;
+      if (!target.closest(".comparison-selector-card")) return;
+      const selectedProfileId = target.value.trim();
+      if (!selectedProfileId) return;
+      publishScientificWorkspaceContext({ selectedProfileId, origin: "compare" });
+    };
+
+    document.addEventListener("change", syncCompareProfile);
+    return () => document.removeEventListener("change", syncCompareProfile);
+  }, [page]);
 
   useEffect(() => {
     const details = detailsRef.current;
@@ -109,6 +130,7 @@ export function ScientificContextBar({ page, onNavigate }: Props) {
       data-source-mode={context.sourceMode}
       data-variable={context.variable}
       data-time-kind={context.timeKind}
+      data-selected-profile-id={context.selectedProfileId ?? ""}
       data-context-deep-link={deepLink}
     >
       <div className="scientific-context-kicker">SHARED SCIENTIFIC CONTEXT</div>
@@ -124,6 +146,7 @@ export function ScientificContextBar({ page, onNavigate }: Props) {
             <div><dt>Time</dt><dd>{timeLabel(context)}</dd></div>
             <div><dt>Variable</dt><dd>{variableLabel(context.variable)}</dd></div>
             <div><dt>Depth</dt><dd>{context.depthM == null ? (context.variable === "chlorophyll" ? "Surface only" : "Not selected") : `${context.depthM.toFixed(2)} m`}</dd></div>
+            <div><dt>Profile</dt><dd>{context.selectedProfileId ?? "Not selected"}</dd></div>
           </dl>
 
           <div className="scientific-context-materialized-control" data-testid="scientific-context-materialized-control">
@@ -179,7 +202,7 @@ export function ScientificContextBar({ page, onNavigate }: Props) {
                 ? "This block has no materialized scientific volume yet. Analysis workspaces remain anchored to verified source evidence until genuine block data is available."
                 : pilot
                   ? "This main block is rendered from genuine Phase 3.5B GLORYS12V1 payloads. Geographic and Water Column 3D views use the same block, native time, variable and depth context; no synthetic values are introduced."
-                  : "Block, time, variable and depth can travel between compatible Ocean Canvas workspaces."}
+                  : "Block, time, variable, depth and verified profile can travel between compatible Ocean Canvas workspaces."}
             </span>
           </div>
 
