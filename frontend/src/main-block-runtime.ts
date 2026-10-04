@@ -56,23 +56,19 @@ export function resolveMainBlock(id: string | null | undefined): ActiveMainBlock
 export function readActiveMainBlockId(): string {
   try {
     const stored = window.localStorage.getItem(ACTIVE_MAIN_BLOCK_STORAGE_KEY);
-    if (stored === CURRENT_VERIFIED_BASELINE.id || isPhase35bPilotId(stored)) return stored;
+    return resolveMainBlock(stored).id;
   } catch {
-    // Fall through to the verified baseline when persistence is unavailable.
+    return CURRENT_VERIFIED_BASELINE.id;
   }
-  return CURRENT_VERIFIED_BASELINE.id;
 }
 
 export function publishActiveMainBlockId(id: string): string {
   const requested = resolveMainBlock(id);
+  const previous = resolveMainBlock(readActiveMainBlockId());
 
-  // Planning cells can still be inspected in the dedicated block engine, but they
-  // never become the scientific renderer source until genuine payloads exist.
-  if (requested.materialization === "planned") {
-    return readActiveMainBlockId();
-  }
-
-  const previous = readActiveMainBlockId();
+  // Keep the full 140-cell geographic workflow selectable. Planned cells remain
+  // geographic context only; api.ts deliberately falls back to verified evidence
+  // unless the selected cell is one of the source-backed Phase 3.5B pilots.
   try {
     window.localStorage.setItem(ACTIVE_MAIN_BLOCK_STORAGE_KEY, requested.id);
   } catch {
@@ -80,10 +76,15 @@ export function publishActiveMainBlockId(id: string): string {
   }
   window.dispatchEvent(new CustomEvent<string>(ACTIVE_MAIN_BLOCK_EVENT, { detail: requested.id }));
 
-  // App.tsx builds its catalog once at startup. A source-backed main-block change
-  // therefore performs one deterministic reload so Geographic + Water Column 3D,
-  // the timeline and provenance all hydrate from the same selected block.
-  if (requested.id !== previous) {
+  // Switching into or out of a source-backed pilot changes the actual scientific
+  // payload family. App.tsx builds its catalog once at startup, so perform one
+  // deterministic reload only for those source-context transitions. Planned ↔
+  // baseline geographic selections remain immediate and preserve the established
+  // "planning geometry + verified evidence" workflow.
+  const sourceContextChanged =
+    requested.id !== previous.id &&
+    (requested.materialization === "pilot" || previous.materialization === "pilot");
+  if (sourceContextChanged) {
     window.setTimeout(() => window.location.reload(), 40);
   }
   return requested.id;
