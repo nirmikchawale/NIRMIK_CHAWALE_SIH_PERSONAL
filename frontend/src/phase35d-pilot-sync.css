@@ -249,8 +249,12 @@ html[data-main-block-materialization="pilot"] .main-block-globe-boundary-note {
   display: none !important;
 }
 
+/* The pilot HUD is intentionally below the fixed synchronization bridge, but it
+   must stay above Cesium's renderer-tools overlay. Without this scoped stacking
+   rule the visible Water Column entry can be covered by an invisible tool hitbox. */
 html[data-main-block-materialization="pilot"] .main-block-globe-hud {
   top: 284px;
+  z-index: 120;
 }
 
 @media (max-width: 1100px) {
@@ -272,7 +276,7 @@ html[data-main-block-materialization="pilot"] .main-block-globe-hud {
 @media (max-width: 760px) {
   .pilot-renderer-bridge {
     position: absolute;
-    z-index: 26;
+    z-index: 126;
     top: 72px;
     right: 10px;
     left: 10px;
@@ -291,6 +295,7 @@ html[data-main-block-materialization="pilot"] .main-block-globe-hud {
 
   html[data-main-block-materialization="pilot"] .main-block-globe-hud {
     top: 168px;
+    z-index: 120;
   }
 }
 
