@@ -64,7 +64,7 @@ export function ScientificContextBar({ page, onNavigate }: Props) {
   const pilot = context.blockMaterialization === "pilot";
   const statusLabel = planned ? "PLANNED TARGET" : pilot ? "MATERIALIZED PILOT" : "VERIFIED BASELINE";
   const deepLink = useMemo(() => buildScientificContextDeepLink(page, context), [context, page]);
-  const materializedIds = useMemo(
+  const materializedIds = useMemo<string[]>(
     () => [CURRENT_VERIFIED_BASELINE.id, ...PHASE35B_PILOT_IDS],
     []
   );
