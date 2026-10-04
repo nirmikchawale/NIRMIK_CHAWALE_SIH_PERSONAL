@@ -25,6 +25,7 @@ import "./phase35a-live-acceptance.css";
 import "./phase5-context-bridge.css";
 import "./phase5-integration-gate.css";
 import "./phase35d-pilot-sync.css";
+import "./phase35d-pilot-compat.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
