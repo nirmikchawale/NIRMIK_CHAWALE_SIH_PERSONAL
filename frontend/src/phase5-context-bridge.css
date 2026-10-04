@@ -29,6 +29,10 @@
 .scientific-context-bar summary span { font-weight: 850; font-size: .82rem; overflow-wrap: anywhere; }
 .scientific-context-bar summary strong { font-size: .57rem; letter-spacing: .08em; opacity: .78; text-align: right; }
 
+.scientific-context-panel {
+  min-width: 0;
+}
+
 .scientific-context-bar dl {
   display: grid;
   gap: 6px;
@@ -172,7 +176,42 @@
 }
 
 @media (max-width: 768px) {
-  .scientific-context-bar { margin: 8px 6px; padding: 9px; }
+  .scientific-context-bar {
+    position: relative;
+    flex: 0 0 auto;
+    margin: 5px 4px;
+    padding: 7px 8px;
+    min-width: 184px;
+    border-radius: 11px;
+  }
+
+  .scientific-context-kicker {
+    margin-bottom: 3px;
+    font-size: .52rem;
+  }
+
+  .scientific-context-bar summary span { font-size: .7rem; }
+  .scientific-context-bar summary strong { font-size: .5rem; }
+
+  .scientific-context-panel {
+    position: fixed;
+    z-index: 98;
+    top: max(84px, calc(env(safe-area-inset-top) + 72px));
+    right: max(8px, env(safe-area-inset-right));
+    left: max(8px, env(safe-area-inset-left));
+    max-height: min(70dvh, calc(100dvh - 118px));
+    padding: 12px;
+    border: 1px solid color-mix(in srgb, var(--glass-border, rgba(255,255,255,.18)) 92%, transparent);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--glass-bg, rgba(8,22,34,.94)) 96%, transparent);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, .34);
+    backdrop-filter: blur(18px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
   .scientific-context-bar dl > div { grid-template-columns: 52px minmax(0, 1fr); }
   .scientific-context-materialized-control { grid-template-columns: 1fr; }
   .scientific-context-stepper { grid-template-columns: repeat(2, minmax(0, 1fr)); }
