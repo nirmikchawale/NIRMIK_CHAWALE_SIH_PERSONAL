@@ -30,6 +30,7 @@ import "./phase35d-pilot-compat.css";
 import "./rui-shell.css";
 import "./rui-shell-compat.css";
 import "./rui-context-header.css";
+import "./rui-context-header-mobile-fix.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
