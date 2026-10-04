@@ -81,3 +81,84 @@
   opacity: .34;
   cursor: not-allowed;
 }
+
+/* On phones the navigation drawer becomes inert while closed, so the one shared
+   ScientificContextBar instance lives in a dedicated always-visible shell row.
+   The runtime itself is unchanged; this only preserves Phase 5/6 visibility. */
+@media (max-width: 900px) {
+  :root {
+    --rui-mobile-context-height: 54px;
+  }
+
+  .ocean-workbench .workspace-frame {
+    grid-template-rows: calc(var(--rui-mobile-nav-height) + var(--rui-mobile-context-height)) minmax(0, 1fr) !important;
+  }
+
+  .app-navigation-root,
+  .app-navigation-root[data-collapsed="true"] {
+    display: grid;
+    grid-template-rows: var(--rui-mobile-nav-height) var(--rui-mobile-context-height);
+    width: 100%;
+    height: calc(var(--rui-mobile-nav-height) + var(--rui-mobile-context-height)) !important;
+  }
+
+  .mobile-workspace-nav {
+    grid-row: 1;
+  }
+
+  .mobile-scientific-context {
+    position: relative;
+    z-index: 45;
+    grid-row: 2;
+    min-width: 0;
+    height: var(--rui-mobile-context-height);
+    overflow: visible;
+    border-bottom: 1px solid var(--wb-line);
+    background: color-mix(in srgb, var(--wb-bg) 96%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .mobile-scientific-context .scientific-context-bar {
+    width: auto;
+    min-width: 0;
+    margin: 4px max(8px, env(safe-area-inset-right)) 4px max(8px, env(safe-area-inset-left));
+    padding: 5px 8px;
+    box-shadow: none;
+  }
+
+  .mobile-scientific-context .scientific-context-kicker {
+    margin-bottom: 2px;
+  }
+
+  .mobile-scientific-context .scientific-context-panel {
+    top: max(166px, calc(env(safe-area-inset-top) + 154px));
+    max-height: min(70dvh, calc(100dvh - 198px));
+  }
+
+  .mobile-scientific-context .scientific-context-bar button {
+    min-width: 0;
+    min-height: 34px;
+    border: 1px solid color-mix(in srgb, var(--wb-line) 88%, transparent);
+    border-radius: 9px;
+    color: var(--wb-text);
+    background: color-mix(in srgb, var(--wb-panel) 88%, transparent);
+    box-shadow: none;
+    transform: none;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .mobile-scientific-context .scientific-context-bar button:hover:not(:disabled),
+  .mobile-scientific-context .scientific-context-bar button:focus-visible {
+    border-color: var(--wb-accent);
+    color: var(--wb-accent);
+    background: var(--wb-raised);
+    transform: none;
+  }
+
+  .mobile-scientific-context .scientific-context-bar button:disabled {
+    opacity: .34;
+    cursor: not-allowed;
+  }
+}
