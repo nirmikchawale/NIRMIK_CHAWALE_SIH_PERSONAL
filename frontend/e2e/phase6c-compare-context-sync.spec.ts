@@ -33,5 +33,5 @@ test("Phase 6C Compare profile selection survives reload and reopens in Explorer
   await page.getByRole("button", { name: "Open context in 3D Explorer" }).click();
   await expect(page).toHaveURL(/#\/explore$/);
   await expect(page.getByTestId("scientific-context-bar")).toHaveAttribute("data-selected-profile-id", secondProfileId!);
-  await expect(page.getByLabel("Argo profile", { exact: true })).toHaveValue(secondProfileId!, { timeout: 60_000 });
+  await expect(page.locator("#explore-observations select")).toHaveValue(secondProfileId!, { timeout: 60_000 });
 });
