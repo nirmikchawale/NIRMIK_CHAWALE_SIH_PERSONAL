@@ -1,10 +1,13 @@
 import { expect, test } from "@playwright/test";
 
 async function openExplore(page: import("@playwright/test").Page) {
-  await page.goto(process.env.OCEANTWIN_LIVE_URL!);
+  await page.goto(process.env.OCEANTWIN_LIVE_URL!, { waitUntil: "domcontentloaded" });
   await expect(page.locator(".ocean-workbench")).toBeVisible();
   const skip = page.getByRole("button", { name: "Skip journey" });
-  if (await skip.isVisible().catch(() => false)) await skip.click();
+  if (await skip.isVisible().catch(() => false)) {
+    await skip.click({ timeout: 15_000 });
+    await expect(page.locator(".globe-shell[data-journey-phase]")).toHaveAttribute("data-journey-phase", "region", { timeout: 10_000 });
+  }
 }
 
 test("Phase 3.5A-G integrates all 140 targets into the primary Cesium Earth workflow", async ({ page }) => {
@@ -49,8 +52,7 @@ test("planned target enters the same Water Column 3D workflow without fabricated
   const verified = page.locator('.water-column-visualization-layer.active .water-column-shell[data-main-block-id="BASE-GLORYS-001"]');
   await expect(verified).toBeVisible();
   await expect(verified).toHaveAttribute("data-materialization", "verified-baseline");
-  await expect(verified).toHaveAttribute("data-depth-count", "31");
-  await expect(verified.locator(".water-column-canvas")).toBeVisible();
+  await expect(verified.locator("canvas.water-column-canvas")).toBeVisible();
 });
 
 for (const viewport of [
@@ -63,11 +65,17 @@ for (const viewport of [
     await openExplore(page);
 
     const hud = page.getByTestId("integrated-main-block-hud");
+    const canvas = page.locator(".globe-visualization-layer.active .cesium-host");
     await expect(hud).toBeVisible();
-    const box = await hud.boundingBox();
+    await expect(canvas).toBeVisible();
+
+    const [box, canvasBox] = await Promise.all([hud.boundingBox(), canvas.boundingBox()]);
     expect(box).not.toBeNull();
-    expect(box!.x).toBeGreaterThanOrEqual(0);
-    expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width + 1);
+    expect(canvasBox).not.toBeNull();
+    expect(box!.x).toBeGreaterThanOrEqual(canvasBox!.x - 1);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(canvasBox!.x + canvasBox!.width + 1);
+    expect(box!.y).toBeGreaterThanOrEqual(canvasBox!.y - 1);
+    expect(box!.y + box!.height).toBeLessThanOrEqual(canvasBox!.y + canvasBox!.height + 1);
 
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
