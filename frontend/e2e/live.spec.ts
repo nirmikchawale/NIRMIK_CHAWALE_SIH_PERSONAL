@@ -145,7 +145,16 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(anomalyInspector).toContainText("Why is this point flagged?");
   await expect(anomalyInspector).toContainText("Magnitude bands describe statistical departure only");
   await expect(anomalyPage.getByRole("button", { name: "Download screening evidence" })).toBeEnabled();
-  await expect(anomalyPage.locator(".anomaly-flag-map svg")).toBeVisible();
+  // Phase 5 inherits Telemetry's selected salinity/depth context. That exact
+// scientific slice may truthfully have zero threshold crossings, so accept the
+// real spatial map or the explicit zero-flag evidence state.
+await expect(anomalyPage).toHaveAttribute("data-variable", "so");
+const spatialState = anomalyPage.locator(".anomaly-context-card").locator(".anomaly-flag-map svg, .anomaly-empty");
+await expect(spatialState).toBeVisible();
+const spatialEmpty = anomalyPage.locator(".anomaly-context-card .anomaly-empty");
+if (await spatialEmpty.isVisible()) {
+  await expect(spatialEmpty).toContainText("No flagged model cells at this depth");
+}
   await anomalyPage.getByRole("button", { name: "Argo residual" }).click();
   await expect(anomalyInspector).toHaveAttribute("data-focus-screen", "residual");
   await expect(anomalyInspector).toContainText("Residual flags by depth");

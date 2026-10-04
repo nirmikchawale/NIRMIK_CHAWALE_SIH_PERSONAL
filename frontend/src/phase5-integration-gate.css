@@ -1,23 +1,28 @@
-/* Phase 5.0 integration-gate fixes.
-   Keep the 140-block controls interactive without allowing them to cover
-   canonical journey/profile controls or mobile workstation trays. */
-
-/* During Earth -> India -> ocean orientation the geographic HUD is context,
-   not the primary action. Removing it from hit-testing keeps Skip usable. */
+/* Phase 5.0 integration-gate fixes. */
 .main-block-globe-hud[data-intro-ready="false"] {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
 }
 
-/* The station layout gives renderer tools their own second grid row. Constrain
-   the absolute 140-block HUD to the map row so it cannot sit over those tools. */
+/* The globe shell is a two-row grid. Own row 1 directly so the block HUD
+   can never drift into the variable-height renderer toolbar in row 2. */
 .station-workspace .main-block-globe-hud {
-  top: 12px;
-  right: 12px;
-  bottom: 166px;
-  max-height: calc(100% - 178px);
+  position: relative;
+  grid-row: 1;
+  grid-column: 1;
+  align-self: start;
+  justify-self: end;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  margin: 12px;
+  width: min(320px, calc(100% - 24px));
+  max-width: calc(100% - 24px);
+  max-height: min(210px, calc(100% - 24px));
   overflow: auto;
+  overscroll-behavior: contain;
   z-index: 20;
 }
 
@@ -26,22 +31,15 @@
   z-index: 30;
 }
 
-/* Journey/entry actions are primary orientation controls whenever visible. */
 .ocean-workbench .ocean-journey,
 .ocean-workbench .field-entry-actions {
   z-index: 32;
 }
 
-/* Water-column gestures own the renderer surface. This prevents the browser's
-   page-zoom/scroll gesture from consuming a two-finger interaction before the
-   renderer's pointer handlers can update its scientific camera. */
 .ocean-workbench .water-column-canvas {
   touch-action: none;
 }
 
-/* The station owns mobile interaction layout. Legacy floating trays and the
-   older standalone atlas/block launchers duplicate controls and can obscure
-   the renderer toolbar on small screens. The integrated HUD remains available. */
 @media (max-width: 760px) {
   .ocean-workbench .station-workspace .mobile-explore-tray,
   .ocean-workbench .station-workspace .mobile-sheet-backdrop {
@@ -56,15 +54,16 @@
   }
 
   .station-workspace .main-block-globe-hud {
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    bottom: 166px;
-    width: auto;
-    /* The 390px judge viewport needs a compact, internally scrollable HUD.
-       Preserve the station-row constraint while preventing the glass panel
-       from extending beneath the mobile viewport. */
-    max-height: min(38dvh, 320px, calc(100% - 176px));
-    overscroll-behavior: contain;
+    margin: 10px;
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    max-height: min(176px, calc(100% - 20px));
+    padding: 9px;
+  }
+}
+
+@media (max-width: 430px) {
+  .station-workspace .main-block-globe-hud {
+    max-height: min(158px, calc(100% - 20px));
   }
 }

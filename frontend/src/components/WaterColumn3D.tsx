@@ -610,6 +610,74 @@ export function WaterColumn3D({
     if (zoomAnimationRef.current != null) window.cancelAnimationFrame(zoomAnimationRef.current);
   }, []);
 
+  // Native non-passive touch handling complements the pointer path. Chromium
+// automation and some mobile WebViews can dispatch a real TouchEvent stream
+// without two usable PointerEvents, so the scientific camera must accept both.
+useEffect(() => {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+
+  let nativePinchDistance: number | null = null;
+  const distanceOf = (touches: TouchList) => {
+    if (touches.length < 2) return null;
+    const a = touches[0];
+    const b = touches[1];
+    return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+  };
+
+  const handleTouchStart = (event: TouchEvent) => {
+    const distance = distanceOf(event.touches);
+    if (distance == null) return;
+    event.preventDefault();
+    touchPinchActiveRef.current = true;
+    if (zoomAnimationRef.current != null) window.cancelAnimationFrame(zoomAnimationRef.current);
+    zoomAnimationRef.current = null;
+    nativePinchDistance = distance;
+    pinchDistanceRef.current = distance;
+    setHover(null);
+  };
+
+  const handleTouchMove = (event: TouchEvent) => {
+    const distance = distanceOf(event.touches);
+    if (distance == null) return;
+    event.preventDefault();
+    touchPinchActiveRef.current = true;
+    const previous = nativePinchDistance ?? pinchDistanceRef.current;
+    if (previous && distance > 0) {
+      setOrbit((current) => ({
+        ...current,
+        zoom: clamp(current.zoom * distance / previous, 0.62, 1.9)
+      }));
+    }
+    nativePinchDistance = distance;
+    pinchDistanceRef.current = distance;
+  };
+
+  const handleTouchEnd = (event: TouchEvent) => {
+    const distance = distanceOf(event.touches);
+    if (distance == null) {
+      touchPinchActiveRef.current = false;
+      nativePinchDistance = null;
+      pinchDistanceRef.current = null;
+      return;
+    }
+    nativePinchDistance = distance;
+    pinchDistanceRef.current = distance;
+  };
+
+  canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+  canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+  canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+  canvas.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+
+  return () => {
+    canvas.removeEventListener('touchstart', handleTouchStart);
+    canvas.removeEventListener('touchmove', handleTouchMove);
+    canvas.removeEventListener('touchend', handleTouchEnd);
+    canvas.removeEventListener('touchcancel', handleTouchEnd);
+  };
+}, [activeMainBlockId, volume, currentsVolume]);
+
   const smoothWaterZoomTo = (targetZoom: number) => {
     if (zoomAnimationRef.current != null) {
       window.cancelAnimationFrame(zoomAnimationRef.current);
