@@ -1,8 +1,8 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const ACTIVE_BLOCK_KEY = "oceancanvas-active-main-block-v1";
 
-async function startFromBaseline(page: Parameters<typeof test>[0] extends never ? never : any) {
+async function startFromBaseline(page: Page) {
   await page.addInitScript((storageKey) => localStorage.removeItem(storageKey), ACTIVE_BLOCK_KEY);
 }
 
