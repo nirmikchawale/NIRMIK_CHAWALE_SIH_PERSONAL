@@ -196,9 +196,12 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(page).toHaveURL(/#\/explore$/);
   const importedGlobeShell = page.locator(".globe-shell:not(.water-column-shell)");
   await expect.poll(async () => Number(await importedGlobeShell.getAttribute("data-imported-profile-count"))).toBeGreaterThanOrEqual(4);
-  await expect(page.locator(".judge-summary")).toContainText("sensor plugin profiles");
+  // The integrated 140-block judge summary now reports block-field provenance.
+  // Imported-session evidence is verified on its dedicated selector instead of
+  // requiring obsolete summary copy.
   await revealCanvasTools(page);
   const importedSelector = page.locator(".imported-observation-chips");
+  await expect(importedSelector).toBeVisible();
   await importedSelector.getByRole("button", { name: /^Sensor profiles/ }).click();
   await expect(importedSelector).toBeVisible();
   await expect(importedSelector).toContainText("GLIDER");
