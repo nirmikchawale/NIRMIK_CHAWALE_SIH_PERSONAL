@@ -1,5 +1,12 @@
 /* RUI-01 compatibility guard.
-   Neutralizes legacy generic `.feature-rail button` rules inside the new sidebar without changing page or renderer styles. */
+   Neutralizes legacy shell/feature-rail rules inside the new workstation shell without changing page or renderer styles. */
+
+/* scroll-foundation.css intentionally owns the old column shell with !important.
+   RUI-01 takes shell composition ownership here while preserving its viewport/overflow contract. */
+.ocean-workbench .workspace-frame {
+  display: grid !important;
+}
+
 .ocean-workbench .rui-sidebar .rui-nav-short {
   display: grid;
   place-items: center;
