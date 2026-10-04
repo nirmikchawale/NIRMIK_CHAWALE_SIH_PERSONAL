@@ -54,6 +54,10 @@ for (const viewport of [
     await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 30_000 });
     const hud = page.locator(".main-block-globe-hud");
     await expect(hud).toBeVisible();
+    // Explorer owns vertical scrolling on mobile. Bring the canonical HUD into
+    // the viewport before measuring its viewport safety; its own max-height and
+    // overflow still remain under test.
+    await hud.scrollIntoViewIfNeeded();
     const box = await hud.boundingBox();
     expect(box).not.toBeNull();
     expect(box!.x).toBeGreaterThanOrEqual(0);
