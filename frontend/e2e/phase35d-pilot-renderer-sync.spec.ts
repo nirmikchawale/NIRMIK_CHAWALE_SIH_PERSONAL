@@ -11,7 +11,7 @@ test("Phase 3.5D loads a genuine pilot into Geographic and Water Column 3D witho
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.addInitScript((storageKey) => localStorage.removeItem(storageKey), ACTIVE_BLOCK_KEY);
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto(`${liveUrl.replace(/\/$/, "")}/#/explore`, { waitUntil: "domcontentloaded" });
+  await page.goto(liveUrl, { waitUntil: "domcontentloaded" });
 
   await page.getByTestId("phase35-block-launcher").click();
   const dialog = page.getByRole("dialog", { name: "Indian Ocean Main Block Engine" });
