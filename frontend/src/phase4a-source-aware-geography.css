@@ -1,0 +1,116 @@
+/* Phase 4A — source-aware geography. UI status only; no scientific palette semantics are changed. */
+
+.phase4a-manifest-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  border-bottom: 1px solid color-mix(in srgb, var(--glass-warning, #f5c56b) 42%, var(--glass-border));
+  color: var(--glass-text);
+  background: color-mix(in srgb, var(--glass-warning, #f5c56b) 9%, var(--glass-panel));
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.phase4a-manifest-alert span {
+  color: var(--glass-muted);
+}
+
+.phase35-block-summary article.materialized {
+  border-color: color-mix(in srgb, var(--glass-success, #64e6a5) 46%, var(--glass-border));
+  background: color-mix(in srgb, var(--glass-success, #64e6a5) 8%, var(--glass-panel));
+}
+
+.phase35-block-summary article.materialized strong {
+  color: color-mix(in srgb, var(--glass-success, #64e6a5) 86%, var(--glass-text));
+}
+
+.phase35-block-cell.pilot {
+  border-color: color-mix(in srgb, var(--glass-success, #64e6a5) 64%, var(--glass-border));
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--glass-success, #64e6a5) 13%, transparent), transparent 70%),
+    color-mix(in srgb, var(--glass-panel-strong) 83%, transparent);
+}
+
+.phase35-block-cell.pilot strong,
+.phase35-block-cell.pilot span {
+  color: color-mix(in srgb, var(--glass-success, #64e6a5) 86%, var(--glass-text));
+}
+
+.phase35-block-cell.coastal:not(.pilot) {
+  border-style: dashed;
+}
+
+.phase35-block-cell.land:not(.active) {
+  opacity: .54;
+  border-color: color-mix(in srgb, var(--glass-muted) 40%, transparent);
+  background: color-mix(in srgb, var(--glass-canvas-deep) 50%, transparent);
+}
+
+.phase35-block-cell.land span {
+  letter-spacing: .08em;
+}
+
+.phase35-block-cell.unknown {
+  border-style: dotted;
+}
+
+.phase35-inspector-status.pilot {
+  border-color: color-mix(in srgb, var(--glass-success, #64e6a5) 52%, var(--glass-border));
+  background: color-mix(in srgb, var(--glass-success, #64e6a5) 9%, var(--glass-panel));
+}
+
+.phase35-inspector-status.pilot strong,
+.phase35-inspector-status.pilot span {
+  color: color-mix(in srgb, var(--glass-success, #64e6a5) 88%, var(--glass-text));
+}
+
+.phase35-inspector-status.land {
+  border-color: color-mix(in srgb, var(--glass-muted) 44%, var(--glass-border));
+  background: color-mix(in srgb, var(--glass-canvas-deep) 38%, var(--glass-panel));
+}
+
+.phase35-inspector-status.land strong,
+.phase35-inspector-status.land span {
+  color: var(--glass-muted);
+}
+
+.main-block-status-pill.pilot {
+  border-color: color-mix(in srgb, var(--glass-success, #64e6a5) 62%, var(--glass-border));
+  color: color-mix(in srgb, var(--glass-success, #64e6a5) 88%, var(--glass-text));
+  background: color-mix(in srgb, var(--glass-success, #64e6a5) 11%, var(--glass-panel));
+}
+
+.main-block-status-pill.land {
+  color: var(--glass-muted);
+  border-style: dashed;
+}
+
+.main-block-grid-key .materialized i {
+  border: 1px solid color-mix(in srgb, var(--glass-success, #64e6a5) 84%, #fff);
+  background: color-mix(in srgb, var(--glass-success, #64e6a5) 56%, transparent);
+}
+
+.main-block-grid-key .land i {
+  border: 1px dashed var(--glass-muted);
+  background: transparent;
+}
+
+.main-block-globe-boundary-note.phase4a-pilot {
+  border-color: color-mix(in srgb, var(--glass-success, #64e6a5) 42%, var(--glass-border));
+}
+
+@media (max-width: 720px) {
+  .phase4a-manifest-alert {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+    padding-inline: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phase35-block-cell {
+    transition: none;
+  }
+}
