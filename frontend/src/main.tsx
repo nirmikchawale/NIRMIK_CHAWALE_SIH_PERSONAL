@@ -23,6 +23,7 @@ import "./main-block-globe-integration.css";
 import "./phase35a-live-acceptance.css";
 import "./phase5-context-bridge.css";
 import "./phase5-integration-gate.css";
+import "./phase4a-source-aware-geography.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
