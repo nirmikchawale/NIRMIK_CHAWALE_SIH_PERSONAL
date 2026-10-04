@@ -5,11 +5,11 @@ on:
     branches:
       - data/phase-35b-pilot-acquisition
     paths:
-      - scripts/materialize_phase35b_pilots.py
       - scripts/materialize_phase35b_pilots_chunked.py
-      - scripts/materialize_phase35b_pilots_chunked_v2.py
       - scripts/materialize_phase35b_pilots_opendap.py
       - frontend/src/pilot-main-block-loader.ts
+      - frontend/public/main-blocks/**
+      - tests/test_phase35b_manifest.py
       - docs/PHASE_35B_PILOT_ACQUISITION_MASTER_PROMPT.md
       - .github/workflows/phase35b-pilot-materialization.yml
   workflow_dispatch:
@@ -46,6 +46,9 @@ jobs:
 
       - name: Independently verify generated pilot evidence
         run: python scripts/materialize_phase35b_pilots_opendap.py --verify-only --output frontend/public/main-blocks
+
+      - name: Run offline manifest regression
+        run: python -m pytest -q tests/test_phase35b_manifest.py
 
       - name: Summarize materialization
         run: |
