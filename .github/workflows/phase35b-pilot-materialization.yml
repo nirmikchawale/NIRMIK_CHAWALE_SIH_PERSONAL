@@ -6,6 +6,7 @@ on:
       - data/phase-35b-pilot-acquisition
     paths:
       - scripts/materialize_phase35b_pilots.py
+      - scripts/materialize_phase35b_pilots_chunked.py
       - frontend/src/pilot-main-block-loader.ts
       - docs/PHASE_35B_PILOT_ACQUISITION_MASTER_PROMPT.md
       - .github/workflows/phase35b-pilot-materialization.yml
@@ -39,10 +40,10 @@ jobs:
         run: python -m pip install --upgrade "numpy>=2.2,<3" "xarray>=2025.1,<2027" "netCDF4>=1.7,<2"
 
       - name: Materialize coast-aware genuine GLORYS12V1 pilots
-        run: python scripts/materialize_phase35b_pilots.py --output frontend/public/main-blocks
+        run: python scripts/materialize_phase35b_pilots_chunked.py --output frontend/public/main-blocks
 
       - name: Independently verify generated pilot evidence
-        run: python scripts/materialize_phase35b_pilots.py --verify-only --output frontend/public/main-blocks
+        run: python scripts/materialize_phase35b_pilots_chunked.py --verify-only --output frontend/public/main-blocks
 
       - name: Summarize materialization
         run: |
