@@ -1,0 +1,101 @@
+name: 3DB-02 genuine pilot acquisition
+
+on:
+  push:
+    branches:
+      - 3db-02-genuine-pilot-acquisition
+    paths:
+      - scripts/materialize_3db02_pilot.py
+      - scripts/main_block_materialization.py
+      - scripts/materialize_phase35b_pilots_opendap.py
+      - scripts/materialize_phase35b_pilots_chunked.py
+      - .github/workflows/3db02-acquire.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: 3db02-genuine-pilot-acquisition
+  cancel-in-progress: false
+
+jobs:
+  acquire-validate-promote:
+    if: ${{ !contains(github.event.head_commit.message, '[3DB02-EVIDENCE]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout 3DB-02 branch
+        uses: actions/checkout@v4
+        with:
+          ref: 3db-02-genuine-pilot-acquisition
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install scientific acquisition dependencies
+        run: python -m pip install --upgrade pip numpy xarray netCDF4 pytest
+
+      - name: Acquire and promote one genuine GLORYS12V1 pilot
+        run: python scripts/materialize_3db02_pilot.py
+
+      - name: Verify canonical 3DB materialization contract
+        run: python scripts/main_block_materialization.py verify
+
+      - name: Run focused scientific regression gates
+        run: |
+          python -m pytest -q \
+            tests/test_3db02_genuine_pilot_acquisition.py \
+            tests/test_3db01_materialization_foundation.py \
+            tests/test_3db00_block_capability_contract.py \
+            tests/test_phase35b_manifest.py
+
+      - name: Compile acquisition and validation modules
+        run: python -m py_compile scripts/materialize_3db02_pilot.py scripts/main_block_materialization.py scripts/materialize_phase35b_pilots_opendap.py scripts/materialize_phase35b_pilots_chunked.py
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Typecheck judge-facing application
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Build production application
+        working-directory: frontend
+        run: npm run build
+
+      - name: Commit only validated 3DB-02 evidence and contract updates
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f frontend/package-lock.json
+          git add \
+            frontend/public/main-blocks/manifest.json \
+            frontend/public/main-blocks/data \
+            frontend/src/main-block-runtime.ts \
+            frontend/e2e/3db00-capability-contract.spec.ts \
+            frontend/e2e/main-block-engine.spec.ts \
+            tests/test_3db01_materialization_foundation.py \
+            tests/test_phase35b_manifest.py \
+            tests/test_3db02_genuine_pilot_acquisition.py \
+            docs/3DB_02_GENUINE_PILOT_BLOCK_ACQUISITION.md
+          if git diff --cached --quiet; then
+            echo 'No validated 3DB-02 evidence changes were produced.'
+            exit 1
+          fi
+          git status --short
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m '3DB-02: acquire genuine pilot evidence [3DB02-EVIDENCE]'
+          git push origin HEAD:3db-02-genuine-pilot-acquisition
+
+      - name: Record acquisition evidence summary
+        run: cat docs/3DB_02_GENUINE_PILOT_BLOCK_ACQUISITION.md >> "$GITHUB_STEP_SUMMARY"
