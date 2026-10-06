@@ -1,6 +1,11 @@
 /* RUI-02 validation hotfix.
-   On compact layouts, explicitly anchor the three shell bands so legacy flex/grid
-   ownership cannot collapse the route workspace. Scientific state/renderers are untouched. */
+   Reconcile the new workspace context band with legacy shell/analysis geometry.
+   Scientific state, source values, observed depths and renderer semantics are untouched. */
+.ocean-workbench[data-rui-context-header="true"][data-workspace-mode="analysis"] .analysis-profile-chart svg {
+  max-height: min(220px, 28dvh);
+  scroll-margin-block: 12px;
+}
+
 @media (max-width: 900px) {
   .ocean-workbench[data-rui-context-header="true"] .workspace-frame {
     position: relative;
