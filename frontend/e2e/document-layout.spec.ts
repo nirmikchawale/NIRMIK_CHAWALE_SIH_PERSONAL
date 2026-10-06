@@ -70,15 +70,40 @@ for (const width of [1440, 390]) {
       expect(["auto", "scroll"]).toContain(geometry.overflowY);
       expect(geometry.height).toBeGreaterThan(200);
       expect(geometry.height).toBeLessThanOrEqual(geometry.parentHeight + 2);
-      expect(geometry.room).toBeGreaterThan(0);
       expect(geometry.width).toBeLessThanOrEqual(geometry.viewport + 1);
       expect(geometry.documentScrollTop).toBe(0);
 
+      // A route is allowed to fit exactly at a particular viewport. In that case,
+      // create temporary test-only overflow so we can still prove that this main
+      // element owns scrolling and the document itself remains locked.
+      const injectedScrollProbe = geometry.room <= 0;
+      if (injectedScrollProbe) {
+        await content.evaluate(element => {
+          const probe = document.createElement("div");
+          probe.dataset.documentLayoutScrollProbe = "true";
+          probe.setAttribute("aria-hidden", "true");
+          probe.style.height = "600px";
+          probe.style.minHeight = "600px";
+          probe.style.flex = "0 0 600px";
+          probe.style.width = "1px";
+          probe.style.pointerEvents = "none";
+          element.appendChild(probe);
+        });
+      }
+
+      await expect.poll(() => content.evaluate(element => element.scrollHeight - element.clientHeight)).toBeGreaterThan(0);
       await content.evaluate(element => { element.scrollTop = 0; });
       await content.locator("h2").first().hover();
       await page.mouse.wheel(0, 600);
       await expect.poll(() => content.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
       await expect.poll(() => page.evaluate(() => document.scrollingElement?.scrollTop ?? 0)).toBe(0);
+
+      if (injectedScrollProbe) {
+        await content.evaluate(element => {
+          element.querySelector('[data-document-layout-scroll-probe="true"]')?.remove();
+          element.scrollTop = 0;
+        });
+      }
 
       await expect(contextHeader).toBeInViewport();
     }
