@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 
 import {
-  CURRENT_VERIFIED_BASELINE,
   INDIAN_OCEAN_MAIN_BLOCKS,
   MAIN_BLOCK_ENGINE_VERSION,
   MAIN_BLOCK_REGIONS,
   TARGET_BLOCK_COUNT,
   TARGET_DOMAIN,
   blockBoundsLabel,
-  intersectsBaseline,
   type MainBlockRegion,
   type OceanMainBlock
 } from "../main-block-engine";
+import {
+  LAND_ONLY_BLOCK_COUNT,
+  OCEAN_INTERSECTING_BLOCK_COUNT,
+  OCEAN_INTERSECTING_MAIN_BLOCKS,
+  oceanCoverageYellowGradient
+} from "../main-block-ocean-mask";
 import {
   fetchPilotMainBlockManifest,
   type PilotBlockManifest,
@@ -30,7 +34,7 @@ type RegionFilter = "all" | MainBlockRegion;
 function initialPreviewId(): string {
   try {
     const stored = window.localStorage.getItem(PREVIEW_STORAGE_KEY);
-    return INDIAN_OCEAN_MAIN_BLOCKS.some((block) => block.id === stored) ? stored! : "IO-001";
+    return OCEAN_INTERSECTING_MAIN_BLOCKS.some((block) => block.id === stored) ? stored! : "IO-001";
   } catch {
     return "IO-001";
   }
@@ -56,7 +60,7 @@ export function Phase35MainBlockEngine() {
   const [manifestError, setManifestError] = useState("");
 
   const onExploreRoute = hash === "" || hash === "#" || hash.startsWith("#/explore");
-  const selected = INDIAN_OCEAN_MAIN_BLOCKS.find((block) => block.id === selectedId) ?? INDIAN_OCEAN_MAIN_BLOCKS[0];
+  const selected = OCEAN_INTERSECTING_MAIN_BLOCKS.find((block) => block.id === selectedId) ?? OCEAN_INTERSECTING_MAIN_BLOCKS[0];
   const manifestById = useMemo(
     () => new Map((manifest?.blocks ?? []).map((entry) => [entry.id, entry])),
     [manifest]
@@ -68,7 +72,7 @@ export function Phase35MainBlockEngine() {
 
   const visibleBlocks = useMemo(() => {
     const cleanQuery = query.trim().toLowerCase();
-    return INDIAN_OCEAN_MAIN_BLOCKS.filter((block) => {
+    return OCEAN_INTERSECTING_MAIN_BLOCKS.filter((block) => {
       const regionMatch = regionFilter === "all" || block.region === regionFilter;
       const manifestEntry = manifestById.get(block.id);
       const statusText = manifestEntry?.materialization === "pilot" ? "materialized pilot source-backed" : "planned";
@@ -153,7 +157,7 @@ export function Phase35MainBlockEngine() {
           <span className="phase35-engine-icon" aria-hidden="true">▦</span>
           <span>
             <strong>Indian Ocean Block Engine</strong>
-            <small>{pilotCount} source-backed pilots · {TARGET_BLOCK_COUNT} target blocks</small>
+            <small>{pilotCount} source-backed pilots · {OCEAN_INTERSECTING_BLOCK_COUNT} ocean-intersecting blocks</small>
           </span>
         </button>
       )}
@@ -172,7 +176,7 @@ export function Phase35MainBlockEngine() {
                 <span className="phase35-kicker">PHASE 3.5D · {MAIN_BLOCK_ENGINE_VERSION}</span>
                 <h2>Indian Ocean Main Block Engine</h2>
                 <p>
-                  {TARGET_BLOCK_COUNT} geographic extraction cells span {TARGET_DOMAIN.west}–{TARGET_DOMAIN.east}°E and {TARGET_DOMAIN.south}–{TARGET_DOMAIN.north}°N. <strong>{pilotCount} cells now carry genuinely materialized GLORYS12V1 fields</strong>; the remaining cells stay planning-only and cannot become a scientific renderer source.
+                  {OCEAN_INTERSECTING_BLOCK_COUNT} ocean-intersecting extraction cells are retained from the {TARGET_BLOCK_COUNT}-cell logical grid spanning {TARGET_DOMAIN.west}–{TARGET_DOMAIN.east}°E and {TARGET_DOMAIN.south}–{TARGET_DOMAIN.north}°N. <strong>{LAND_ONLY_BLOCK_COUNT} zero-ocean land cells are suppressed</strong>; mixed ocean+land cells remain available.
                 </p>
               </div>
               <button type="button" className="phase35-block-close" onClick={() => setOpen(false)} aria-label="Close main block engine">×</button>
@@ -180,9 +184,9 @@ export function Phase35MainBlockEngine() {
 
             <section className="phase35-block-summary" aria-label="Block engine status" data-testid="phase35-materialization-summary">
               <article>
-                <small>LOGICAL TARGETS</small>
-                <strong>{formatTargetCount(TARGET_BLOCK_COUNT)}</strong>
-                <span>Indian Ocean planning cells</span>
+                <small>OCEAN-INTERSECTING BLOCKS</small>
+                <strong>{formatTargetCount(OCEAN_INTERSECTING_BLOCK_COUNT)}</strong>
+                <span>ocean-only + mixed coastal cells</span>
               </article>
               <article className="materialized">
                 <small>SOURCE-BACKED PILOTS</small>
@@ -192,12 +196,12 @@ export function Phase35MainBlockEngine() {
               <article>
                 <small>MULTI-DATE PILOTS</small>
                 <strong>{multiDateCount}</strong>
-                <span>two genuine daily source frames</span>
+                <span>genuine native source frames</span>
               </article>
-              <article className="verified">
-                <small>VERIFIED DEMO BASELINE</small>
-                <strong>1</strong>
-                <span>{blockBoundsLabel(CURRENT_VERIFIED_BASELINE)}</span>
+              <article>
+                <small>LAND-ONLY EXCLUDED</small>
+                <strong>{LAND_ONLY_BLOCK_COUNT}</strong>
+                <span>0% ocean footprint</span>
               </article>
             </section>
 
@@ -223,31 +227,33 @@ export function Phase35MainBlockEngine() {
                   </label>
                   <div className="phase35-block-result-count" aria-live="polite">
                     <strong>{visibleBlocks.length}</strong>
-                    <span>shown of {TARGET_BLOCK_COUNT}</span>
+                    <span>shown of {OCEAN_INTERSECTING_BLOCK_COUNT} ocean blocks</span>
                   </div>
                 </div>
 
                 <div className="phase35-grid-note">
-                  <span>Schematic 14 × 10 geographic extraction grid</span>
-                  <span>Solid accent = source-backed pilot · dashed = intersects verified demo baseline</span>
+                  <span>Ocean-intersecting cells from the canonical 14 × 10 source grid</span>
+                  <span>Yellow light → dark = lower → higher ocean coverage · land-only cells removed</span>
                 </div>
 
-                <div className="phase35-block-grid" role="group" aria-label="140 logical Indian Ocean main blocks">
+                <div className="phase35-block-grid" role="group" aria-label="Ocean-intersecting Indian Ocean main blocks">
                   {visibleBlocks.map((block) => {
                     const active = block.id === selected.id;
                     const sourceEntry = manifestById.get(block.id);
                     const materialization = sourceEntry?.materialization ?? "planned";
                     const isPilot = materialization === "pilot";
-                    const overlapsCurrent = intersectsBaseline(block);
+                    const oceanFraction = sourceEntry?.ocean_fraction ?? 0.5;
                     return (
                       <button
                         key={block.id}
                         type="button"
-                        className={`phase35-block-cell ${active ? "active" : ""} ${isPilot ? "materialized" : ""} ${overlapsCurrent ? "baseline-overlap" : ""}`}
+                        className={`phase35-block-cell ${active ? "active" : ""} ${isPilot ? "materialized" : ""}`}
                         aria-pressed={active}
                         aria-label={`${block.id}, ${block.region}, ${blockBoundsLabel(block)}, ${isPilot ? "source-backed materialized pilot" : "planned main block"}`}
                         data-block-id={block.id}
                         data-materialization={materialization}
+                        data-ocean-fraction={oceanFraction.toFixed(6)}
+                        style={{ background: oceanCoverageYellowGradient(oceanFraction) }}
                         onClick={() => selectBlock(block)}
                       >
                         <strong>{block.id.replace("IO-", "")}</strong>
@@ -292,7 +298,7 @@ export function Phase35MainBlockEngine() {
                       {selectedIsActive ? "ACTIVE IN GEOGRAPHIC + WATER COLUMN 3D" : `Load ${selected.id} in Geographic + Water Column 3D`}
                     </button>
                     <small className="phase35-activation-note">
-                      Activation uses only this block's source-backed payloads. The page reloads once so catalog, timeline, map, water column, telemetry, anomaly screen and provenance share one scientific context.
+                      Activation refreshes the scientific catalog and native timeline in place. The page does not reload and block selection never auto-opens Water Column 3D.
                     </small>
                   </>
                 ) : (
@@ -308,32 +314,13 @@ export function Phase35MainBlockEngine() {
                   </>
                 )}
 
-                <div className="phase35-baseline-card">
-                  <div>
-                    <span className="phase35-baseline-badge">VERIFIED DEMO BASELINE</span>
-                    <strong>{CURRENT_VERIFIED_BASELINE.id}</strong>
-                  </div>
-                  <p>{blockBoundsLabel(CURRENT_VERIFIED_BASELINE)}</p>
-                  <ul>
-                    <li>02 Jan 2024 · daily mean</li>
-                    <li>{CURRENT_VERIFIED_BASELINE.depthLevels} verified depth levels</li>
-                    <li>Temperature · Salinity · horizontal currents</li>
-                  </ul>
-                  <button
-                    type="button"
-                    className="phase35-baseline-return"
-                    disabled={activeId === CURRENT_VERIFIED_BASELINE.id}
-                    onClick={() => publishActiveMainBlockId(CURRENT_VERIFIED_BASELINE.id)}
-                  >
-                    {activeId === CURRENT_VERIFIED_BASELINE.id ? "Baseline is active" : "Return renderers to verified baseline"}
-                  </button>
-                </div>
+
               </aside>
             </div>
 
             <footer className="phase35-block-footer">
               <strong>SCIENTIFIC BOUNDARY</strong>
-              <span>{pilotCount} main blocks are genuinely materialized from GLORYS12V1 source evidence. The remaining {TARGET_BLOCK_COUNT - pilotCount} cells are planning geography only and are deliberately prevented from becoming a scientific renderer source.</span>
+              <span>{OCEAN_INTERSECTING_BLOCK_COUNT} ocean-intersecting blocks remain visible; {LAND_ONLY_BLOCK_COUNT} zero-ocean land cells are removed from exploration. {pilotCount} retained blocks are genuinely materialized and the others remain fail-closed planning geography.</span>
             </footer>
           </aside>
         </>
