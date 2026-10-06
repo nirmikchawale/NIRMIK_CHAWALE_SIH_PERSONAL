@@ -4,11 +4,13 @@ import {
   type OceanMainBlock,
   type VerifiedBaselineBlock
 } from "./main-block-engine";
+import { deriveMainBlockCapabilities } from "./main-block-capabilities";
 import { findGeographicMainBlockAt } from "./main-block-geography";
 
 export const ACTIVE_MAIN_BLOCK_STORAGE_KEY = "oceancanvas-active-main-block-v1";
 export const ACTIVE_MAIN_BLOCK_EVENT = "oceancanvas:active-main-block";
 export const ACTIVE_MAIN_BLOCK_QUERY_KEY = "block";
+export const MAIN_BLOCK_WATER_COLUMN_SYNC_VERSION = "3db-05-v1";
 
 export const PHASE35B_PILOT_IDS = [
   "IO-001", "IO-002", "IO-015", "IO-016", "IO-031", "IO-038",
@@ -28,6 +30,27 @@ const PILOT_PRIMARY_DATE = "2004-03-15";
 const PILOT_SECONDARY_DATE = "2004-07-28";
 
 export type ActiveMainBlock = OceanMainBlock | VerifiedBaselineBlock;
+export type MainBlockWaterColumnMode = "scientific-volume" | "geographic-shell";
+
+export interface MainBlockWaterColumnSyncContext {
+  version: typeof MAIN_BLOCK_WATER_COLUMN_SYNC_VERSION;
+  blockId: string;
+  materialization: ActiveMainBlock["materialization"];
+  mode: MainBlockWaterColumnMode;
+  geographicReady: boolean;
+  waterColumnReady: boolean;
+  scientificVolumeAllowed: boolean;
+  evidenceClass: ReturnType<typeof deriveMainBlockCapabilities>["provenance"]["evidenceClass"];
+  validationLevel: ReturnType<typeof deriveMainBlockCapabilities>["validation"]["level"];
+  bounds: {
+    west: number;
+    east: number;
+    south: number;
+    north: number;
+  };
+  availableDates: readonly string[];
+  sourceProduct: string | null;
+}
 
 export function isPhase35bPilotId(id: string | null | undefined): id is string {
   return typeof id === "string" && PILOT_ID_SET.has(id);
@@ -53,6 +76,28 @@ export function resolveMainBlock(id: string | null | undefined): ActiveMainBlock
     sourceProduct: "Copernicus Marine / Mercator Ocean GLORYS12V1",
     availableDates: dates,
     nativeTimesUtc: dates.map((date) => `${date}T12:00:00Z`)
+  };
+}
+
+export function deriveMainBlockWaterColumnSyncContext(
+  id: string | null | undefined
+): MainBlockWaterColumnSyncContext {
+  const block = resolveMainBlock(id);
+  const capability = deriveMainBlockCapabilities(block);
+  const scientificVolumeAllowed = capability.waterColumnReady && capability.materialized;
+  return {
+    version: MAIN_BLOCK_WATER_COLUMN_SYNC_VERSION,
+    blockId: block.id,
+    materialization: block.materialization,
+    mode: scientificVolumeAllowed ? "scientific-volume" : "geographic-shell",
+    geographicReady: capability.geographicReady,
+    waterColumnReady: capability.waterColumnReady,
+    scientificVolumeAllowed,
+    evidenceClass: capability.provenance.evidenceClass,
+    validationLevel: capability.validation.level,
+    bounds: capability.geographicBounds,
+    availableDates: capability.availableTimes,
+    sourceProduct: capability.provenance.sourceProduct
   };
 }
 
