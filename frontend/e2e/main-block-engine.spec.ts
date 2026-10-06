@@ -6,21 +6,21 @@ async function startFromBaseline(page: Page) {
   await page.addInitScript((storageKey) => localStorage.removeItem(storageKey), ACTIVE_BLOCK_KEY);
 }
 
-test("Phase 3.5D exposes 140 targets and exactly 24 source-backed pilots", async ({ page }) => {
+test("Phase 3.5D exposes 140 targets and exactly 25 source-backed pilots", async ({ page }) => {
   await startFromBaseline(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(process.env.OCEANTWIN_LIVE_URL!);
 
   const launcher = page.getByTestId("phase35-block-launcher");
   await expect(launcher).toBeVisible();
-  await expect(launcher).toContainText("24 source-backed pilots");
+  await expect(launcher).toContainText("25 source-backed pilots");
   await launcher.click();
 
   const dialog = page.getByRole("dialog", { name: "Indian Ocean Main Block Engine" });
   await expect(dialog).toBeVisible();
   await expect(dialog.locator(".phase35-block-cell")).toHaveCount(140);
   await expect(dialog.getByTestId("phase35-materialization-summary")).toContainText("SOURCE-BACKED PILOTS");
-  await expect(dialog.getByTestId("phase35-materialization-summary")).toContainText("24");
+  await expect(dialog.getByTestId("phase35-materialization-summary")).toContainText("25");
   await expect(dialog.getByTestId("phase35-materialization-summary")).toContainText("MULTI-DATE PILOTS");
   await expect(dialog.getByText("BASE-GLORYS-001")).toBeVisible();
   await expect(dialog.getByText("02 Jan 2024 · daily mean")).toBeVisible();
