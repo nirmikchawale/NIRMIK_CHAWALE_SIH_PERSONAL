@@ -16,6 +16,15 @@
     left: 0;
     width: 100%;
     height: var(--rui-mobile-nav-height);
+    pointer-events: none;
+  }
+
+  .ocean-workbench[data-rui-context-header="true"] .app-navigation-root .mobile-workspace-nav {
+    pointer-events: auto;
+  }
+
+  .ocean-workbench[data-rui-context-header="true"] .app-navigation-root[data-mobile-open="true"] {
+    pointer-events: auto;
   }
 
   .ocean-workbench[data-rui-context-header="true"] .workspace-frame > .scientific-context-header {
