@@ -1,6 +1,16 @@
 /* RUI-NAV-02 — canonical 3D Explorer feature hierarchy.
    Navigation/placement only: scientific values, payload eligibility, provenance and renderer semantics are unchanged. */
 
+.explorer-consolidation-slot { display:contents; }
+
+/* NAV-02 moves these visible controls out of global header chrome. The original
+   App handlers remain mounted as hidden delegation targets so no scientific or
+   workspace state machinery is duplicated. */
+.ocean-workbench[data-page="explore"] .app-header > .header-status > .workspace-mode-switcher,
+.ocean-workbench[data-page="explore"] .app-header button[aria-label="Focus 3D"] {
+  display:none!important;
+}
+
 .ocean-workbench[data-page="explore"] .station-workspace {
   grid-template-areas:
     "directory directory"
