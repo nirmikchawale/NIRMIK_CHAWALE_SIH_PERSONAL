@@ -339,3 +339,97 @@
     grid-template-columns:1fr;
   }
 }
+
+
+/* VIS-01 / Station compatibility reconciliation.
+   NAV-02 extends the Station grid; it must not erase Station's inspector/control
+   areas when profile, evidence, analysis, mobile, focus or presentation state is active. */
+.ocean-workbench[data-page="explore"] .station-workspace[data-inspector="open"] {
+  grid-template-columns:240px minmax(0,1fr) 320px;
+  grid-template-areas:
+    "directory directory directory"
+    "source source source"
+    "controls block inspector"
+    "controls dock inspector"
+    "controls scene inspector"
+    "controls range inspector"
+    "controls evidence inspector";
+  grid-template-rows:auto auto auto 56px minmax(460px,calc(100dvh - 440px)) auto auto;
+}
+
+.ocean-workbench[data-page="explore"][data-control-dock="closed"] .station-workspace[data-inspector="open"] {
+  grid-template-columns:minmax(0,1fr) 380px;
+  grid-template-areas:
+    "directory directory"
+    "source source"
+    "block inspector"
+    "dock inspector"
+    "scene inspector"
+    "range inspector"
+    "evidence inspector";
+  grid-template-rows:auto auto auto 56px minmax(460px,calc(100dvh - 440px)) auto auto;
+}
+
+/* Preserve Station's deliberate full-viewport layouts. The NAV-02 directory and
+   block home are hidden in focus/presentation rather than becoming implicit grid items. */
+.ocean-workbench[data-page="explore"].focus-mode .station-workspace,
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .station-workspace {
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-areas:"source" "dock" "scene" "range" "evidence"!important;
+  grid-template-rows:auto 56px minmax(460px,calc(100dvh - 440px)) auto auto!important;
+}
+
+@media (max-width:1100px) and (min-width:761px) {
+  .ocean-workbench[data-page="explore"] .station-workspace[data-inspector="open"] {
+    grid-template-columns:240px minmax(0,1fr);
+    grid-template-areas:
+      "directory directory"
+      "source source"
+      "controls block"
+      "controls dock"
+      "controls scene"
+      "controls range"
+      "controls inspector"
+      "controls evidence";
+    grid-template-rows:auto auto auto 56px minmax(460px,calc(100dvh - 440px)) auto auto auto;
+  }
+
+  .ocean-workbench[data-page="explore"][data-control-dock="closed"] .station-workspace[data-inspector="open"] {
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:
+      "directory"
+      "source"
+      "block"
+      "dock"
+      "scene"
+      "range"
+      "inspector"
+      "evidence";
+    grid-template-rows:auto auto auto 56px minmax(460px,calc(100dvh - 440px)) auto auto auto;
+  }
+}
+
+@media (max-width:760px) {
+  .ocean-workbench[data-page="explore"] .station-workspace,
+  .ocean-workbench[data-page="explore"] .station-workspace[data-inspector="open"],
+  .ocean-workbench[data-page="explore"][data-control-dock="closed"] .station-workspace,
+  .ocean-workbench[data-page="explore"][data-control-dock="closed"] .station-workspace[data-inspector="open"] {
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-areas:
+      "directory"
+      "source"
+      "block"
+      "dock"
+      "scene"
+      "range"
+      "controls"
+      "inspector"
+      "evidence"!important;
+    grid-template-rows:auto auto auto auto 480px auto auto auto auto!important;
+  }
+
+  .explorer-block-system-launchers > :is(.phase35-block-engine-root,.phase3-atlas-root) {
+    width:100%;
+    min-width:0;
+  }
+}
