@@ -41,13 +41,13 @@ def _first_payload(manifest: dict) -> tuple[dict, dict, dict]:
     return record, block, payload
 
 
-def test_3db01_reusable_foundation_validates_current_inventory_without_promotion() -> None:
+def test_3db01_reusable_foundation_validates_current_inventory() -> None:
     snapshot = validate_manifest(BLOCK_ROOT)
     assert snapshot.logical_blocks == 140
-    assert snapshot.materialized_pilots == 24
-    assert snapshot.planned_blocks == 116
+    assert snapshot.materialized_pilots == 25
+    assert snapshot.planned_blocks == 115
     assert snapshot.multi_date_pilots == 6
-    assert snapshot.payloads == 30
+    assert snapshot.payloads == 31
     assert snapshot.land_blocks_materialized == 0
 
 
