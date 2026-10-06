@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { blockBoundsLabel } from "../main-block-engine";
 import { fetchPilotMainBlockManifest, type PilotBlockManifest } from "../pilot-main-block-loader";
 import {
+  deriveMainBlockWaterColumnSyncContext,
   isPhase35bPilotId,
   publishActiveMainBlockId,
   readActiveMainBlockId,
@@ -22,7 +23,8 @@ export function PilotMainBlockRendererBridge() {
   const [context, setContext] = useState<ScientificWorkspaceContext>(readScientificWorkspaceContext);
 
   const onExplore = hash === "" || hash === "#" || hash.startsWith("#/explore");
-  const activeBlock = resolveMainBlock(activeId);
+  const activeBlock = useMemo(() => resolveMainBlock(activeId), [activeId]);
+  const waterColumnSync = useMemo(() => deriveMainBlockWaterColumnSyncContext(activeId), [activeId]);
   const activePilot = useMemo(
     () => manifest?.blocks.find((block) => block.id === activeId && block.materialization === "pilot") ?? null,
     [manifest, activeId]
@@ -59,6 +61,63 @@ export function PilotMainBlockRendererBridge() {
     };
   }, [pilot, activeId]);
 
+  // 3DB-05 synchronization bridge for the legacy WaterColumn3D presentation
+  // surface. Phase 3.5D already hydrates the scientific payload family through
+  // api.ts after a deterministic source-context reload. The remaining legacy
+  // component still stamps a materialized pilot as BASE-GLORYS-001 in its DOM
+  // context. Reconcile only identity/lifecycle metadata here; scientific arrays,
+  // timestamps, depths, values and renderer geometry are never rewritten.
+  useEffect(() => {
+    if (!pilot || !waterColumnSync.scientificVolumeAllowed) return;
+
+    let frame: number | null = null;
+    const bounds = blockBoundsLabel(activeBlock);
+
+    const reconcileWaterColumnIdentity = () => {
+      frame = null;
+      const shell = document.querySelector<HTMLElement>(
+        ".water-column-shell:not(.planned-main-block-shell):not(.water-column-loading)"
+      );
+      if (!shell) return;
+
+      shell.dataset.mainBlockId = activeId;
+      shell.dataset.materialization = "pilot";
+      shell.dataset.waterColumnSync = "synchronized";
+      shell.dataset.waterColumnSyncVersion = waterColumnSync.version;
+      shell.dataset.waterColumnEvidenceClass = waterColumnSync.evidenceClass;
+
+      const identity = shell.querySelector<HTMLElement>(".water-column-main-block-context");
+      if (!identity) return;
+      identity.setAttribute("aria-label", "Active source-backed pilot main block");
+
+      const strong = identity.querySelector<HTMLElement>("strong");
+      const expectedStrong = `${activeId} · SOURCE-BACKED PILOT VOLUME`;
+      if (strong && strong.textContent !== expectedStrong) strong.textContent = expectedStrong;
+
+      const depthCount = Number.parseInt(shell.dataset.depthCount ?? "", 10);
+      const depthLabel = Number.isFinite(depthCount) && depthCount > 0
+        ? `${depthCount} genuine depth levels`
+        : "genuine source depth levels";
+      const small = identity.querySelector<HTMLElement>("small");
+      const expectedSmall = `${bounds} · ${depthLabel} · source-backed GLORYS12V1 pilot · no independent Argo validation claim`;
+      if (small && small.textContent !== expectedSmall) small.textContent = expectedSmall;
+    };
+
+    const schedule = () => {
+      if (frame != null) return;
+      frame = window.requestAnimationFrame(reconcileWaterColumnIdentity);
+    };
+
+    const observer = new MutationObserver(schedule);
+    observer.observe(document.body, { childList: true, subtree: true });
+    schedule();
+
+    return () => {
+      observer.disconnect();
+      if (frame != null) window.cancelAnimationFrame(frame);
+    };
+  }, [pilot, activeId, activeBlock, waterColumnSync]);
+
   if (!onExplore || !pilot) return null;
 
   const currentTime = context.blockId === activeId && context.timestamp
@@ -73,6 +132,8 @@ export function PilotMainBlockRendererBridge() {
       data-testid="pilot-renderer-bridge"
       data-block-id={activeId}
       data-materialization="pilot"
+      data-water-column-sync={waterColumnSync.scientificVolumeAllowed ? "ready" : "locked"}
+      data-water-column-sync-version={waterColumnSync.version}
       aria-label="Active source-backed pilot main block"
     >
       <div className="pilot-renderer-bridge-heading">
@@ -92,6 +153,7 @@ export function PilotMainBlockRendererBridge() {
         <div><dt>Native time</dt><dd>{currentTime}</dd></div>
         <div><dt>Source</dt><dd>GLORYS12V1 · Phase 3.5B payload</dd></div>
         <div><dt>Coverage</dt><dd>{activePilot ? `${(activePilot.ocean_fraction * 100).toFixed(1)}% ocean/finite footprint` : "Source-backed pilot"}</dd></div>
+        <div><dt>Water Column gate</dt><dd>{waterColumnSync.validationLevel} · {waterColumnSync.evidenceClass}</dd></div>
         <div><dt>Integrity</dt><dd>No synthetic values · uo/vo only for currents</dd></div>
       </dl>
       <p>
