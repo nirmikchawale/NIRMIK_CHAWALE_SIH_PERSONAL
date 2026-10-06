@@ -4,6 +4,7 @@ import {
   type OceanMainBlock,
   type VerifiedBaselineBlock
 } from "./main-block-engine";
+import { findGeographicMainBlockAt } from "./main-block-geography";
 
 export const ACTIVE_MAIN_BLOCK_STORAGE_KEY = "oceancanvas-active-main-block-v1";
 export const ACTIVE_MAIN_BLOCK_EVENT = "oceancanvas:active-main-block";
@@ -146,10 +147,7 @@ export function subscribeActiveMainBlock(listener: (id: string) => void): () => 
 }
 
 export function findTargetBlockAt(longitude: number, latitude: number): OceanMainBlock | null {
-  return INDIAN_OCEAN_MAIN_BLOCKS.find((block) =>
-    longitude >= block.west && longitude <= block.east &&
-    latitude >= block.south && latitude <= block.north
-  ) ?? null;
+  return findGeographicMainBlockAt(longitude, latitude);
 }
 
 export function activeMainBlockRegion(block: ActiveMainBlock): string {
