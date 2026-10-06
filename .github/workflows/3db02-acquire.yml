@@ -6,6 +6,7 @@ on:
       - 3db-02-genuine-pilot-acquisition
     paths:
       - scripts/materialize_3db02_pilot.py
+      - scripts/run_3db02_acquisition.py
       - scripts/main_block_materialization.py
       - scripts/materialize_phase35b_pilots_opendap.py
       - scripts/materialize_phase35b_pilots_chunked.py
@@ -39,7 +40,7 @@ jobs:
         run: python -m pip install --upgrade pip numpy xarray netCDF4 pytest
 
       - name: Acquire and promote one genuine GLORYS12V1 pilot
-        run: python scripts/materialize_3db02_pilot.py
+        run: python scripts/run_3db02_acquisition.py
 
       - name: Verify canonical 3DB materialization contract
         run: python scripts/main_block_materialization.py verify
@@ -53,7 +54,7 @@ jobs:
             tests/test_phase35b_manifest.py
 
       - name: Compile acquisition and validation modules
-        run: python -m py_compile scripts/materialize_3db02_pilot.py scripts/main_block_materialization.py scripts/materialize_phase35b_pilots_opendap.py scripts/materialize_phase35b_pilots_chunked.py
+        run: python -m py_compile scripts/materialize_3db02_pilot.py scripts/run_3db02_acquisition.py scripts/main_block_materialization.py scripts/materialize_phase35b_pilots_opendap.py scripts/materialize_phase35b_pilots_chunked.py
 
       - name: Setup Node
         uses: actions/setup-node@v4
