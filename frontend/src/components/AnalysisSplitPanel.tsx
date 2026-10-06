@@ -1,4 +1,4 @@
-import { useMemo, useState, type PointerEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { Catalog, ProfileDetail, VariableCard } from "../types";
 
@@ -67,6 +67,7 @@ function nearestIndex(values: number[], target: number) {
 
 export function AnalysisSplitPanel({ catalog, variable, depthM, time, detail, onDepthSync }: Props) {
   const [hoveredLevelIndex, setHoveredLevelIndex] = useState<number | null>(null);
+  const chartRef = useRef<SVGSVGElement | null>(null);
 
   const temperatures = detail
     ? detail.levels.flatMap((level) => [level.observed_temperature, level.model_temperature_interpolated])
@@ -104,11 +105,11 @@ export function AnalysisSplitPanel({ catalog, variable, depthM, time, detail, on
     ? chartPoint(activeLevel.observed_temperature, activeLevel.observation_depth_m, xMin, xMax, maxDepth).y
     : CHART_PAD;
 
-  const syncFromPointer = (event: PointerEvent<SVGSVGElement>) => {
+  const syncFromClientY = useCallback((target: SVGSVGElement, clientY: number) => {
     if (!detail || detail.levels.length === 0) return;
-    const bounds = event.currentTarget.getBoundingClientRect();
+    const bounds = target.getBoundingClientRect();
     if (bounds.height <= 0) return;
-    const localY = ((event.clientY - bounds.top) / bounds.height) * CHART_HEIGHT;
+    const localY = ((clientY - bounds.top) / bounds.height) * CHART_HEIGHT;
     const fraction = clamp((localY - CHART_PAD) / (CHART_HEIGHT - CHART_PAD * 2), 0, 1);
     const targetDepth = fraction * maxDepth;
     const nextIndex = nearestIndex(
@@ -119,7 +120,38 @@ export function AnalysisSplitPanel({ catalog, variable, depthM, time, detail, on
       setHoveredLevelIndex(nextIndex);
       onDepthSync(detail.levels[nextIndex].observation_depth_m);
     }
-  };
+  }, [detail, hoveredLevelIndex, maxDepth, onDepthSync]);
+
+  useEffect(() => {
+    const syncWhenInsideChart = (event: globalThis.MouseEvent | globalThis.PointerEvent) => {
+      const chart = chartRef.current;
+      if (!chart) return;
+      const bounds = chart.getBoundingClientRect();
+      if (
+        bounds.width <= 0 ||
+        bounds.height <= 0 ||
+        event.clientX < bounds.left ||
+        event.clientX > bounds.right ||
+        event.clientY < bounds.top ||
+        event.clientY > bounds.bottom
+      ) {
+        return;
+      }
+      syncFromClientY(chart, event.clientY);
+    };
+
+    // Analysis Split is a layered, scrollable workspace. Capture movement at
+    // the window boundary as a fail-safe so a transparent renderer/overlay
+    // cannot swallow a genuine depth-selection gesture that is physically
+    // inside the T–Z chart. The same source-backed snapping function is used;
+    // no synthetic depth or value is introduced.
+    window.addEventListener("pointermove", syncWhenInsideChart, true);
+    window.addEventListener("mousemove", syncWhenInsideChart, true);
+    return () => {
+      window.removeEventListener("pointermove", syncWhenInsideChart, true);
+      window.removeEventListener("mousemove", syncWhenInsideChart, true);
+    };
+  }, [syncFromClientY]);
 
   return (
     <aside
@@ -181,13 +213,26 @@ export function AnalysisSplitPanel({ catalog, variable, depthM, time, detail, on
               <span>{xMin.toFixed(1)}–{xMax.toFixed(1)} °C · 0–{maxDepth.toFixed(0)} m</span>
             </div>
             <svg
+              ref={chartRef}
               viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
               role="application"
               aria-label="Interactive synchronized model and Argo temperature profile"
-              onPointerMove={syncFromPointer}
-              onPointerDown={syncFromPointer}
+              onPointerMove={(event) => syncFromClientY(event.currentTarget, event.clientY)}
+              onPointerDown={(event) => syncFromClientY(event.currentTarget, event.clientY)}
+              onMouseMove={(event) => syncFromClientY(event.currentTarget, event.clientY)}
+              onMouseDown={(event) => syncFromClientY(event.currentTarget, event.clientY)}
               onPointerLeave={() => setHoveredLevelIndex(null)}
+              onMouseLeave={() => setHoveredLevelIndex(null)}
             >
+              <rect
+                x="0"
+                y="0"
+                width={CHART_WIDTH}
+                height={CHART_HEIGHT}
+                fill="transparent"
+                pointerEvents="all"
+                className="analysis-interaction-hit-area"
+              />
               <line x1="18" x2="342" y1="18" y2="18" className="analysis-grid-line" />
               <line x1="18" x2="342" y1="125" y2="125" className="analysis-grid-line" />
               <line x1="18" x2="342" y1="232" y2="232" className="analysis-grid-line" />

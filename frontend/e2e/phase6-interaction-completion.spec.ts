@@ -27,6 +27,10 @@ test("Phase 6 materialized-block controls are live across workspaces and deep-li
   await expect(bar).toHaveAttribute("data-block-id", "BASE-GLORYS-001");
   await expect(bar).toHaveAttribute("data-block-materialization", "verified-baseline");
 
+  const details = bar.locator("details.scientific-context-details");
+  await details.locator("summary").click();
+  await expect(details).toHaveAttribute("open", "");
+
   const blockControl = page.getByTestId("scientific-context-materialized-control");
   await expect(blockControl).toBeVisible();
   const select = page.getByLabel("Active materialized scientific block");
@@ -48,6 +52,10 @@ test("Phase 6 materialized-block controls are live across workspaces and deep-li
   await page.goto(deepLink!);
   await expect(bar).toHaveAttribute("data-block-id", "IO-001", { timeout: 30_000 });
   await expect(bar).toHaveAttribute("data-block-materialization", "pilot");
+
+  const restoredDetails = bar.locator("details.scientific-context-details");
+  await restoredDetails.locator("summary").click();
+  await expect(restoredDetails).toHaveAttribute("open", "");
 
   const copied = page.getByRole("button", { name: "Copy shareable scientific context link" });
   await expect(copied).toBeVisible();

@@ -6,6 +6,7 @@ import App from "./App";
 import { Phase35MainBlockEngine } from "./components/Phase35MainBlockEngine";
 import { Phase3ArabianAtlas } from "./components/Phase3ArabianAtlas";
 import { PilotMainBlockRendererBridge } from "./components/PilotMainBlockRendererBridge";
+import { WorkspaceContextHost } from "./components/WorkspaceContextHost";
 import "./styles.css";
 import "./feature-upgrades.css";
 import "./workbench.css";
@@ -28,11 +29,14 @@ import "./phase35d-pilot-sync.css";
 import "./phase35d-pilot-compat.css";
 import "./rui-shell.css";
 import "./rui-shell-compat.css";
+import "./rui-context-header.css";
+import "./rui-context-header-mobile-fix.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <>
       <App />
+      <WorkspaceContextHost />
       <Phase35MainBlockEngine />
       <Phase3ArabianAtlas />
       <PilotMainBlockRendererBridge />

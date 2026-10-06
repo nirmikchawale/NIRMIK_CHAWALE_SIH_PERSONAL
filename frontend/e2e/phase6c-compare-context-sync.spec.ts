@@ -27,8 +27,13 @@ test("Phase 6C Compare profile selection survives reload and reopens in Explorer
 
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: /Ocean Canvas/i })).toBeVisible();
-  await expect(page.getByTestId("scientific-context-bar")).toHaveAttribute("data-selected-profile-id", secondProfileId!);
+  const restoredContextBar = page.getByTestId("scientific-context-bar");
+  await expect(restoredContextBar).toHaveAttribute("data-selected-profile-id", secondProfileId!);
   await expect(page.getByLabel("Verified Argo profile")).toHaveValue(secondProfileId!, { timeout: 60_000 });
+
+  const contextDetails = restoredContextBar.locator("details.scientific-context-details");
+  await contextDetails.locator("summary").click();
+  await expect(contextDetails).toHaveAttribute("open", "");
 
   await page.getByRole("button", { name: "Open context in 3D Explorer" }).click();
   await expect(page).toHaveURL(/#\/explore$/);

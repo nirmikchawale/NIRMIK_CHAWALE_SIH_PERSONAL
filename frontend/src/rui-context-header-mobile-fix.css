@@ -1,0 +1,76 @@
+/* RUI-02 validation hotfix.
+   Reconcile the new workspace context band with legacy shell/analysis geometry.
+   Scientific state, source values, observed depths and renderer semantics are untouched. */
+.ocean-workbench[data-rui-context-header="true"][data-workspace-mode="analysis"] .analysis-profile-chart svg {
+  max-height: min(220px, 28dvh);
+  scroll-margin-block: 12px;
+}
+
+@media (max-width: 900px) {
+  .ocean-workbench[data-rui-context-header="true"] .workspace-frame {
+    position: relative;
+    display: block !important;
+  }
+
+  .ocean-workbench[data-rui-context-header="true"] .app-navigation-root,
+  .ocean-workbench[data-rui-context-header="true"] .app-navigation-root[data-collapsed="true"] {
+    position: absolute;
+    z-index: 44;
+    top: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: var(--rui-mobile-nav-height);
+    pointer-events: none;
+  }
+
+  .ocean-workbench[data-rui-context-header="true"] .app-navigation-root .mobile-workspace-nav {
+    pointer-events: auto;
+  }
+
+  .ocean-workbench[data-rui-context-header="true"] .app-navigation-root[data-mobile-open="true"] {
+    pointer-events: auto;
+  }
+
+  .ocean-workbench[data-rui-context-header="true"] .workspace-frame > .scientific-context-header {
+    position: absolute;
+    z-index: 43;
+    top: var(--rui-mobile-nav-height);
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: var(--rui-mobile-context-height);
+  }
+
+  .ocean-workbench[data-rui-context-header="true"] .scientific-context-header .scientific-context-panel {
+    position: fixed !important;
+    top: calc(58px + var(--rui-mobile-nav-height) + var(--rui-mobile-context-height) + 6px) !important;
+    right: max(8px, env(safe-area-inset-right)) !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    left: max(8px, env(safe-area-inset-left)) !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    box-sizing: border-box;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+
+  .ocean-workbench[data-rui-context-header="true"] .workspace-frame > .workspace {
+    position: absolute !important;
+    top: calc(var(--rui-mobile-nav-height) + var(--rui-mobile-context-height));
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .ocean-workbench.focus-mode[data-rui-context-header="true"] .workspace-frame > .workspace {
+    top: 0;
+  }
+}
