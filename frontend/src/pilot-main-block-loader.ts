@@ -1,4 +1,5 @@
 import type { CurrentsResponse, CurrentsVolumeResponse, FieldResponse, VolumeResponse } from "./types";
+import { assertNativeDepthAxis, resolveNativeDepthSelection } from "./main-block-depth";
 
 export type PilotOceanRelevance = "ocean" | "coastal" | "land";
 
@@ -119,6 +120,15 @@ export function fetchPilotMainBlockManifest(): Promise<PilotBlockManifest> {
   return fetchJson<PilotBlockManifest>(`${PILOT_BASE}/manifest.json`);
 }
 
+function nativeDepthAxis(payload: PilotBlockPayload): readonly number[] {
+  return assertNativeDepthAxis(
+    payload.block_id,
+    payload.coordinates.depth_m,
+    payload.coordinates.depth_positive,
+    payload.shape.depth
+  );
+}
+
 export async function fetchPilotMainBlock(
   blockId: string,
   date: string,
@@ -144,6 +154,7 @@ export async function fetchPilotMainBlock(
   ) {
     throw new Error(`Pilot payload failed scientific-integrity policy for ${blockId} ${date}.`);
   }
+  nativeDepthAxis(payload);
   return payload;
 }
 
@@ -166,7 +177,8 @@ function scalarMetadata(payload: PilotBlockPayload, variable: "thetao" | "so") {
 export function pilotBlockVolume(payload: PilotBlockPayload, variable: "thetao" | "so"): VolumeResponse {
   const meta = scalarMetadata(payload, variable);
   const points: VolumeResponse["points"] = [];
-  const { longitude, latitude, depth_m } = payload.coordinates;
+  const { longitude, latitude } = payload.coordinates;
+  const depth_m = nativeDepthAxis(payload);
   for (let d = 0; d < depth_m.length; d += 1) {
     for (let y = 0; y < latitude.length; y += 1) {
       for (let x = 0; x < longitude.length; x += 1) {
@@ -196,15 +208,19 @@ export function pilotBlockField(
   variable: "thetao" | "so",
   depthIndex: number
 ): FieldResponse {
-  if (depthIndex < 0 || depthIndex >= payload.coordinates.depth_m.length) {
-    throw new Error(`Depth index ${depthIndex} is outside ${payload.block_id}.`);
-  }
+  const selectedDepth = resolveNativeDepthSelection(
+    payload.block_id,
+    payload.coordinates.depth_m,
+    payload.coordinates.depth_positive,
+    depthIndex,
+    payload.shape.depth
+  );
   const meta = scalarMetadata(payload, variable);
   const values: FieldResponse["values"] = [];
   for (let y = 0; y < payload.coordinates.latitude.length; y += 1) {
     const row: Array<number | null> = [];
     for (let x = 0; x < payload.coordinates.longitude.length; x += 1) {
-      row.push(meta.source.values[flatIndex(payload, depthIndex, y, x)] ?? null);
+      row.push(meta.source.values[flatIndex(payload, selectedDepth.depthIndex, y, x)] ?? null);
     }
     values.push(row);
   }
@@ -214,8 +230,8 @@ export function pilotBlockField(
     units: meta.source.units,
     time_index: 0,
     time: payload.time,
-    depth_index: depthIndex,
-    depth_m: payload.coordinates.depth_m[depthIndex],
+    depth_index: selectedDepth.depthIndex,
+    depth_m: selectedDepth.depthM,
     latitude: payload.coordinates.latitude,
     longitude: payload.coordinates.longitude,
     values,
@@ -232,7 +248,8 @@ export function pilotBlockField(
 
 export function pilotBlockCurrentsVolume(payload: PilotBlockPayload): CurrentsVolumeResponse {
   const vectors: CurrentsVolumeResponse["vectors"] = [];
-  const { longitude, latitude, depth_m } = payload.coordinates;
+  const { longitude, latitude } = payload.coordinates;
+  const depth_m = nativeDepthAxis(payload);
   for (let d = 0; d < depth_m.length; d += 1) {
     for (let y = 0; y < latitude.length; y += 1) {
       for (let x = 0; x < longitude.length; x += 1) {
@@ -255,7 +272,7 @@ export function pilotBlockCurrentsVolume(payload: PilotBlockPayload): CurrentsVo
     vectors,
     minimum: speeds.length ? Math.min(...speeds) : 0,
     maximum: speeds.length ? Math.max(...speeds) : 0,
-    depths_m: depth_m,
+    depths_m: [...depth_m],
     depth_positive: "down",
     components: ["uo", "vo"],
     vertical_component_available: false,
@@ -264,13 +281,17 @@ export function pilotBlockCurrentsVolume(payload: PilotBlockPayload): CurrentsVo
 }
 
 export function pilotBlockCurrents(payload: PilotBlockPayload, depthIndex: number): CurrentsResponse {
-  if (depthIndex < 0 || depthIndex >= payload.coordinates.depth_m.length) {
-    throw new Error(`Depth index ${depthIndex} is outside ${payload.block_id}.`);
-  }
+  const selectedDepth = resolveNativeDepthSelection(
+    payload.block_id,
+    payload.coordinates.depth_m,
+    payload.coordinates.depth_positive,
+    depthIndex,
+    payload.shape.depth
+  );
   const vectors: CurrentsResponse["vectors"] = [];
   for (let y = 0; y < payload.coordinates.latitude.length; y += 1) {
     for (let x = 0; x < payload.coordinates.longitude.length; x += 1) {
-      const index = flatIndex(payload, depthIndex, y, x);
+      const index = flatIndex(payload, selectedDepth.depthIndex, y, x);
       const u = payload.variables.uo.values[index];
       const v = payload.variables.vo.values[index];
       if (typeof u === "number" && typeof v === "number" && Number.isFinite(u) && Number.isFinite(v)) {
@@ -285,8 +306,8 @@ export function pilotBlockCurrents(payload: PilotBlockPayload, depthIndex: numbe
     units: payload.variables.uo.units,
     time_index: 0,
     time: payload.time,
-    depth_index: depthIndex,
-    depth_m: payload.coordinates.depth_m[depthIndex],
+    depth_index: selectedDepth.depthIndex,
+    depth_m: selectedDepth.depthM,
     vectors,
     minimum: speeds.length ? Math.min(...speeds) : 0,
     maximum: speeds.length ? Math.max(...speeds) : 0,
