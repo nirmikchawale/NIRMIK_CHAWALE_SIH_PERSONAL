@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 
 import App from "./App";
+import { ExplorerConsolidationHost } from "./components/ExplorerConsolidationHost";
 import { PilotMainBlockRendererBridge } from "./components/PilotMainBlockRendererBridge";
 import { WorkspaceContextHost } from "./components/WorkspaceContextHost";
 import "./styles.css";
@@ -37,6 +38,7 @@ createRoot(document.getElementById("root")!).render(
     <>
       <App />
       <WorkspaceContextHost />
+      <ExplorerConsolidationHost />
       <PilotMainBlockRendererBridge />
     </>
   </StrictMode>
