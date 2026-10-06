@@ -41,8 +41,6 @@ import type {
 import { displayUnits } from "../units";
 import { paletteCssGradient, paletteHsl } from "../palettes";
 import {
-  CURRENT_VERIFIED_BASELINE,
-  TARGET_BLOCK_COUNT,
   TARGET_DOMAIN,
   blockBoundsLabel
 } from "../main-block-engine";
