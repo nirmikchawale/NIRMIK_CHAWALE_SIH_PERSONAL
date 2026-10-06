@@ -7,6 +7,7 @@ const COORDINATE_EPSILON_DEGREES = 1e-6;
 const SPEED_EPSILON = 1e-8;
 
 export type CesiumScientificRenderKind = "scalar-slice" | "scalar-volume" | "horizontal-currents";
+export type CesiumScientificScope = "main-block" | "external-source";
 
 export interface CesiumRenderExtent {
   west: number;
@@ -17,13 +18,17 @@ export interface CesiumRenderExtent {
   maximumDepthM: number;
 }
 
+type MainBlockLifecycleStatus = ReturnType<typeof deriveMainBlockCapabilities>["lifecycleStatus"];
+type MainBlockEvidenceClass = ReturnType<typeof deriveMainBlockCapabilities>["provenance"]["evidenceClass"];
+
 interface CesiumRenderPlanBase {
-  blockId: string;
+  scientificScope: CesiumScientificScope;
+  blockId: string | null;
   blockName: string;
   kind: CesiumScientificRenderKind;
-  materialization: ScientificMainBlock["materialization"];
-  lifecycleStatus: ReturnType<typeof deriveMainBlockCapabilities>["lifecycleStatus"];
-  evidenceClass: ReturnType<typeof deriveMainBlockCapabilities>["provenance"]["evidenceClass"];
+  materialization: ScientificMainBlock["materialization"] | "external-source";
+  lifecycleStatus: MainBlockLifecycleStatus | "source-backed-external";
+  evidenceClass: MainBlockEvidenceClass | "external-source";
   geographicBounds: ReturnType<typeof deriveMainBlockCapabilities>["geographicBounds"];
 }
 
@@ -34,7 +39,7 @@ export interface BlockedCesiumRenderPlan extends CesiumRenderPlanBase {
 
 export interface AllowedCesiumRenderPlan extends CesiumRenderPlanBase {
   allowed: true;
-  variable: "thetao" | "so" | "currents";
+  variable: string;
   sourceTime: string;
   sourceDate: string;
   sampleCount: number;
@@ -54,6 +59,7 @@ function blockedPlan(
   const capability = deriveMainBlockCapabilities(block);
   return {
     allowed: false,
+    scientificScope: "main-block",
     blockId: capability.id,
     blockName: capability.name,
     kind,
@@ -133,6 +139,9 @@ function extentFromCoordinates(
   if (!longitudes.length || !latitudes.length || !depths.length) {
     throw new Error("3DB-04 Cesium contract: render extent cannot be derived from empty native coordinates.");
   }
+  longitudes.forEach((value) => assertFinite("longitude", value));
+  latitudes.forEach((value) => assertFinite("latitude", value));
+  depths.forEach(assertDepth);
   return {
     west: Math.min(...longitudes),
     east: Math.max(...longitudes),
@@ -150,6 +159,7 @@ function allowedBase(
   const capability = deriveMainBlockCapabilities(block);
   return {
     allowed: true,
+    scientificScope: "main-block",
     blockId: capability.id,
     blockName: capability.name,
     kind,
@@ -162,44 +172,11 @@ function allowedBase(
   };
 }
 
-/**
- * The 3DB scientific block contract governs GLORYS block payloads only.
- * INCOIS operational/chlorophyll and other independently sourced overlays use
- * their own source-integrity contracts and must not be rejected merely because
- * their genuine timestamps or variables differ from a GLORYS block registry.
- */
-export function isMainBlockGlorysField(field: FieldResponse): boolean {
-  return field.provenance.dataset_id === MAIN_BLOCK_GLORYS_DATASET_ID;
-}
-
-export function canCesiumRenderMainBlock(block: ScientificMainBlock): boolean {
-  return deriveMainBlockCapabilities(block).cesiumReady;
-}
-
-export function buildCesiumFieldRenderPlan(
-  block: ScientificMainBlock,
-  field: FieldResponse
-): CesiumMainBlockRenderPlan {
-  if (!isMainBlockGlorysField(field)) {
-    throw new Error(
-      `3DB-04 Cesium contract: dataset ${field.provenance.dataset_id} is not a GLORYS main-block payload.`
-    );
-  }
-  if (!canCesiumRenderMainBlock(block)) return blockedPlan(block, "scalar-slice");
-
-  const variable = assertVariableAvailable(block, field.variable);
-  if (variable === "currents") {
-    throw new Error("3DB-04 Cesium contract: scalar field renderer cannot accept current vectors.");
-  }
-  const date = assertTimeAvailable(block, field.time);
+function validateScalarFieldSamples(field: FieldResponse): { sampleCount: number; extent: CesiumRenderExtent } {
   assertDepth(field.depth_m);
   if (!field.longitude.length || !field.latitude.length) {
     throw new Error("3DB-04 Cesium contract: scalar field has no native horizontal coordinates.");
   }
-  for (const longitude of field.longitude) {
-    for (const latitude of field.latitude) assertCoordinateInsideBlock(block, longitude, latitude);
-  }
-
   if (field.values.length !== field.latitude.length) {
     throw new Error("3DB-04 Cesium contract: scalar field latitude/value shape mismatch.");
   }
@@ -215,14 +192,77 @@ export function buildCesiumFieldRenderPlan(
     }
   }
   if (sampleCount === 0) throw new Error("3DB-04 Cesium contract: scalar field contains no finite source samples.");
+  return {
+    sampleCount,
+    extent: extentFromCoordinates(field.longitude, field.latitude, [field.depth_m])
+  };
+}
+
+/**
+ * The 3DB block contract governs GLORYS main-block payloads only. INCOIS
+ * operational/chlorophyll and other genuine overlays retain their own source
+ * identity and must not inherit GLORYS block dates, variables or validation.
+ */
+export function isMainBlockGlorysField(field: FieldResponse): boolean {
+  return field.provenance.dataset_id === MAIN_BLOCK_GLORYS_DATASET_ID;
+}
+
+export function canCesiumRenderMainBlock(block: ScientificMainBlock): boolean {
+  return deriveMainBlockCapabilities(block).cesiumReady;
+}
+
+export function buildCesiumFieldRenderPlan(
+  block: ScientificMainBlock,
+  field: FieldResponse
+): CesiumMainBlockRenderPlan {
+  const date = sourceDate(field.time);
+  const validated = validateScalarFieldSamples(field);
+
+  if (!isMainBlockGlorysField(field)) {
+    return {
+      allowed: true,
+      scientificScope: "external-source",
+      blockId: null,
+      blockName: `${field.provenance.product} · ${field.provenance.dataset_id}`,
+      kind: "scalar-slice",
+      materialization: "external-source",
+      lifecycleStatus: "source-backed-external",
+      evidenceClass: "external-source",
+      geographicBounds: {
+        west: validated.extent.west,
+        east: validated.extent.east,
+        south: validated.extent.south,
+        north: validated.extent.north
+      },
+      variable: field.variable,
+      sourceTime: field.time,
+      sourceDate: date,
+      sampleCount: validated.sampleCount,
+      extent: validated.extent,
+      nativeCoordinatesPreserved: true,
+      nativeDepthPreserved: true,
+      horizontalCurrentOnly: false
+    };
+  }
+
+  if (!canCesiumRenderMainBlock(block)) return blockedPlan(block, "scalar-slice");
+
+  const variable = assertVariableAvailable(block, field.variable);
+  if (variable === "currents") {
+    throw new Error("3DB-04 Cesium contract: scalar field renderer cannot accept current vectors.");
+  }
+  assertTimeAvailable(block, field.time);
+  for (const longitude of field.longitude) {
+    for (const latitude of field.latitude) assertCoordinateInsideBlock(block, longitude, latitude);
+  }
 
   return {
     ...allowedBase(block, "scalar-slice"),
     variable,
     sourceTime: field.time,
     sourceDate: date,
-    sampleCount,
-    extent: extentFromCoordinates(field.longitude, field.latitude, [field.depth_m]),
+    sampleCount: validated.sampleCount,
+    extent: validated.extent,
     horizontalCurrentOnly: false
   };
 }
