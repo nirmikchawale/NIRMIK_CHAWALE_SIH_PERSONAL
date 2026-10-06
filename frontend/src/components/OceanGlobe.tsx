@@ -42,11 +42,17 @@ import { displayUnits } from "../units";
 import { paletteCssGradient, paletteHsl } from "../palettes";
 import {
   CURRENT_VERIFIED_BASELINE,
-  INDIAN_OCEAN_MAIN_BLOCKS,
   TARGET_BLOCK_COUNT,
   TARGET_DOMAIN,
   blockBoundsLabel
 } from "../main-block-engine";
+import {
+  LAND_ONLY_BLOCK_COUNT,
+  OCEAN_INTERSECTING_BLOCK_COUNT,
+  OCEAN_INTERSECTING_MAIN_BLOCKS,
+  oceanCoverageYellow
+} from "../main-block-ocean-mask";
+import { fetchPilotMainBlockManifest } from "../pilot-main-block-loader";
 import {
   buildCesiumCurrentsRenderPlan,
   buildCesiumFieldRenderPlan,
@@ -145,7 +151,6 @@ export function OceanGlobe({
   const calloutRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<Viewer | null>(null);
   const enterWaterColumnRef = useRef(onEnterWaterColumn);
-  const regionEntryArmedRef = useRef(true);
   const stopJourneyRef = useRef<() => void>(() => {});
   const journeyRef = useRef<(skip?: boolean) => void>(() => {});
   const entryAvailableRef = useRef(canEnterWaterColumn);
@@ -167,7 +172,6 @@ export function OceanGlobe({
   const [imageryPreference, setImageryPreference] = useState<"auto" | "offline">("auto");
   const [imageryStatus, setImageryStatus] = useState<"connecting" | "online" | "offline" | "grid">("connecting");
   const [introPhase, setIntroPhase] = useState<"idle" | "earth" | "india" | "flying" | "region">("idle");
-  const [regionEntryArmed, setRegionEntryArmed] = useState(true);
   const [activeMainBlockId, setActiveMainBlockId] = useState(readActiveMainBlockId);
   const activeMainBlock = resolveMainBlock(activeMainBlockId);
 
@@ -337,18 +341,6 @@ export function OceanGlobe({
       setCameraHeight(viewer.camera.positionCartographic.height);
     });
 
-    const boundary = viewer.entities.add({
-      id: "model-domain-boundary",
-      polyline: {
-        positions: Cartesian3.fromDegreesArray([
-          67, 12, 70, 12, 70, 14, 67, 14, 67, 12
-        ]),
-        width: 3.2,
-        material: Color.fromCssColorString("#ffd56a").withAlpha(0.96)
-      }
-    });
-    void boundary;
-
     viewer.entities.add({
       id: "main-block-domain-boundary",
       polyline: {
@@ -360,38 +352,34 @@ export function OceanGlobe({
           TARGET_DOMAIN.west, TARGET_DOMAIN.south
         ]),
         width: 2.2,
-        material: Color.fromCssColorString("#70e1f5").withAlpha(0.82)
+        material: Color.fromCssColorString("#d5a800").withAlpha(0.82)
       }
     });
 
-    for (const block of INDIAN_OCEAN_MAIN_BLOCKS) {
-      viewer.entities.add({
-        id: `main-block:${block.id}`,
-        rectangle: {
-          coordinates: Rectangle.fromDegrees(block.west, block.south, block.east, block.north),
-          height: 1_250,
-          material: Color.fromCssColorString("#53c9e8").withAlpha(0.035),
-          outline: true,
-          outlineColor: Color.fromCssColorString("#65d5ef").withAlpha(0.46)
+    void fetchPilotMainBlockManifest()
+      .then((manifest) => {
+        if (viewer.isDestroyed()) return;
+        const byId = new Map(manifest.blocks.map((entry) => [entry.id, entry]));
+        for (const block of OCEAN_INTERSECTING_MAIN_BLOCKS) {
+          const oceanFraction = byId.get(block.id)?.ocean_fraction ?? 0;
+          const yellow = Color.fromCssColorString(oceanCoverageYellow(oceanFraction));
+          viewer.entities.add({
+            id: `main-block:${block.id}`,
+            rectangle: {
+              coordinates: Rectangle.fromDegrees(block.west, block.south, block.east, block.north),
+              height: 1_250,
+              material: yellow.withAlpha(0.12),
+              outline: true,
+              outlineColor: yellow.withAlpha(0.72)
+            }
+          });
         }
+        viewer.scene.requestRender();
+      })
+      .catch(() => {
+        // Scientific payload rendering remains available if block coverage
+        // metadata cannot be loaded; do not reintroduce land-only geometry.
       });
-    }
-
-    viewer.entities.add({
-      id: "verified-main-block-footprint",
-      rectangle: {
-        coordinates: Rectangle.fromDegrees(
-          CURRENT_VERIFIED_BASELINE.west,
-          CURRENT_VERIFIED_BASELINE.south,
-          CURRENT_VERIFIED_BASELINE.east,
-          CURRENT_VERIFIED_BASELINE.north
-        ),
-        height: 1_650,
-        material: Color.fromCssColorString("#ffd56a").withAlpha(0.09),
-        outline: true,
-        outlineColor: Color.fromCssColorString("#ffd56a").withAlpha(0.96)
-      }
-    });
 
     viewerRef.current = viewer;
 
@@ -414,21 +402,6 @@ export function OceanGlobe({
         return;
       }
 
-      // When field-entry mode is armed, clicks on rendered model samples or
-      // the verified-domain boundary should enter the connected water column
-      // directly. This is more robust than relying only on ellipsoid picking.
-      if (
-        regionEntryArmedRef.current &&
-        entryAvailableRef.current &&
-        (pickedId?.kind === "ocean-inspection" || entityId === "model-domain-boundary")
-      ) {
-        publishActiveMainBlockId(CURRENT_VERIFIED_BASELINE.id);
-        setActiveMainBlockId(CURRENT_VERIFIED_BASELINE.id);
-        setInspection(null);
-        enterWaterColumnRef.current();
-        return;
-      }
-
       const surfacePoint = viewer.camera.pickEllipsoid(
         movement.position,
         viewer.scene.globe.ellipsoid
@@ -437,25 +410,10 @@ export function OceanGlobe({
         const cartographic = viewer.scene.globe.ellipsoid.cartesianToCartographic(surfacePoint);
         const longitude = CesiumMath.toDegrees(cartographic.longitude);
         const latitude = CesiumMath.toDegrees(cartographic.latitude);
-        // Use the same framed study window as the opening journey. The
-        // scientific model domain remains 67–70 E, 12–14 N; this slightly
-        // larger interaction envelope only makes the deliberate field-entry
-        // gesture easier to hit on projectors and touchpads.
-        const insideStudyFrame =
-          longitude >= 66.35 && longitude <= 70.65 && latitude >= 11.35 && latitude <= 14.65;
-
-        if (insideStudyFrame) {
-          publishActiveMainBlockId(CURRENT_VERIFIED_BASELINE.id);
-          setActiveMainBlockId(CURRENT_VERIFIED_BASELINE.id);
-          if (regionEntryArmedRef.current && entryAvailableRef.current) {
-            setInspection(null);
-            enterWaterColumnRef.current();
-          }
-          return;
-        }
-
         const targetBlock = findTargetBlockAt(longitude, latitude);
         if (targetBlock) {
+          // Block clicks select geographic/scientific context only. 3DB-07
+          // deliberately does not auto-open Water Column 3D.
           publishActiveMainBlockId(targetBlock.id);
           setActiveMainBlockId(targetBlock.id);
           setInspection(null);
@@ -497,25 +455,22 @@ export function OceanGlobe({
 
     viewer.entities.removeById("active-main-block-highlight");
     const block = resolveMainBlock(activeMainBlockId);
-    const verifiedBaseline = block.materialization === "verified-baseline";
+    if (block.materialization === "verified-baseline") {
+      // Keep the immutable baseline as scientific reference evidence only.
+      // It must not occupy the block grid or obscure IO-073/074/087/088.
+      viewer.scene.requestRender();
+      return;
+    }
     const sourceBackedPilot = block.materialization === "pilot";
     const centreLon = (block.west + block.east) / 2;
     const centreLat = (block.south + block.north) / 2;
-    const outline = verifiedBaseline
-      ? Color.fromCssColorString("#ffd56a")
-      : sourceBackedPilot
-        ? Color.fromCssColorString("#8cefff")
-        : Color.fromCssColorString("#e9fbff");
-    const fill = verifiedBaseline
-      ? Color.fromCssColorString("#ffd56a").withAlpha(0.12)
-      : sourceBackedPilot
-        ? Color.fromCssColorString("#53c9e8").withAlpha(0.13)
-        : Color.fromCssColorString("#6fe6fa").withAlpha(0.08);
-    const lifecycleLabel = verifiedBaseline
-      ? "VERIFIED BASELINE"
-      : sourceBackedPilot
-        ? "SOURCE-BACKED PILOT"
-        : "PLANNED";
+    const outline = sourceBackedPilot
+      ? Color.fromCssColorString("#8a6400")
+      : Color.fromCssColorString("#b88700");
+    const fill = sourceBackedPilot
+      ? Color.fromCssColorString("#f2c94c").withAlpha(0.18)
+      : Color.fromCssColorString("#ffe27a").withAlpha(0.12);
+    const lifecycleLabel = sourceBackedPilot ? "SOURCE-BACKED PILOT" : "PLANNED";
 
     viewer.scene.globe.translucency.rectangle = Rectangle.fromDegrees(
       block.west,
@@ -555,8 +510,6 @@ export function OceanGlobe({
     const viewer = viewerRef.current;
     if (!presentationActive || !viewer || viewer.isDestroyed()) return;
 
-    regionEntryArmedRef.current = true;
-    setRegionEntryArmed(true);
     setInspection(null);
     journeyRef.current();
   }, [presentationActive]);
@@ -1368,7 +1321,7 @@ export function OceanGlobe({
       data-color-max={colorMaximum}
       data-imported-profile-count={importedProfiles.length}
       data-selected-imported-profile={selectedImportedProfileId}
-      data-main-block-count={TARGET_BLOCK_COUNT}
+      data-main-block-count={OCEAN_INTERSECTING_BLOCK_COUNT}
       data-active-main-block={activeMainBlock.id}
       data-active-main-block-materialization={activeMaterialization}
       data-cesium-scientific-render-ready={canCesiumRenderMainBlock(activeMainBlock) ? "true" : "false"}
@@ -1382,9 +1335,9 @@ export function OceanGlobe({
       >
         <div className="main-block-globe-heading">
           <div>
-            <span>INDIAN OCEAN MAIN EARTH MODEL</span>
-            <strong>{activeMainBlock.id} · {activeMainBlockRegion(activeMainBlock)}</strong>
-            <small>{blockBoundsLabel(activeMainBlock)}</small>
+            <span>INDIAN OCEAN OCEAN-BLOCK FIELD</span>
+            <strong>{activeMaterialization === "verified-baseline" ? "Verified GLORYS reference · no block selected" : `${activeMainBlock.id} · ${activeMainBlockRegion(activeMainBlock)}`}</strong>
+            <small>{activeMaterialization === "verified-baseline" ? "Reference evidence retained outside the block grid" : blockBoundsLabel(activeMainBlock)}</small>
           </div>
           <span className={`main-block-status-pill ${activeMaterialization !== "planned" ? "verified" : ""}`}>
             {activeStatusLabel}
@@ -1394,14 +1347,14 @@ export function OceanGlobe({
           <span>Active main block</span>
           <select
             aria-label="Active main block"
-            value={activeMainBlock.id}
+            value={activeMaterialization === "verified-baseline" ? "" : activeMainBlock.id}
             onChange={(event) => {
               selectMainBlock(event.target.value);
               window.setTimeout(() => fitMainBlock(event.target.value), 0);
             }}
           >
-            <option value={CURRENT_VERIFIED_BASELINE.id}>BASE-GLORYS-001 · verified 67–70°E / 12–14°N</option>
-            {INDIAN_OCEAN_MAIN_BLOCKS.map((block) => (
+            <option value="" disabled>Select an ocean-intersecting block</option>
+            {OCEAN_INTERSECTING_MAIN_BLOCKS.map((block) => (
               <option key={block.id} value={block.id}>
                 {block.id} · {block.region} · {block.west}–{block.east}°E / {block.south}–{block.north}°N
               </option>
@@ -1409,18 +1362,18 @@ export function OceanGlobe({
           </select>
         </label>
         <div className="main-block-globe-stats" aria-label="Main block materialization status">
-          <div><span>Logical grid</span><strong>{TARGET_BLOCK_COUNT} blocks</strong></div>
+          <div><span>Ocean blocks</span><strong>{OCEAN_INTERSECTING_BLOCK_COUNT} retained</strong></div>
+          <div><span>Land-only removed</span><strong>{LAND_ONLY_BLOCK_COUNT}</strong></div>
           <div><span>Source-backed pilots</span><strong>25 materialized</strong></div>
-          <div><span>Independent baseline</span><strong>1 verified</strong></div>
         </div>
         <div className="main-block-grid-key" aria-label="Block map legend">
-          <span><i /> Planned footprint</span>
-          <span className="verified"><i /> Source-backed / verified</span>
+          <span><i /> Light yellow · mixed/coastal</span>
+          <span className="verified"><i /> Dark yellow · ocean-dominant</span>
           <span className="active"><i /> Active selection</span>
         </div>
         <div className="main-block-globe-actions">
-          <button type="button" onClick={() => fitMainBlock()}>Fit selected block</button>
-          <button type="button" onClick={fitIndianOceanBlocks}>Fit 140-block field</button>
+          <button type="button" disabled={activeMaterialization === "verified-baseline"} onClick={() => fitMainBlock()}>Fit selected block</button>
+          <button type="button" onClick={fitIndianOceanBlocks}>Fit ocean-block field</button>
           <button
             type="button"
             className="primary"
@@ -1429,13 +1382,10 @@ export function OceanGlobe({
           >
             Open in Water Column 3D
           </button>
-          <button type="button" onClick={() => { selectMainBlock(CURRENT_VERIFIED_BASELINE.id); fitMainBlock(CURRENT_VERIFIED_BASELINE.id); }}>
-            Verified baseline
-          </button>
         </div>
         <p className="main-block-globe-boundary-note">
           {activeMaterialization === "verified-baseline"
-            ? <>This footprint carries the <strong>independently model–observation validated GLORYS baseline</strong>.</>
+            ? <>The independently validated GLORYS baseline remains <strong>reference science only</strong> and is not drawn as a block footprint.</>
             : activeMaterialization === "pilot"
               ? <>This footprint carries a <strong>genuine source-backed GLORYS pilot</strong>; no pilot-specific independent observation validation is implied.</>
               : <>This footprint is integrated into the Earth model but carries <strong>no copied or synthetic ocean values</strong> until materialized from source data.</>}
@@ -1540,7 +1490,7 @@ export function OceanGlobe({
         <div className="journey-stops" aria-live="polite">
           <span className={introPhase === "earth" ? "active" : ""}>01 Earth</span><i aria-hidden="true">→</i>
           <span className={introPhase === "india" ? "active" : ""}>02 India</span><i aria-hidden="true">→</i>
-          <span className={introPhase === "flying" || introPhase === "region" ? "active" : ""}>03 140-block ocean field</span>
+          <span className={introPhase === "flying" || introPhase === "region" ? "active" : ""}>03 112-block ocean field</span>
         </div>
         <button
           type="button"
@@ -1571,32 +1521,23 @@ export function OceanGlobe({
             ? "One ocean. One connected system."
             : introPhase === "india"
               ? "From national context to the Indian Ocean."
-              : "140 geographic targets with source-backed materialization where evidence exists."}
+              : "112 ocean-intersecting targets with source-backed materialization where evidence exists."}
         </strong>
         <small>
           {introPhase === "earth"
             ? "Ocean Canvas starts at planetary scale so model fields, currents and in-situ observations stay anchored to real geography before we zoom into evidence."
             : introPhase === "india"
               ? "We narrow to the northern Indian Ocean, where INCOIS multi-time analysis adds genuine temporal breadth to the verified model baseline."
-              : "60–100°E · 5–25°N · 140 selectable target footprints; 25 genuine GLORYS pilots are source-backed while the 67–70°E · 12–14°N baseline remains the independently model–observation validated reference."}
+              : "60–100°E · 5–25°N · 112 ocean-intersecting target footprints; 28 zero-ocean land cells are suppressed. The verified GLORYS baseline remains reference evidence and is no longer drawn as a competing block footprint."}
         </small>
       </div>}
-      {canEnterWaterColumn && introPhase === "region" && <div className="field-entry-actions">
-        <button type="button" className="study-region-entry" aria-label="Enter Water Column 3D" onClick={() => enterWaterColumnRef.current()}>
-          <span>LOOK BENEATH THE SURFACE</span><strong>Enter Water Column 3D</strong>
-          <small>{regionEntryArmed ? "Click the ocean field, or enter here" : "Point inspection is on · enter 3D here"}</small>
-        </button>
-        <button type="button" className="field-inspect-toggle" aria-pressed={!regionEntryArmed} onClick={() => {
-          regionEntryArmedRef.current = !regionEntryArmed;
-          setRegionEntryArmed(!regionEntryArmed);
-        }}>{regionEntryArmed ? "Inspect points on map" : "Enable field-click entry"}</button>
-      </div>}
+
       <div className="globe-overlay top-left judge-summary">
         <div>
           <span className="live-dot" />
           <strong>INDIAN OCEAN · INTEGRATED MAIN-BLOCK FIELD</strong>
         </div>
-        <span>{TARGET_BLOCK_COUNT} target footprints · active {activeMainBlock.id} · 25 source-backed pilots + 1 independently validated baseline · {profiles.length} Argo comparison profiles</span>
+        <span>{OCEAN_INTERSECTING_BLOCK_COUNT} ocean-intersecting footprints · {LAND_ONLY_BLOCK_COUNT} land-only suppressed · active {activeMaterialization === "verified-baseline" ? "reference science" : activeMainBlock.id} · 25 source-backed pilots · {profiles.length} Argo comparison profiles</span>
         <small>
           {scalar?.label ?? (currents ? "Currents" : "Ocean field")}
           {field ? ` · ${field.depth_m.toFixed(2)} m` : ""}
@@ -1691,7 +1632,7 @@ export function OceanGlobe({
       </div>
 
       <div className="globe-overlay interaction-hint">
-        Drag to orbit · wheel to zoom · Fit returns to the selected block · click evidence to inspect
+        Drag to orbit · wheel to zoom · click a yellow block to select · click evidence to inspect
       </div>
       <div className="globe-overlay legend-card">
         <span>{legendLabel}</span>
