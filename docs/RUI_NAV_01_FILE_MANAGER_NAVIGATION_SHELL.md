@@ -3,8 +3,9 @@
 **Project:** SIH26067 · Ocean Canvas · The Optimizers  
 **Workstream:** RUI-NAV — Navigation, Information Architecture & Feature Consolidation  
 **Phase:** RUI-NAV-01  
-**Implementation base:** `1ec8fdad3f45eaa8ed29012f9b843c215050fcd9`  
-**Dependency state:** NAV-00 merged; RUI-02 merged; 3DB-03 merged; RUI-COORD-00 merged  
+**Initial implementation base:** `1ec8fdad3f45eaa8ed29012f9b843c215050fcd9`  
+**Fresh-main reconciliation checkpoint:** `d1fe5a95e1ead5f6a55a77c869987997bda0010a`  
+**Dependency state:** NAV-00 merged; RUI-02 merged; RUI-COORD-00 merged; 3DB-03 merged; 3DB-04 merged  
 **Runtime scope:** navigation structure only
 
 ---
@@ -72,10 +73,12 @@ The existing RUI-01 shell is composed rather than replaced. NAV-01 adds:
 - canonical directory groups from `NAVIGATION_TREE`;
 - semantic `tree` / `treeitem` structure;
 - explicit directory-view markers for each root group;
-- `aria-current="page"` on the active workspace;
+- `aria-current="page"` on the active workspace treeitem;
 - canonical `Ocean Canvas / Directory / Workspace` breadcrumb;
 - active-directory state on the shell root;
 - the same desktop collapse and mobile drawer behavior already verified by RUI-01.
+
+Each semantic `treeitem` contains the existing real workspace `button`. This preserves the frozen semantic hierarchy while maintaining backward compatibility with the established judge-flow/browser interactions and keyboard/button behavior.
 
 ### `frontend/src/rui-nav-file-manager.css`
 
@@ -89,19 +92,23 @@ Only minimal structural breadcrumb/directory presentation is added. Broad visual
 
 NAV-01 does not move scientific context into the tree and does not create a second scientific state store. `ScientificContextHeader`, `WorkspaceContextHost`, and the existing scientific-context runtime remain authoritative.
 
-### 3DB-03 geography remains authoritative
+### 3DB-03 geography and 3DB-04 Cesium science gating remain authoritative
 
 NAV-01 does not alter:
 
-- geographic block ownership;
-- 140-cell target geometry;
+- geographic block ownership or the 140-cell target geometry;
 - pilot/materialized/planned state;
 - source-backed payload eligibility;
-- renderer data contracts.
+- the 3DB-04 fail-closed Cesium scientific rendering contract;
+- active-block geographic bounds used by Cesium;
+- native coordinate/time/depth validation;
+- current-vector scientific semantics.
+
+The concurrent 3DB-04 merge is a scientific-rendering dependency, not navigation ownership. NAV-01 consumes the resulting production state without reimplementing or relabeling it.
 
 ### RUI presentation ownership remains intact
 
-NAV-01 supplies structure and semantic state only. It does not perform the later RUI-VIS-01 visual redesign. Existing shell behavior, theme handling, reduced-motion behavior, desktop collapse, mobile drawer and focus restoration are preserved.
+NAV-01 supplies structure and semantic state only. It does not perform the later RUI visual redesign. Existing shell behavior, theme handling, reduced-motion behavior, desktop collapse, mobile drawer and focus restoration are preserved.
 
 ---
 
@@ -118,7 +125,8 @@ No changes are made to:
 - comparison or anomaly methods;
 - provenance/evidence payloads;
 - materialized block files/checksums;
-- Cesium or Water Column renderer calculations.
+- 3DB-04 Cesium rendering eligibility or calculations;
+- Water Column renderer calculations.
 
 Navigation contains hierarchy only. Scientific source/model state remains outside the tree.
 
@@ -130,19 +138,21 @@ RUI-NAV-01 is complete only when all of the following are true:
 
 1. root groups are exactly `EXPLORE`, `ANALYSE`, `DATA`, `SCIENCE` in frozen order;
 2. all six current workspaces have exactly one canonical parent;
-3. active workspace exposes `aria-current="page"`;
+3. active workspace treeitem exposes `aria-current="page"`;
 4. canonical breadcrumb resolves `Ocean Canvas / root directory / workspace`;
 5. semantic directory states expose the frozen child membership;
 6. all existing route ids and deep links remain valid;
-7. desktop sidebar collapse/expand remains functional;
-8. mobile drawer open/close/Escape/focus restoration remains functional;
-9. RUI-02 scientific context remains outside the navigation tree;
-10. no scientific, renderer, data, materialization or provenance behavior changes;
-11. TypeScript/build/browser acceptance is green on the exact branch head;
-12. branch is race-checked against fresh `main` before merge;
-13. exact merge commit standard CI is green;
-14. GitHub Pages deploy succeeds;
-15. public HTTPS and live Chromium judge-flow verification succeed.
+7. established workspace buttons remain operable inside the semantic treeitems;
+8. desktop sidebar collapse/expand remains functional;
+9. mobile drawer open/close/Escape/focus restoration remains functional;
+10. RUI-02 scientific context remains outside the navigation tree;
+11. 3DB-03 geography and 3DB-04 scientific Cesium gating remain unchanged by NAV-01;
+12. no scientific, renderer, data, materialization or provenance behavior changes;
+13. TypeScript/build/browser acceptance is green on the exact branch head;
+14. branch is race-checked against fresh `main` before merge;
+15. exact merge commit standard CI is green;
+16. GitHub Pages deploy succeeds;
+17. public HTTPS and live Chromium judge-flow verification succeed.
 
 ---
 
@@ -163,6 +173,8 @@ The following are **not NAV-01 work** and remain intentionally unchanged:
 
 ---
 
-## 8. Next integration unlock
+## 8. Integration checkpoint and next unlock
 
-A verified NAV-01 merge unlocks **RUI-VIS-01 — File-Manager Shell Visual Integration** for Chat 1. Structurally, the next RUI-NAV phase remains **NAV-02 — 3D Explorer Consolidation**.
+At the fresh-main reconciliation checkpoint, 3DB-04 is already merged into production. NAV-01 therefore remains responsible only for the navigation side of the first combined integration gate and must preserve 3DB-04 unchanged.
+
+A verified NAV-01 merge unlocks the next RUI visual-integration work for the file-manager shell. Structurally, the next RUI-NAV phase remains **NAV-02 — 3D Explorer Consolidation**.
