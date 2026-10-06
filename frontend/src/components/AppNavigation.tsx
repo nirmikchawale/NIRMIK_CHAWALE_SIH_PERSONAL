@@ -196,24 +196,28 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
                   const item = pageItem(pageId);
                   const active = page === item.id;
                   return (
-                    <button
+                    <div
                       key={item.id}
-                      type="button"
                       role="treeitem"
                       aria-level={2}
-                      className={`rui-nav-item ${active ? "active" : ""}`}
-                      onClick={() => navigateFromSidebar(item.id)}
-                      title={`${item.label} — ${item.description}`}
                       aria-label={item.label}
                       aria-current={active ? "page" : undefined}
-                      data-workspace-id={item.id}
                     >
-                      <span className="rui-nav-short" aria-hidden="true">{item.short}</span>
-                      <span className="rui-nav-copy">
-                        <strong>{item.label}</strong>
-                        <small>{item.description}</small>
-                      </span>
-                    </button>
+                      <button
+                        type="button"
+                        className={`rui-nav-item ${active ? "active" : ""}`}
+                        onClick={() => navigateFromSidebar(item.id)}
+                        title={`${item.label} — ${item.description}`}
+                        aria-label={item.label}
+                        data-workspace-id={item.id}
+                      >
+                        <span className="rui-nav-short" aria-hidden="true">{item.short}</span>
+                        <span className="rui-nav-copy">
+                          <strong>{item.label}</strong>
+                          <small>{item.description}</small>
+                        </span>
+                      </button>
+                    </div>
                   );
                 })}
               </div>
