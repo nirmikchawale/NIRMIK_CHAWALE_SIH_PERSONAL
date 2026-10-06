@@ -40,7 +40,7 @@ def test_3db04_renderer_contract_is_fail_closed_and_source_coordinate_preserving
 
     assert 'MAIN_BLOCK_CESIUM_RENDERER_VERSION = "3db-04-v1"' in source
     assert "deriveMainBlockCapabilities" in source
-    assert "capability.cesiumReady" in source
+    assert "deriveMainBlockCapabilities(block).cesiumReady" in source
     assert "Scientific Cesium rendering is locked" in source
     assert "nativeCoordinatesPreserved: true" in source
     assert "nativeDepthPreserved: true" in source
