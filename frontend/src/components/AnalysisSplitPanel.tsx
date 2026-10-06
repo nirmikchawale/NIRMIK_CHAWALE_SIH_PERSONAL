@@ -188,6 +188,15 @@ export function AnalysisSplitPanel({ catalog, variable, depthM, time, detail, on
               onPointerDown={syncFromPointer}
               onPointerLeave={() => setHoveredLevelIndex(null)}
             >
+              <rect
+                x="0"
+                y="0"
+                width={CHART_WIDTH}
+                height={CHART_HEIGHT}
+                fill="transparent"
+                pointerEvents="all"
+                className="analysis-interaction-hit-area"
+              />
               <line x1="18" x2="342" y1="18" y2="18" className="analysis-grid-line" />
               <line x1="18" x2="342" y1="125" y2="125" className="analysis-grid-line" />
               <line x1="18" x2="342" y1="232" y2="232" className="analysis-grid-line" />
