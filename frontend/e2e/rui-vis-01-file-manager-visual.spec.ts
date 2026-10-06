@@ -51,9 +51,7 @@ test("RUI-VIS-01 gives the frozen NAV-01 tree readable desktop hierarchy and del
 
   await sidebar.getByRole("button", { name: "Collapse workspace sidebar" }).click();
   await expect(root).toHaveAttribute("data-collapsed", "true");
-  const collapsedBox = await root.boundingBox();
-  expect(collapsedBox).not.toBeNull();
-  expect(collapsedBox!.width).toBeLessThanOrEqual(76);
+  await expect.poll(async () => (await root.boundingBox())?.width ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(76);
   await expect(breadcrumb).toBeHidden();
   await expect(explorer.locator(".rui-nav-copy")).toBeHidden();
   await expect(explorer.locator(".rui-nav-short")).toBeVisible();
@@ -128,8 +126,8 @@ test("RUI-VIS-01 mobile drawer keeps touch targets, breadcrumb context, Escape r
   }
   expect(await numericStyle(sidebar.getByRole("button", { name: "Close workspace navigation" }), "minHeight")).toBeGreaterThanOrEqual(42);
 
-  // The scientific context is still its own always-visible shell row; the drawer contains hierarchy only.
-  await expect(page.locator(".mobile-scientific-context")).toBeVisible();
+  // The scientific context remains a separate shell surface; the drawer contains hierarchy only.
+  await expect(page.getByTestId("scientific-context-header")).toBeVisible();
   await expect(sidebar.getByRole("tree", { name: "Ocean Canvas feature directory" })).not.toContainText("GLORYS12V1");
 
   await page.keyboard.press("Escape");
