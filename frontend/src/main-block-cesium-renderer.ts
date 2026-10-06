@@ -2,6 +2,7 @@ import { deriveMainBlockCapabilities, type ScientificMainBlock } from "./main-bl
 import type { CurrentsResponse, FieldResponse, VolumeResponse } from "./types";
 
 export const MAIN_BLOCK_CESIUM_RENDERER_VERSION = "3db-04-v1";
+export const MAIN_BLOCK_GLORYS_DATASET_ID = "cmems_mod_glo_phy_my_0.083deg_P1D-m";
 const COORDINATE_EPSILON_DEGREES = 1e-6;
 const SPEED_EPSILON = 1e-8;
 
@@ -20,6 +21,7 @@ interface CesiumRenderPlanBase {
   blockId: string;
   blockName: string;
   kind: CesiumScientificRenderKind;
+  materialization: ScientificMainBlock["materialization"];
   lifecycleStatus: ReturnType<typeof deriveMainBlockCapabilities>["lifecycleStatus"];
   evidenceClass: ReturnType<typeof deriveMainBlockCapabilities>["provenance"]["evidenceClass"];
   geographicBounds: ReturnType<typeof deriveMainBlockCapabilities>["geographicBounds"];
@@ -55,6 +57,7 @@ function blockedPlan(
     blockId: capability.id,
     blockName: capability.name,
     kind,
+    materialization: block.materialization,
     lifecycleStatus: capability.lifecycleStatus,
     evidenceClass: capability.provenance.evidenceClass,
     geographicBounds: capability.geographicBounds,
@@ -150,12 +153,23 @@ function allowedBase(
     blockId: capability.id,
     blockName: capability.name,
     kind,
+    materialization: block.materialization,
     lifecycleStatus: capability.lifecycleStatus,
     evidenceClass: capability.provenance.evidenceClass,
     geographicBounds: capability.geographicBounds,
     nativeCoordinatesPreserved: true,
     nativeDepthPreserved: true
   };
+}
+
+/**
+ * The 3DB scientific block contract governs GLORYS block payloads only.
+ * INCOIS operational/chlorophyll and other independently sourced overlays use
+ * their own source-integrity contracts and must not be rejected merely because
+ * their genuine timestamps or variables differ from a GLORYS block registry.
+ */
+export function isMainBlockGlorysField(field: FieldResponse): boolean {
+  return field.provenance.dataset_id === MAIN_BLOCK_GLORYS_DATASET_ID;
 }
 
 export function canCesiumRenderMainBlock(block: ScientificMainBlock): boolean {
@@ -166,6 +180,11 @@ export function buildCesiumFieldRenderPlan(
   block: ScientificMainBlock,
   field: FieldResponse
 ): CesiumMainBlockRenderPlan {
+  if (!isMainBlockGlorysField(field)) {
+    throw new Error(
+      `3DB-04 Cesium contract: dataset ${field.provenance.dataset_id} is not a GLORYS main-block payload.`
+    );
+  }
   if (!canCesiumRenderMainBlock(block)) return blockedPlan(block, "scalar-slice");
 
   const variable = assertVariableAvailable(block, field.variable);
