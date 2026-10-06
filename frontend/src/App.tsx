@@ -1282,7 +1282,7 @@ export default function App() {
               </div>
             </div>
           ) : page === "telemetry" ? (
-            <TelemetryPage catalog={catalog} provenance={provenance} />
+            <TelemetryPage catalog={catalog} provenance={provenance} argoProfiles={profiles} importedProfiles={importedProfiles} />
           ) : page === "compare" ? (
             <ComparisonPage
               profiles={profiles}
