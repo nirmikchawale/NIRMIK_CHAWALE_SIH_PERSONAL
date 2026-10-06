@@ -1,0 +1,82 @@
+/* RUI-NAV-01 — structural file-manager navigation primitives.
+   Visual-system refinement remains owned by the RUI workstream. */
+
+.rui-nav-breadcrumb {
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 8px 8px 7px;
+  border-bottom: 1px solid color-mix(in srgb, var(--wb-line) 58%, transparent);
+}
+
+.rui-nav-breadcrumb ol {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rui-nav-breadcrumb li {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  color: var(--wb-muted);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.rui-nav-breadcrumb li + li::before {
+  content: "/";
+  flex: 0 0 auto;
+  margin-inline: 5px;
+  color: color-mix(in srgb, var(--wb-muted) 66%, transparent);
+}
+
+.rui-nav-breadcrumb li:last-child {
+  flex: 1 1 auto;
+  color: var(--wb-text);
+}
+
+.rui-nav-breadcrumb li span {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rui-nav-group-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rui-nav-group-label small {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  min-height: 18px;
+  padding-inline: 5px;
+  border: 1px solid color-mix(in srgb, var(--wb-line) 74%, transparent);
+  border-radius: 999px;
+  color: var(--wb-muted);
+  font-size: 8px;
+  line-height: 1;
+}
+
+.rui-nav-group[data-directory-view] {
+  min-width: 0;
+}
+
+.app-navigation-root[data-collapsed="true"] .rui-nav-breadcrumb,
+.app-navigation-root[data-collapsed="true"] .rui-nav-group-label small {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .rui-nav-breadcrumb {
+    padding-inline: 8px;
+  }
+}
