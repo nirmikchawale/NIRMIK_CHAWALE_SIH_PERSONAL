@@ -18,12 +18,12 @@ test("RUI-01 desktop shell provides grouped collapsible left navigation without 
   await expect(root).toHaveAttribute("data-collapsed", "false");
   await expect(sidebar).toBeVisible();
 
-  for (const group of ["EXPLORE", "ANALYSE", "DATA", "EVIDENCE"]) {
+  for (const group of ["EXPLORE", "ANALYSE", "DATA", "SCIENCE"]) {
     await expect(sidebar.locator(`[data-nav-group="${group}"]`)).toBeVisible();
   }
   await expect(sidebar.locator('[data-nav-group="DATA"]')).toContainText("Data Lab");
-  await expect(sidebar.locator('[data-nav-group="EVIDENCE"]')).toContainText("Science & System");
-  await expect(sidebar.getByRole("button", { name: "3D Explorer" })).toHaveAttribute("aria-current", "page");
+  await expect(sidebar.locator('[data-nav-group="SCIENCE"]')).toContainText("Science System");
+  await expect(sidebar.getByRole("treeitem", { name: "3D Explorer" })).toHaveAttribute("aria-current", "page");
 
   const expandedWidth = (await root.boundingBox())?.width ?? 0;
   await sidebar.getByRole("button", { name: "Collapse workspace sidebar" }).click();
@@ -34,20 +34,20 @@ test("RUI-01 desktop shell provides grouped collapsible left navigation without 
   await sidebar.getByRole("button", { name: "Expand workspace sidebar" }).click();
   await expect(root).toHaveAttribute("data-collapsed", "false");
 
-  await sidebar.getByRole("button", { name: "Telemetry" }).click();
+  await sidebar.getByRole("treeitem", { name: "Telemetry" }).click();
   await expect(page).toHaveURL(/#\/telemetry$/);
   await expect(page.locator('main[data-page="telemetry"]')).toBeVisible();
-  await expect(sidebar.getByRole("button", { name: "Telemetry" })).toHaveAttribute("aria-current", "page");
+  await expect(sidebar.getByRole("treeitem", { name: "Telemetry" })).toHaveAttribute("aria-current", "page");
 
-  await sidebar.getByRole("button", { name: "Model vs Observation" }).click();
+  await sidebar.getByRole("treeitem", { name: "Model vs Observation" }).click();
   await expect(page).toHaveURL(/#\/compare$/);
   await expect(page.locator('main[data-page="compare"]')).toBeVisible();
 
-  await sidebar.getByRole("button", { name: "Data Lab" }).click();
+  await sidebar.getByRole("treeitem", { name: "Data Lab" }).click();
   await expect(page).toHaveURL(/#\/data-lab$/);
   await expect(page.locator('main[data-page="data-lab"]')).toBeVisible();
 
-  await sidebar.getByRole("button", { name: "Science & System" }).click();
+  await sidebar.getByRole("treeitem", { name: "Science System" }).click();
   await expect(page).toHaveURL(/#\/about$/);
   await expect(page.locator('main[data-page="about"]')).toBeVisible();
 });
@@ -72,7 +72,7 @@ test("RUI-01 mobile shell uses a compact dock and dismissible navigation drawer"
   await expect(sidebar).not.toHaveAttribute("aria-hidden", "true");
   await expect(sidebar).toBeVisible();
 
-  await sidebar.getByRole("button", { name: "Telemetry" }).click();
+  await sidebar.getByRole("treeitem", { name: "Telemetry" }).click();
   await expect(page).toHaveURL(/#\/telemetry$/);
   await expect(root).toHaveAttribute("data-mobile-open", "false");
   await expect(dock).toContainText("Telemetry");
