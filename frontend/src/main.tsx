@@ -31,6 +31,7 @@ import "./rui-shell.css";
 import "./rui-shell-compat.css";
 import "./rui-context-header.css";
 import "./rui-context-header-mobile-fix.css";
+import "./rui-nav-file-manager.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
