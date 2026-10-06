@@ -3,8 +3,7 @@ import { createRoot } from "react-dom/client";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 
 import App from "./App";
-import { Phase35MainBlockEngine } from "./components/Phase35MainBlockEngine";
-import { Phase3ArabianAtlas } from "./components/Phase3ArabianAtlas";
+import { ExplorerConsolidationHost } from "./components/ExplorerConsolidationHost";
 import { PilotMainBlockRendererBridge } from "./components/PilotMainBlockRendererBridge";
 import { WorkspaceContextHost } from "./components/WorkspaceContextHost";
 import "./styles.css";
@@ -32,14 +31,14 @@ import "./rui-shell-compat.css";
 import "./rui-context-header.css";
 import "./rui-context-header-mobile-fix.css";
 import "./rui-nav-file-manager.css";
+import "./rui-nav-explorer.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <>
       <App />
       <WorkspaceContextHost />
-      <Phase35MainBlockEngine />
-      <Phase3ArabianAtlas />
+      <ExplorerConsolidationHost />
       <PilotMainBlockRendererBridge />
     </>
   </StrictMode>
