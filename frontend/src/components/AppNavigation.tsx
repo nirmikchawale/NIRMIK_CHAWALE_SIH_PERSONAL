@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { PageId } from "../navigation";
-import { PAGE_ITEMS } from "../navigation";
+import {
+  NAVIGATION_TREE,
+  breadcrumbForPage,
+  navigationGroupForPage,
+  pageItem
+} from "../navigation";
 
 interface Props {
   page: PageId;
@@ -11,13 +16,6 @@ interface Props {
 
 const SIDEBAR_STORAGE_KEY = "ocean-canvas-rui-sidebar-collapsed";
 const MOBILE_QUERY = "(max-width: 900px)";
-
-const NAV_GROUPS: Array<{ label: string; pages: PageId[] }> = [
-  { label: "EXPLORE", pages: ["explore"] },
-  { label: "ANALYSE", pages: ["telemetry", "compare", "anomaly"] },
-  { label: "DATA", pages: ["data-lab"] },
-  { label: "EVIDENCE", pages: ["about"] }
-];
 
 function initialCollapsed(): boolean {
   try {
@@ -37,8 +35,9 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
   const [mobileLayout, setMobileLayout] = useState(initialMobileLayout);
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
 
-  const currentPage = PAGE_ITEMS.find((item) => item.id === page) ?? PAGE_ITEMS[0];
-  const currentGroup = NAV_GROUPS.find((group) => group.pages.includes(page))?.label ?? "EXPLORE";
+  const currentPage = pageItem(page);
+  const currentGroup = navigationGroupForPage(page);
+  const breadcrumbs = breadcrumbForPage(page);
   const mobileClosed = mobileLayout && !mobileOpen;
   const sidebarInert = focusMode || mobileClosed;
 
@@ -94,6 +93,7 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
       data-testid="app-navigation-root"
       data-collapsed={collapsed ? "true" : "false"}
       data-mobile-open={mobileOpen ? "true" : "false"}
+      data-nav-directory={currentGroup.id}
     >
       <div
         className="mobile-workspace-nav"
@@ -114,7 +114,7 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
           <span>Workspaces</span>
         </button>
         <div className="mobile-workspace-current" aria-live="polite">
-          <span>{currentGroup}</span>
+          <span>{currentGroup.label}</span>
           <strong>{currentPage.label}</strong>
         </div>
       </div>
@@ -163,35 +163,69 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
           </button>
         </div>
 
-        <div className="rui-sidebar-groups">
-          {NAV_GROUPS.map((group) => (
-            <div className="rui-nav-group" data-nav-group={group.label} key={group.label}>
-              <div className="rui-nav-group-label">{group.label}</div>
-              <div className="rui-nav-group-items">
+        <div className="rui-nav-breadcrumb" role="navigation" aria-label="Workspace breadcrumb" data-testid="workspace-breadcrumb">
+          <ol>
+            {breadcrumbs.map((crumb, index) => (
+              <li key={`${crumb.kind}-${crumb.label}`} aria-current={index === breadcrumbs.length - 1 ? "page" : undefined}>
+                <span>{crumb.label}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <div
+          className="rui-sidebar-groups"
+          role="tree"
+          aria-label="Ocean Canvas feature directory"
+          data-testid="workspace-directory-tree"
+        >
+          {NAVIGATION_TREE.map((group) => (
+            <section
+              className="rui-nav-group"
+              data-nav-group={group.label}
+              data-directory-view={group.id}
+              aria-labelledby={`rui-nav-group-${group.id}`}
+              key={group.id}
+            >
+              <div className="rui-nav-group-label" id={`rui-nav-group-${group.id}`}>
+                <span>{group.label}</span>
+                <small>{group.pages.length}</small>
+              </div>
+              <div className="rui-nav-group-items" role="group" aria-label={`${group.directoryLabel} directory`}>
                 {group.pages.map((pageId) => {
-                  const item = PAGE_ITEMS.find((candidate) => candidate.id === pageId);
-                  if (!item) return null;
+                  const item = pageItem(pageId);
                   const active = page === item.id;
                   return (
-                    <button
+                    <div
                       key={item.id}
-                      type="button"
-                      className={`rui-nav-item ${active ? "active" : ""}`}
-                      onClick={() => navigateFromSidebar(item.id)}
-                      title={`${item.label} — ${item.description}`}
+                      role="treeitem"
+                      aria-level={2}
                       aria-label={item.label}
                       aria-current={active ? "page" : undefined}
+                      onClick={() => navigateFromSidebar(item.id)}
                     >
-                      <span className="rui-nav-short" aria-hidden="true">{item.short}</span>
-                      <span className="rui-nav-copy">
-                        <strong>{item.label}</strong>
-                        <small>{item.description}</small>
-                      </span>
-                    </button>
+                      <button
+                        type="button"
+                        className={`rui-nav-item ${active ? "active" : ""}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          navigateFromSidebar(item.id);
+                        }}
+                        title={`${item.label} — ${item.description}`}
+                        aria-label={item.label}
+                        data-workspace-id={item.id}
+                      >
+                        <span className="rui-nav-short" aria-hidden="true">{item.short}</span>
+                        <span className="rui-nav-copy">
+                          <strong>{item.label}</strong>
+                          <small>{item.description}</small>
+                        </span>
+                      </button>
+                    </div>
                   );
                 })}
               </div>
-            </div>
+            </section>
           ))}
         </div>
       </nav>

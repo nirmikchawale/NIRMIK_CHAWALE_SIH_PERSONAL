@@ -32,13 +32,7 @@ for (const width of [1440, 390]) {
     await expect(contextHeader).toBeInViewport();
     await expect(page.locator(".science-footer")).not.toBeVisible();
 
-    for (const [label, route] of [
-      ["Telemetry", "telemetry"],
-      ["Model vs Observation", "compare"],
-      ["Anomaly Screening", "anomaly"],
-      ["Data Lab", "data-lab"],
-      ["Science & System", "about"],
-    ]) {
+    for (const route of ["telemetry", "compare", "anomaly", "data-lab", "about"]) {
       if (width <= 900) {
         const mobileTrigger = page.getByRole("button", { name: "Open workspace navigation" });
         await expect(mobileTrigger).toBeVisible();
@@ -46,7 +40,10 @@ for (const width of [1440, 390]) {
         await expect(page.getByRole("navigation", { name: "Ocean Canvas workspaces" })).toBeVisible();
       }
 
-      await page.getByRole("button", { name: label, exact: true }).click();
+      // NAV-01 exposes a stable workspace identifier while intentionally changing
+      // workspace controls from generic button semantics to semantic treeitems.
+      // Keep this scroll-contract regression independent of that presentation role.
+      await page.locator(`[data-workspace-id="${route}"]`).click();
       const content = page.locator(`main[data-page="${route}"]`);
       await expect(content).toBeVisible();
 

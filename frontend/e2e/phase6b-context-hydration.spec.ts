@@ -70,7 +70,7 @@ test("Phase 6B keeps a deep-linked pilot block active when navigation cleans the
   await expect(contextBar).toHaveAttribute("data-block-materialization", "pilot");
   await expect.poll(() => page.evaluate(() => localStorage.getItem("oceancanvas-active-main-block-v1"))).toBe("IO-001");
 
-  await page.getByRole("button", { name: "Telemetry" }).click();
+  await page.locator('[data-workspace-id="telemetry"]').click();
   await expect(page).toHaveURL(/#\/telemetry$/);
   await expect(page.getByTestId("scientific-context-bar")).toHaveAttribute("data-block-id", "IO-001");
   await expect(page.getByTestId("scientific-context-bar")).toHaveAttribute("data-block-materialization", "pilot");

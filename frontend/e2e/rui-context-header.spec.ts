@@ -50,7 +50,7 @@ test("RUI-02 desktop moves shared science context out of navigation into compact
   await expect(header).toContainText("Geographic selection only");
   await expect(header).toContainText(/remain anchored to verified source evidence/i);
 
-  await sidebar.getByRole("button", { name: "Telemetry" }).click();
+  await sidebar.locator('[data-workspace-id="telemetry"]').click();
   await expect(page).toHaveURL(/#\/telemetry$/);
   await expect(header).toBeVisible();
   await expect(context).toHaveAttribute("data-block-id", "IO-047");
@@ -96,7 +96,7 @@ test("RUI-02 mobile keeps navigation and scientific context independently access
   await trigger.click();
   const sidebar = page.getByRole("navigation", { name: "Ocean Canvas workspaces" });
   await expect(sidebar).toBeVisible();
-  await sidebar.getByRole("button", { name: "Telemetry" }).click();
+  await sidebar.locator('[data-workspace-id="telemetry"]').click();
   await expect(page).toHaveURL(/#\/telemetry$/);
   await expect(navRoot).toHaveAttribute("data-mobile-open", "false");
   await expect(header).toBeVisible();
