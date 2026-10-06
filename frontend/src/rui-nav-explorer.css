@@ -3,9 +3,6 @@
 
 .explorer-consolidation-slot { display:contents; }
 
-/* NAV-02 moves these visible controls out of global header chrome. The original
-   App handlers remain mounted as hidden delegation targets so no scientific or
-   workspace state machinery is duplicated. */
 .ocean-workbench[data-page="explore"] .app-header > .header-status > .workspace-mode-switcher,
 .ocean-workbench[data-page="explore"] .app-header button[aria-label="Focus 3D"] {
   display:none!important;
@@ -171,8 +168,6 @@
   transform:none!important;
 }
 
-/* The renderer's established toolbar is the canonical Scene Controls home.
-   Keep it physically attached to the renderer instead of cloning its actions. */
 .station-workspace .renderer-tools {
   scroll-margin-top:110px;
 }

@@ -14,13 +14,16 @@ Contextual shortcuts may point to a capability, but they must not create a secon
 
 ## Production baseline consumed
 
-NAV-02 is built from the production tree containing:
+NAV-02 is reconciled on the production tree containing:
 
 - RUI-NAV-01 file-manager navigation shell;
+- RUI-VIS-01 file-manager shell visual integration;
 - RUI-02 workspace-owned scientific context (`ScientificContextHeader` / `WorkspaceContextHost`);
 - 3DB-03 geographic main-block ownership;
 - 3DB-04 fail-closed Cesium rendering contract;
 - 3DB-05 Geographic ↔ Water Column synchronization and canonical baseline/pilot/planned lifecycle identity.
+
+RUI-VIS-01 remains authoritative for the visual shell. NAV-02 adds Explorer-specific consolidation inside that shell and does not revert its route hierarchy, file-manager presentation, visual tokens, or responsive shell behavior.
 
 3DB-05 remains authoritative for scientific state. NAV-02 does not change block payload values, coordinate/time/depth validation, materialization state, source-backed eligibility, Water Column fail-closed behavior, current-vector semantics, provenance, or QC.
 
@@ -95,7 +98,7 @@ This approach is deliberate:
 - block engines now render in the actual Explorer workspace DOM instead of as global feature islands;
 - workspace/focus actions reuse existing App handlers instead of forking state ownership.
 
-The portal host observes route/workspace/focus state only for presentation and delegation. It does not own scientific state.
+The portal host observes only the workbench attributes required for route/workspace/focus presentation. Startup and hash-route attachment are bounded and do not observe body-wide subtree mutations.
 
 ## Scientific invariants
 
@@ -128,7 +131,7 @@ NAV-02 is not complete until all of the following are true on the exact branch h
 1. TypeScript / React / Cesium build succeeds.
 2. Existing scientific API/fallback suite succeeds.
 3. Existing 3DB-03/04/05 browser coverage succeeds.
-4. Existing NAV-01 file-manager coverage succeeds.
+4. Existing NAV-01 and VIS-01 shell coverage succeeds.
 5. NAV-02 browser acceptance confirms all eleven Explorer homes.
 6. Workspace mode changes still use production App behavior.
 7. Both block tools are visible inside the canonical Block System and no longer fixed launchers.
@@ -157,4 +160,4 @@ NAV-02 does **not** implement later-phase ownership:
 
 ## Completion rule
 
-RUI-NAV-02 may be marked **COMPLETE / MERGED / DEPLOYED / LIVE / VERIFIED** only after exact-head CI is green, a fresh-main race check passes, the PR is merged without dropping concurrent 3DB/RUI work, and exact-main tests + final-MVP + Pages + live Chromium verification all finish successfully.
+RUI-NAV-02 may be marked **COMPLETE / MERGED / DEPLOYED / LIVE / VERIFIED** only after exact-head CI is green, a fresh-main race check passes, the PR is merged without dropping concurrent 3DB/RUI/VIS work, and exact-main tests + final-MVP + Pages + live Chromium verification all finish successfully.

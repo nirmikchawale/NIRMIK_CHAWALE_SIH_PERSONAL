@@ -34,8 +34,6 @@ test("RUI-NAV-02 exposes one canonical 3D Explorer directory with all frozen hom
   ];
   for (const label of expected) await expect(directory.getByRole("button", { name: label })).toBeVisible();
 
-  // The legacy header switcher remains only as an App-state delegate; the visible
-  // canonical workspace control now lives in the Explorer directory.
   await expect(page.locator(".app-header > .header-status > .workspace-mode-switcher")).toBeHidden();
   const workspace = page.getByRole("group", { name: "Explorer workspace mode" });
   await expect(workspace).toBeVisible();
