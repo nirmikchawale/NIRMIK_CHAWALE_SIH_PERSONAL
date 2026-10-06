@@ -12,10 +12,11 @@ test("Phase 3.5D loads a genuine pilot into Geographic and Water Column 3D witho
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(liveUrl, { waitUntil: "domcontentloaded" });
 
-  // Establish a deterministic baseline once. Do not use addInitScript here: that
-  // would clear the key again during the intentional pilot activation reload.
+  // Establish a deterministic reference context once. 3DB-07 removes the old
+  // block-triggered page reload, so a window sentinel must survive activation.
   await page.evaluate((storageKey) => localStorage.removeItem(storageKey), ACTIVE_BLOCK_KEY);
   await page.reload({ waitUntil: "domcontentloaded" });
+  await page.evaluate(() => ((window as typeof window & { __blockSwitchSentinel?: string }).__blockSwitchSentinel = "alive"));
 
   await page.getByTestId("phase35-block-launcher").click();
   const dialog = page.getByRole("dialog", { name: "Indian Ocean Main Block Engine" });
@@ -26,10 +27,8 @@ test("Phase 3.5D loads a genuine pilot into Geographic and Water Column 3D witho
 
   const activate = page.getByTestId("phase35-activate-pilot");
   await expect(activate).toContainText("Load IO-001");
-  await Promise.all([
-    page.waitForEvent("load"),
-    activate.click()
-  ]);
+  await activate.click();
+  await expect.poll(() => page.evaluate(() => (window as typeof window & { __blockSwitchSentinel?: string }).__blockSwitchSentinel)).toBe("alive");
 
   await expect.poll(async () => page.evaluate((key) => localStorage.getItem(key), ACTIVE_BLOCK_KEY)).toBe("IO-001");
 
@@ -61,10 +60,8 @@ test("Phase 3.5D loads a genuine pilot into Geographic and Water Column 3D witho
   await expect(page.getByTestId("planned-main-block-shell")).toHaveCount(0);
 
   const returnToBaseline = page.getByTestId("pilot-return-baseline");
-  await Promise.all([
-    page.waitForEvent("load"),
-    returnToBaseline.click()
-  ]);
+  await returnToBaseline.click();
+  await expect.poll(() => page.evaluate(() => (window as typeof window & { __blockSwitchSentinel?: string }).__blockSwitchSentinel)).toBe("alive");
   await expect.poll(async () => page.evaluate((key) => localStorage.getItem(key), ACTIVE_BLOCK_KEY)).toBe("BASE-GLORYS-001");
   await expect(page.getByTestId("scientific-context-bar")).toHaveAttribute("data-block-id", "BASE-GLORYS-001", { timeout: 30_000 });
   await expect(page.getByTestId("pilot-renderer-bridge")).toHaveCount(0);
