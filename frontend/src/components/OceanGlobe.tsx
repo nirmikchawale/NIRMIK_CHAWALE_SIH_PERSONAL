@@ -1333,7 +1333,7 @@ export function OceanGlobe({
       >
         <div className="main-block-globe-heading">
           <div>
-            <span>INDIAN OCEAN OCEAN-BLOCK FIELD</span>
+            <span>INDIAN OCEAN BLOCK FIELD</span>
             <strong>{activeMaterialization === "verified-baseline" ? "Verified GLORYS reference · no block selected" : `${activeMainBlock.id} · ${activeMainBlockRegion(activeMainBlock)}`}</strong>
             <small>{activeMaterialization === "verified-baseline" ? "Reference evidence retained outside the block grid" : blockBoundsLabel(activeMainBlock)}</small>
           </div>
