@@ -54,9 +54,7 @@ test("Phase 6 materialized-block controls are live across workspaces and deep-li
   await expect(bar).toHaveAttribute("data-block-materialization", "pilot");
 
   const restoredDetails = bar.locator("details.scientific-context-details");
-  if (!(await restoredDetails.getAttribute("open"))) {
-    await restoredDetails.locator("summary").click();
-  }
+  await restoredDetails.locator("summary").click();
   await expect(restoredDetails).toHaveAttribute("open", "");
 
   const copied = page.getByRole("button", { name: "Copy shareable scientific context link" });
