@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 
 import { api } from "../api";
 import { IncoisOperationalPanel } from "../components/IncoisOperationalPanel";
+import { TelemetryDirectoryNav } from "../components/TelemetryDirectoryNav";
 import type {
   Catalog,
+  ImportedObservationProfile,
+  ProfileSummary,
   ProvenanceResponse,
   TelemetryDepthStat,
   TelemetryResponse,
@@ -16,6 +19,8 @@ import { publishScientificWorkspaceContext, readScientificWorkspaceContext } fro
 interface Props {
   catalog: Catalog;
   provenance: ProvenanceResponse | null;
+  argoProfiles: ProfileSummary[];
+  importedProfiles: ImportedObservationProfile[];
 }
 
 function linePoints(
@@ -473,7 +478,94 @@ function downloadTelemetryCsv(telemetry: TelemetryResponse) {
   URL.revokeObjectURL(url);
 }
 
-export function TelemetryPage({ catalog, provenance }: Props) {
+function TelemetrySensors({
+  argoProfiles,
+  importedProfiles
+}: {
+  argoProfiles: ProfileSummary[];
+  importedProfiles: ImportedObservationProfile[];
+}) {
+  const importedGroups = [
+    { id: "glider", label: "Glider" },
+    { id: "ctd", label: "CTD / XCTD" },
+    { id: "bgc", label: "BGC" },
+    { id: "other", label: "Other" }
+  ].map((group) => {
+    const profiles = importedProfiles.filter((profile) => profile.sensor_type === group.id);
+    return {
+      ...group,
+      profiles,
+      measurements: profiles.reduce((sum, profile) => sum + profile.records.length, 0)
+    };
+  }).filter((group) => group.profiles.length > 0);
+
+  const importedMeasurementCount = importedProfiles.reduce((sum, profile) => sum + profile.records.length, 0);
+
+  return (
+    <section
+      className="telemetry-card telemetry-sensors-card"
+      data-testid="rui-nav-03-sensors"
+      data-imported-profile-count={importedProfiles.length}
+      data-argo-profile-count={argoProfiles.length}
+    >
+      <div className="telemetry-card-heading">
+        <div>
+          <span>SENSORS</span>
+          <h3>Observation profiles available to Ocean Canvas</h3>
+        </div>
+        <strong>{argoProfiles.length + importedProfiles.length} profiles</strong>
+      </div>
+
+      <p>
+        This directory inventories the existing observation evidence only. Values remain source supplied
+        after validation; Telemetry does not reinterpret these profiles as independent model validation.
+      </p>
+
+      <div className="telemetry-sensor-grid">
+        <article>
+          <span>ARGO MATCHUPS</span>
+          <strong>{argoProfiles.length}</strong>
+          <small>eligible comparison profiles · detailed matchup science remains in Model vs Observation</small>
+        </article>
+        {importedGroups.map((group) => (
+          <article key={group.id}>
+            <span>{group.label.toUpperCase()}</span>
+            <strong>{group.profiles.length}</strong>
+            <small>{group.measurements.toLocaleString()} validated measurement rows</small>
+          </article>
+        ))}
+      </div>
+
+      {importedProfiles.length > 0 ? (
+        <div className="telemetry-sensor-list" aria-label="Telemetry observation profiles">
+          {importedProfiles.slice(0, 8).map((profile) => (
+            <article key={profile.id}>
+              <div>
+                <span>{profile.sensor_type.toUpperCase()}</span>
+                <strong>{profile.platform_id}</strong>
+              </div>
+              <small>{profile.records.length} rows · {profile.variables.join(" · ")} · {profile.source}</small>
+            </article>
+          ))}
+          {importedProfiles.length > 8 && (
+            <p>+ {importedProfiles.length - 8} additional shared observation profiles remain available to the Explorer observation layer.</p>
+          )}
+        </div>
+      ) : (
+        <div className="telemetry-inline-warning">
+          Verified Glider / CTD / BGC profiles are not available in this runtime. No placeholder measurements are created.
+        </div>
+      )}
+
+      <div className="telemetry-sensor-integrity">
+        <span>IMPORTED MEASUREMENTS</span>
+        <strong>{importedMeasurementCount.toLocaleString()}</strong>
+        <small>source values preserved · no synthetic measurements or timestamps</small>
+      </div>
+    </section>
+  );
+}
+export function TelemetryPage({ catalog, provenance, argoProfiles, importedProfiles }: Props) {
   const initialContext = useMemo(() => readScientificWorkspaceContext(), []);
   const initialDepthIndex = Math.min(
     Math.max(initialContext.depthIndex ?? 18, 0),
