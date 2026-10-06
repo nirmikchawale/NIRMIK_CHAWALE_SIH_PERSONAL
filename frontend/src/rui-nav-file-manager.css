@@ -1,11 +1,94 @@
-/* RUI-NAV-01 — structural file-manager navigation primitives.
-   Visual-system refinement remains owned by the RUI workstream. */
+/* RUI-VIS-01 — visual integration for the frozen RUI-NAV-01 file-manager shell.
+   This layer owns presentation only. Navigation parentage, routes, scientific context,
+   renderer values, 3DB lifecycle semantics and evidence contracts remain unchanged. */
 
+:root {
+  --rui-sidebar-expanded: 272px;
+  --rui-sidebar-collapsed: 72px;
+  --rui-nav-surface: color-mix(in srgb, var(--wb-panel) 82%, transparent);
+  --rui-nav-surface-raised: color-mix(in srgb, var(--wb-raised) 84%, transparent);
+  --rui-nav-hairline: color-mix(in srgb, var(--wb-line) 70%, transparent);
+  --rui-nav-active: color-mix(in srgb, var(--wb-accent) 13%, var(--wb-panel));
+  --rui-nav-focus: color-mix(in srgb, var(--wb-accent) 78%, #ffffff 22%);
+}
+
+/* Sidebar surface hierarchy */
+.ocean-workbench .rui-sidebar.feature-rail {
+  padding: 12px 10px 10px;
+  border-right-color: var(--rui-nav-hairline);
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--wb-panel) 42%, transparent) 0%,
+      color-mix(in srgb, var(--wb-bg) 97%, transparent) 32%,
+      color-mix(in srgb, var(--wb-bg) 99%, transparent) 100%);
+  box-shadow:
+    inset -1px 0 color-mix(in srgb, var(--wb-line) 28%, transparent),
+    10px 0 28px rgba(0, 0, 0, .08);
+  backdrop-filter: blur(18px) saturate(112%);
+  -webkit-backdrop-filter: blur(18px) saturate(112%);
+}
+
+.rui-sidebar-brand {
+  min-height: 62px;
+  padding: 2px 4px 11px;
+  border-bottom-color: var(--rui-nav-hairline);
+}
+
+.rui-sidebar-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border-color: color-mix(in srgb, var(--wb-accent) 58%, var(--wb-line));
+  background:
+    radial-gradient(circle at 28% 22%, color-mix(in srgb, var(--wb-accent) 28%, transparent), transparent 48%),
+    color-mix(in srgb, var(--wb-accent) 9%, var(--wb-panel));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wb-accent) 8%, transparent);
+  font-size: 12px;
+  letter-spacing: .02em;
+}
+
+.rui-sidebar-brand-copy {
+  gap: 3px;
+}
+
+.rui-sidebar-brand-copy strong {
+  font-size: 14px;
+  font-weight: 760;
+  letter-spacing: -.015em;
+}
+
+.rui-sidebar-brand-copy small {
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.ocean-workbench .rui-sidebar .sidebar-collapse,
+.ocean-workbench .rui-sidebar .sidebar-mobile-close {
+  min-width: 38px;
+  width: 38px;
+  min-height: 38px;
+  height: 38px;
+  border-radius: 11px;
+  border-color: var(--rui-nav-hairline);
+  background: var(--rui-nav-surface);
+}
+
+.ocean-workbench .rui-sidebar .sidebar-collapse:hover,
+.ocean-workbench .rui-sidebar .sidebar-mobile-close:hover {
+  border-color: color-mix(in srgb, var(--wb-accent) 62%, var(--wb-line));
+  color: var(--wb-accent);
+  background: var(--rui-nav-surface-raised);
+}
+
+/* Breadcrumb reads as lightweight workstation chrome rather than another card. */
 .rui-nav-breadcrumb {
   flex: 0 0 auto;
   min-width: 0;
-  padding: 8px 8px 7px;
-  border-bottom: 1px solid color-mix(in srgb, var(--wb-line) 58%, transparent);
+  margin: 8px 2px 4px;
+  padding: 8px 9px;
+  border: 1px solid color-mix(in srgb, var(--wb-line) 48%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--wb-panel) 45%, transparent);
 }
 
 .rui-nav-breadcrumb ol {
@@ -15,28 +98,40 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  overflow: hidden;
 }
 
 .rui-nav-breadcrumb li {
   display: inline-flex;
   align-items: center;
+  flex: 0 1 auto;
   min-width: 0;
+  max-width: 42%;
   color: var(--wb-muted);
-  font-size: 9px;
-  font-weight: 700;
-  line-height: 1.2;
+  font-size: 10px;
+  font-weight: 680;
+  line-height: 1.25;
+}
+
+.rui-nav-breadcrumb li:first-child {
+  flex: 0 0 auto;
+  max-width: 84px;
 }
 
 .rui-nav-breadcrumb li + li::before {
-  content: "/";
+  content: "›";
   flex: 0 0 auto;
   margin-inline: 5px;
-  color: color-mix(in srgb, var(--wb-muted) 66%, transparent);
+  color: color-mix(in srgb, var(--wb-muted) 62%, transparent);
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .rui-nav-breadcrumb li:last-child {
   flex: 1 1 auto;
+  max-width: none;
   color: var(--wb-text);
+  font-weight: 760;
 }
 
 .rui-nav-breadcrumb li span {
@@ -46,28 +141,189 @@
   white-space: nowrap;
 }
 
+/* Directory tree density and visual parentage. */
+.rui-sidebar-groups {
+  padding: 7px 2px 12px;
+  scrollbar-color: color-mix(in srgb, var(--wb-line) 70%, transparent) transparent;
+}
+
+.rui-nav-group {
+  min-width: 0;
+}
+
+.rui-nav-group + .rui-nav-group {
+  margin-top: 13px;
+}
+
 .rui-nav-group-label {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  min-height: 24px;
+  padding: 2px 8px 6px;
+  color: var(--wb-muted);
+  font-size: 10px;
+  font-weight: 820;
+  line-height: 1.2;
+  letter-spacing: .105em;
+}
+
+.rui-nav-group-label > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.rui-nav-group-label > span::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border: 1px solid color-mix(in srgb, var(--wb-muted) 72%, var(--wb-line));
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--wb-panel) 76%, transparent);
 }
 
 .rui-nav-group-label small {
   display: inline-grid;
   place-items: center;
-  min-width: 18px;
-  min-height: 18px;
-  padding-inline: 5px;
-  border: 1px solid color-mix(in srgb, var(--wb-line) 74%, transparent);
+  min-width: 20px;
+  min-height: 20px;
+  padding-inline: 6px;
+  border: 1px solid color-mix(in srgb, var(--wb-line) 66%, transparent);
   border-radius: 999px;
   color: var(--wb-muted);
-  font-size: 8px;
+  background: color-mix(in srgb, var(--wb-panel) 42%, transparent);
+  font-size: 10px;
+  font-weight: 720;
   line-height: 1;
 }
 
-.rui-nav-group[data-directory-view] {
+.app-navigation-root[data-nav-directory="explore"] .rui-nav-group[data-directory-view="explore"] .rui-nav-group-label,
+.app-navigation-root[data-nav-directory="analyse"] .rui-nav-group[data-directory-view="analyse"] .rui-nav-group-label,
+.app-navigation-root[data-nav-directory="data"] .rui-nav-group[data-directory-view="data"] .rui-nav-group-label,
+.app-navigation-root[data-nav-directory="science"] .rui-nav-group[data-directory-view="science"] .rui-nav-group-label {
+  color: var(--wb-text);
+}
+
+.app-navigation-root[data-nav-directory="explore"] .rui-nav-group[data-directory-view="explore"] .rui-nav-group-label > span::before,
+.app-navigation-root[data-nav-directory="analyse"] .rui-nav-group[data-directory-view="analyse"] .rui-nav-group-label > span::before,
+.app-navigation-root[data-nav-directory="data"] .rui-nav-group[data-directory-view="data"] .rui-nav-group-label > span::before,
+.app-navigation-root[data-nav-directory="science"] .rui-nav-group[data-directory-view="science"] .rui-nav-group-label > span::before {
+  border-color: var(--wb-accent);
+  background: color-mix(in srgb, var(--wb-accent) 52%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--wb-accent) 8%, transparent);
+}
+
+.rui-nav-group-items {
+  gap: 5px;
+}
+
+.rui-nav-group-items [role="treeitem"] {
   min-width: 0;
+  border-radius: 12px;
+}
+
+.ocean-workbench .rui-sidebar .rui-nav-item {
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 10px;
+  min-height: 50px;
+  padding: 7px 8px;
+  border-radius: 12px;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.ocean-workbench .rui-sidebar .rui-nav-item::before {
+  top: 10px;
+  bottom: 10px;
+  left: 1px;
+  width: 3px;
+}
+
+.ocean-workbench .rui-sidebar .rui-nav-short {
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+  width: 36px;
+  height: 34px;
+  padding-inline: 4px;
+  border-color: color-mix(in srgb, var(--wb-line) 74%, transparent);
+  border-radius: 9px;
+  color: var(--wb-muted);
+  background: color-mix(in srgb, var(--wb-panel) 64%, transparent);
+  font-size: 10px;
+  font-weight: 850;
+  line-height: 1;
+  letter-spacing: .035em;
+}
+
+.ocean-workbench .rui-sidebar .rui-nav-copy {
+  gap: 3px;
+}
+
+.ocean-workbench .rui-sidebar .rui-nav-copy strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 730;
+  line-height: 1.2;
+}
+
+.ocean-workbench .rui-sidebar .rui-nav-copy small {
+  display: block;
+  color: color-mix(in srgb, var(--wb-muted) 94%, transparent);
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.ocean-workbench .rui-sidebar .rui-nav-item:hover {
+  border-color: color-mix(in srgb, var(--wb-accent) 28%, var(--wb-line));
+  color: var(--wb-text);
+  background: color-mix(in srgb, var(--wb-raised) 68%, transparent);
+}
+
+.ocean-workbench .rui-sidebar .rui-nav-item.active {
+  border-color: color-mix(in srgb, var(--wb-accent) 46%, var(--wb-line));
+  color: var(--wb-text);
+  background: var(--rui-nav-active);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--wb-accent) 5%, transparent),
+    0 5px 16px rgba(0, 0, 0, .08);
+}
+
+.ocean-workbench .rui-sidebar .rui-nav-item.active::before {
+  background: var(--wb-accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--wb-accent) 34%, transparent);
+}
+
+.ocean-workbench .rui-sidebar .rui-nav-item.active .rui-nav-short {
+  border-color: color-mix(in srgb, var(--wb-accent) 72%, var(--wb-line));
+  color: var(--wb-accent);
+  background: color-mix(in srgb, var(--wb-accent) 11%, var(--wb-panel));
+}
+
+.rui-sidebar :is(button, summary):focus-visible,
+.mobile-workspace-nav button:focus-visible {
+  outline: 2px solid var(--rui-nav-focus);
+  outline-offset: 2px;
+}
+
+/* Collapsed mode stays a deliberate tool rail, not a squeezed expanded sidebar. */
+.app-navigation-root[data-collapsed="true"] .rui-sidebar {
+  padding-inline: 7px;
+}
+
+.app-navigation-root[data-collapsed="true"] .rui-sidebar-brand {
+  padding-inline: 0;
+}
+
+.app-navigation-root[data-collapsed="true"] .rui-sidebar-mark {
+  width: 38px;
+  height: 38px;
 }
 
 .app-navigation-root[data-collapsed="true"] .rui-nav-breadcrumb,
@@ -75,8 +331,143 @@
   display: none;
 }
 
+.app-navigation-root[data-collapsed="true"] .rui-sidebar-groups {
+  padding-top: 10px;
+}
+
+.app-navigation-root[data-collapsed="true"] .rui-sidebar .rui-nav-item {
+  min-height: 48px;
+  padding: 6px 5px;
+}
+
+.app-navigation-root[data-collapsed="true"] .rui-sidebar .rui-nav-short {
+  min-width: 36px;
+  width: 36px;
+  height: 34px;
+}
+
+/* Tablet keeps the hierarchy readable without stealing the science viewport. */
+@media (max-width: 1180px) and (min-width: 901px) {
+  :root {
+    --rui-sidebar-expanded: 236px;
+  }
+
+  .rui-nav-breadcrumb li {
+    font-size: 9.5px;
+  }
+
+  .ocean-workbench .rui-sidebar .rui-nav-copy strong {
+    font-size: 12px;
+  }
+
+  .ocean-workbench .rui-sidebar .rui-nav-copy small {
+    display: none;
+  }
+}
+
+/* Mobile projects the same hierarchy into an off-canvas file-manager drawer. */
 @media (max-width: 900px) {
+  .mobile-workspace-nav {
+    gap: 12px;
+    padding-block: 6px;
+    background: color-mix(in srgb, var(--wb-bg) 97%, transparent);
+    box-shadow: 0 1px color-mix(in srgb, var(--wb-line) 32%, transparent);
+  }
+
+  .mobile-sidebar-trigger {
+    min-height: 40px;
+    padding: 7px 11px;
+    border-color: color-mix(in srgb, var(--wb-line) 78%, transparent);
+    border-radius: 11px;
+    background: var(--rui-nav-surface);
+    font-size: 11px;
+  }
+
+  .mobile-workspace-current span {
+    font-size: 9px;
+    letter-spacing: .1em;
+  }
+
+  .mobile-workspace-current strong {
+    font-size: 12px;
+  }
+
+  .ocean-workbench .rui-sidebar.feature-rail {
+    width: min(340px, calc(100vw - 28px));
+    padding: 12px max(12px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-bottom));
+    border-radius: 0 16px 16px 0;
+    box-shadow: 22px 0 56px rgba(0, 0, 0, .38);
+  }
+
   .rui-nav-breadcrumb {
-    padding-inline: 8px;
+    margin-top: 9px;
+    padding: 9px 10px;
+  }
+
+  .rui-nav-breadcrumb li {
+    font-size: 10px;
+  }
+
+  .ocean-workbench .rui-sidebar .rui-nav-item {
+    min-height: 48px;
+  }
+
+  .ocean-workbench .rui-sidebar .sidebar-mobile-close {
+    min-width: 42px;
+    width: 42px;
+    min-height: 42px;
+    height: 42px;
+  }
+
+  /* Desktop collapse preference must never reduce the mobile drawer's content. */
+  .app-navigation-root[data-collapsed="true"] .rui-nav-breadcrumb {
+    display: block;
+  }
+
+  .app-navigation-root[data-collapsed="true"] .rui-nav-group-label small {
+    display: inline-grid;
+  }
+}
+
+@media (max-width: 520px) {
+  .ocean-workbench .rui-sidebar.feature-rail {
+    width: min(326px, calc(100vw - 20px));
+  }
+
+  .rui-nav-breadcrumb li:first-child {
+    max-width: 68px;
+  }
+
+  .rui-nav-breadcrumb li:nth-child(2) {
+    max-width: 76px;
+  }
+}
+
+/* Motion is subtle and entirely dispensable. */
+@media (prefers-reduced-motion: reduce) {
+  .app-navigation-root,
+  .ocean-workbench .rui-sidebar.feature-rail,
+  .ocean-workbench .rui-sidebar .rui-nav-item,
+  .rui-nav-group-label > span::before,
+  .mobile-workspace-nav,
+  .sidebar-backdrop {
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Preserve operability in forced-colour/high-contrast environments. */
+@media (forced-colors: active) {
+  .ocean-workbench .rui-sidebar.feature-rail,
+  .rui-nav-breadcrumb,
+  .ocean-workbench .rui-sidebar .rui-nav-item,
+  .rui-nav-short,
+  .mobile-sidebar-trigger {
+    forced-color-adjust: auto;
+  }
+
+  .ocean-workbench .rui-sidebar .rui-nav-item.active {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
   }
 }
