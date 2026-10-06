@@ -202,11 +202,15 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
                       aria-level={2}
                       aria-label={item.label}
                       aria-current={active ? "page" : undefined}
+                      onClick={() => navigateFromSidebar(item.id)}
                     >
                       <button
                         type="button"
                         className={`rui-nav-item ${active ? "active" : ""}`}
-                        onClick={() => navigateFromSidebar(item.id)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          navigateFromSidebar(item.id);
+                        }}
                         title={`${item.label} — ${item.description}`}
                         aria-label={item.label}
                         data-workspace-id={item.id}
