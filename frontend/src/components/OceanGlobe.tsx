@@ -48,9 +48,14 @@ import {
   blockBoundsLabel
 } from "../main-block-engine";
 import {
+  buildCesiumCurrentsRenderPlan,
+  buildCesiumFieldRenderPlan,
+  buildCesiumVolumeRenderPlan,
+  canCesiumRenderMainBlock
+} from "../main-block-cesium-renderer";
+import {
   activeMainBlockRegion,
   findTargetBlockAt,
-  isVerifiedBaseline,
   publishActiveMainBlockId,
   readActiveMainBlockId,
   resolveMainBlock,
@@ -94,7 +99,6 @@ interface Props {
   onEnterWaterColumn: () => void;
   canEnterWaterColumn: boolean;
 }
-
 
 function scalarColor(
   value: number,
@@ -241,16 +245,23 @@ export function OceanGlobe({
     viewer.scene.globe.maximumScreenSpaceError = 0.8;
     viewer.scene.fog.enabled = false;
     viewer.scene.globe.translucency.enabled = true;
-    // Open a translucent "window" only over the verified study field so sub-surface depth
-    // planes keep their true palette colours; the rest of the globe stays opaque.
+    // Open the translucent scientific window over the active canonical 3DB block footprint.
+    // This changes only presentation; source longitude/latitude/depth remain untouched.
+    const initialRenderBlock = resolveMainBlock(readActiveMainBlockId());
     viewer.scene.globe.translucency.frontFaceAlpha = 0.3;
     viewer.scene.globe.translucency.backFaceAlpha = 0.28;
-    viewer.scene.globe.translucency.rectangle = Rectangle.fromDegrees(66.85, 11.85, 70.15, 14.15);
+    viewer.scene.globe.translucency.rectangle = Rectangle.fromDegrees(
+      initialRenderBlock.west,
+      initialRenderBlock.south,
+      initialRenderBlock.east,
+      initialRenderBlock.north
+    );
     viewer.scene.screenSpaceCameraController.minimumZoomDistance = 100_000;
     viewer.scene.screenSpaceCameraController.maximumZoomDistance = 18_000_000;
     viewer.scene.screenSpaceCameraController.inertiaZoom = 0.65;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    void reducedMotion;
     let journeyGeneration = 0;
     const stopJourney = () => {
       journeyGeneration += 1;
@@ -315,8 +326,8 @@ export function OceanGlobe({
       }, 900);
     };
     // Always orient the viewer from Earth → India → the integrated Indian Ocean block field on mount.
-    // The 140 logical targets are geographic planning geometry only; the verified GLORYS
-    // baseline remains the sole source-backed ocean volume until later materialization phases.
+    // The 140 logical targets remain geographic truth; only the immutable baseline and genuine pilots
+    // may cross the 3DB-04 fail-closed scientific Cesium render gate.
     journeyRef.current(false);
     // Keep judge-facing camera telemetry valid immediately, even while the
     // opening journey is still animating. This prevents transient 0-height
@@ -486,16 +497,32 @@ export function OceanGlobe({
 
     viewer.entities.removeById("active-main-block-highlight");
     const block = resolveMainBlock(activeMainBlockId);
-    const verified = isVerifiedBaseline(block);
+    const verifiedBaseline = block.materialization === "verified-baseline";
+    const sourceBackedPilot = block.materialization === "pilot";
     const centreLon = (block.west + block.east) / 2;
     const centreLat = (block.south + block.north) / 2;
-    const outline = verified
+    const outline = verifiedBaseline
       ? Color.fromCssColorString("#ffd56a")
-      : Color.fromCssColorString("#e9fbff");
-    const fill = verified
+      : sourceBackedPilot
+        ? Color.fromCssColorString("#8cefff")
+        : Color.fromCssColorString("#e9fbff");
+    const fill = verifiedBaseline
       ? Color.fromCssColorString("#ffd56a").withAlpha(0.12)
-      : Color.fromCssColorString("#6fe6fa").withAlpha(0.12);
+      : sourceBackedPilot
+        ? Color.fromCssColorString("#53c9e8").withAlpha(0.13)
+        : Color.fromCssColorString("#6fe6fa").withAlpha(0.08);
+    const lifecycleLabel = verifiedBaseline
+      ? "VERIFIED BASELINE"
+      : sourceBackedPilot
+        ? "SOURCE-BACKED PILOT"
+        : "PLANNED";
 
+    viewer.scene.globe.translucency.rectangle = Rectangle.fromDegrees(
+      block.west,
+      block.south,
+      block.east,
+      block.north
+    );
     viewer.entities.add({
       id: "active-main-block-highlight",
       position: Cartesian3.fromDegrees(centreLon, centreLat, 28_000),
@@ -507,7 +534,7 @@ export function OceanGlobe({
         outlineColor: outline
       },
       label: {
-        text: verified ? `${block.id} · VERIFIED` : `${block.id} · PLANNED`,
+        text: `${block.id} · ${lifecycleLabel}`,
         font: "700 12px system-ui",
         fillColor: Color.WHITE,
         outlineColor: Color.fromCssColorString("#04111d"),
@@ -670,8 +697,6 @@ export function OceanGlobe({
       });
     }
 
-
-
     const sensorColour = (sensor: ImportedObservationProfile["sensor_type"]) => {
       if (sensor === "glider") return Color.fromCssColorString("#8cefff");
       if (sensor === "ctd") return Color.fromCssColorString("#b58cff");
@@ -779,8 +804,9 @@ export function OceanGlobe({
     const viewer = viewerRef.current;
     if (!viewer) return;
 
+    const block = resolveMainBlock(activeMainBlockId);
     const depth = field?.depth_m ?? currents?.depth_m;
-    if (depth == null || volume) {
+    if (depth == null || volume || !canCesiumRenderMainBlock(block)) {
       viewer.entities.removeById("selected-depth-plane");
       if (depthAnimationRef.current != null) {
         window.cancelAnimationFrame(depthAnimationRef.current);
@@ -790,12 +816,13 @@ export function OceanGlobe({
       return;
     }
 
+    const blockRectangle = Rectangle.fromDegrees(block.west, block.south, block.east, block.north);
     let plane = viewer.entities.getById("selected-depth-plane");
     if (!plane) {
       plane = viewer.entities.add({
         id: "selected-depth-plane",
         rectangle: {
-          coordinates: Rectangle.fromDegrees(67, 12, 70, 14),
+          coordinates: blockRectangle,
           height: -depth * verticalExaggeration,
           material: Color.fromCssColorString("#40d8f2").withAlpha(0.12),
           outline: true,
@@ -808,6 +835,7 @@ export function OceanGlobe({
     }
 
     if (!plane.rectangle) return;
+    plane.rectangle.coordinates = new ConstantProperty(blockRectangle);
     if (depthAnimationRef.current != null) {
       window.cancelAnimationFrame(depthAnimationRef.current);
     }
@@ -847,7 +875,7 @@ export function OceanGlobe({
         depthAnimationRef.current = null;
       }
     };
-  }, [field?.depth_m, currents?.depth_m, volume, verticalExaggeration]);
+  }, [field?.depth_m, currents?.depth_m, volume, verticalExaggeration, activeMainBlockId]);
 
   useEffect(() => {
     const viewer = viewerRef.current;
@@ -858,7 +886,23 @@ export function OceanGlobe({
     }
     dynamicPrimitivesRef.current = [];
 
-    if (field) {
+    const block = resolveMainBlock(activeMainBlockId);
+    let fieldAllowed = false;
+    let volumeAllowed = false;
+    let currentsAllowed = false;
+    try {
+      fieldAllowed = field ? buildCesiumFieldRenderPlan(block, field).allowed : false;
+      volumeAllowed = volume ? buildCesiumVolumeRenderPlan(block, volume).allowed : false;
+      currentsAllowed = currents ? buildCesiumCurrentsRenderPlan(block, currents).allowed : false;
+      setRendererError((current) => current.startsWith("3DB-04 Cesium contract:") ? "" : current);
+    } catch (reason) {
+      const message = reason instanceof Error ? reason.message : String(reason);
+      setRendererError(message || "3DB-04 Cesium contract rejected the scientific render payload.");
+      viewer.scene.requestRender();
+      return;
+    }
+
+    if (field && fieldAllowed) {
       const collection = new PointPrimitiveCollection();
       for (let yi = 0; yi < field.latitude.length; yi += 1) {
         for (let xi = 0; xi < field.longitude.length; xi += 1) {
@@ -897,7 +941,7 @@ export function OceanGlobe({
       dynamicPrimitivesRef.current.push(collection);
     }
 
-    if (volume) {
+    if (volume && volumeAllowed) {
       const longitudes = Array.from(new Set(volume.points.map(([lon]) => lon))).sort((a, b) => a - b);
       const latitudes = Array.from(new Set(volume.points.map(([, lat]) => lat))).sort((a, b) => a - b);
       const lonStep = longitudes.length > 1 ? Math.abs(longitudes[1] - longitudes[0]) : 0.15;
@@ -956,7 +1000,7 @@ export function OceanGlobe({
       }
     }
 
-    if (currents) {
+    if (currents && currentsAllowed) {
       const lines = new PolylineCollection();
       const heads = new PointPrimitiveCollection();
       const displayScaleDegrees = 1.25;
@@ -1032,7 +1076,7 @@ export function OceanGlobe({
     }
 
     viewer.scene.requestRender();
-  }, [field, volume, currents, verticalExaggeration, colorPalette, colorScale, colorMinimum, colorMaximum]);
+  }, [field, volume, currents, verticalExaggeration, colorPalette, colorScale, colorMinimum, colorMaximum, activeMainBlockId]);
 
   const selectedProfile = profiles.find((profile) => profile.profile_id === selectedProfileId) ?? null;
 
@@ -1089,7 +1133,6 @@ export function OceanGlobe({
   const legendMax = scalar ? colorMaximum : currents?.maximum;
   const legendUnits = scalar?.units ?? currents?.units;
   const legendLabel = scalar?.label ?? (currents ? "Current speed" : "Ocean field");
-
 
   const smoothGlobeZoom = (direction: "in" | "out") => {
     stopJourneyRef.current();
@@ -1299,6 +1342,13 @@ export function OceanGlobe({
     });
   };
 
+  const activeMaterialization = activeMainBlock.materialization;
+  const activeStatusLabel = activeMaterialization === "verified-baseline"
+    ? "Verified volume"
+    : activeMaterialization === "pilot"
+      ? "Source-backed pilot"
+      : "Planned target";
+
   return (
     <main
       className="globe-shell"
@@ -1320,7 +1370,8 @@ export function OceanGlobe({
       data-selected-imported-profile={selectedImportedProfileId}
       data-main-block-count={TARGET_BLOCK_COUNT}
       data-active-main-block={activeMainBlock.id}
-      data-active-main-block-materialization={isVerifiedBaseline(activeMainBlock) ? "verified-baseline" : "planned"}
+      data-active-main-block-materialization={activeMaterialization}
+      data-cesium-scientific-render-ready={canCesiumRenderMainBlock(activeMainBlock) ? "true" : "false"}
     >
       <div ref={containerRef} className="cesium-host" />
       <section
@@ -1335,8 +1386,8 @@ export function OceanGlobe({
             <strong>{activeMainBlock.id} · {activeMainBlockRegion(activeMainBlock)}</strong>
             <small>{blockBoundsLabel(activeMainBlock)}</small>
           </div>
-          <span className={`main-block-status-pill ${isVerifiedBaseline(activeMainBlock) ? "verified" : ""}`}>
-            {isVerifiedBaseline(activeMainBlock) ? "Verified volume" : "Planned target"}
+          <span className={`main-block-status-pill ${activeMaterialization !== "planned" ? "verified" : ""}`}>
+            {activeStatusLabel}
           </span>
         </div>
         <label>
@@ -1359,12 +1410,12 @@ export function OceanGlobe({
         </label>
         <div className="main-block-globe-stats" aria-label="Main block materialization status">
           <div><span>Logical grid</span><strong>{TARGET_BLOCK_COUNT} blocks</strong></div>
-          <div><span>New volumes</span><strong>0 materialized</strong></div>
-          <div><span>Verified now</span><strong>1 baseline</strong></div>
+          <div><span>Source-backed pilots</span><strong>25 materialized</strong></div>
+          <div><span>Independent baseline</span><strong>1 verified</strong></div>
         </div>
         <div className="main-block-grid-key" aria-label="Block map legend">
           <span><i /> Planned footprint</span>
-          <span className="verified"><i /> Verified baseline</span>
+          <span className="verified"><i /> Source-backed / verified</span>
           <span className="active"><i /> Active selection</span>
         </div>
         <div className="main-block-globe-actions">
@@ -1383,9 +1434,11 @@ export function OceanGlobe({
           </button>
         </div>
         <p className="main-block-globe-boundary-note">
-          {isVerifiedBaseline(activeMainBlock)
-            ? <>This footprint carries the <strong>current source-backed GLORYS volume</strong>.</>
-            : <>This footprint is integrated into the Earth model but carries <strong>no copied or synthetic ocean values</strong> until materialized from source data.</>}
+          {activeMaterialization === "verified-baseline"
+            ? <>This footprint carries the <strong>independently model–observation validated GLORYS baseline</strong>.</>
+            : activeMaterialization === "pilot"
+              ? <>This footprint carries a <strong>genuine source-backed GLORYS pilot</strong>; no pilot-specific independent observation validation is implied.</>
+              : <>This footprint is integrated into the Earth model but carries <strong>no copied or synthetic ocean values</strong> until materialized from source data.</>}
         </p>
       </section>
       <div className="renderer-tools" aria-label="Ocean view tools">
@@ -1518,14 +1571,14 @@ export function OceanGlobe({
             ? "One ocean. One connected system."
             : introPhase === "india"
               ? "From national context to the Indian Ocean."
-              : "140 geographic targets around one verified water column."}
+              : "140 geographic targets with source-backed materialization where evidence exists."}
         </strong>
         <small>
           {introPhase === "earth"
             ? "Ocean Canvas starts at planetary scale so model fields, currents and in-situ observations stay anchored to real geography before we zoom into evidence."
             : introPhase === "india"
               ? "We narrow to the northern Indian Ocean, where INCOIS multi-time analysis adds genuine temporal breadth to the verified model baseline."
-              : "60–100°E · 5–25°N · 140 selectable target footprints are now part of the main Earth model; the 67–70°E · 12–14°N GLORYS baseline remains the only materialized volume."}
+              : "60–100°E · 5–25°N · 140 selectable target footprints; 25 genuine GLORYS pilots are source-backed while the 67–70°E · 12–14°N baseline remains the independently model–observation validated reference."}
         </small>
       </div>}
       {canEnterWaterColumn && introPhase === "region" && <div className="field-entry-actions">
@@ -1543,7 +1596,7 @@ export function OceanGlobe({
           <span className="live-dot" />
           <strong>INDIAN OCEAN · INTEGRATED MAIN-BLOCK FIELD</strong>
         </div>
-        <span>{TARGET_BLOCK_COUNT} target footprints · active {activeMainBlock.id} · verified science remains 67–70°E / 12–14°N · {profiles.length} Argo comparison profiles</span>
+        <span>{TARGET_BLOCK_COUNT} target footprints · active {activeMainBlock.id} · 25 source-backed pilots + 1 independently validated baseline · {profiles.length} Argo comparison profiles</span>
         <small>
           {scalar?.label ?? (currents ? "Currents" : "Ocean field")}
           {field ? ` · ${field.depth_m.toFixed(2)} m` : ""}
@@ -1597,10 +1650,10 @@ export function OceanGlobe({
             )}
           </div>
           <small>{inspection.time.replace("T", " ").replace("Z", " UTC")}</small>
-          <small>Copernicus GLORYS12V1 · cached verified reanalysis</small>
+          <small>Copernicus GLORYS12V1 · source-backed reanalysis</small>
         </div>
       )}
-      {(field || currents) && !volume && (
+      {(field || currents) && !volume && canCesiumRenderMainBlock(activeMainBlock) && (
         <div className="globe-overlay depth-indicator">
           DEPTH PLANE · {(field?.depth_m ?? currents?.depth_m ?? 0).toFixed(2)} m
         </div>
@@ -1638,7 +1691,7 @@ export function OceanGlobe({
       </div>
 
       <div className="globe-overlay interaction-hint">
-        Drag to orbit · wheel to zoom · Fit returns to the verified study area · click evidence to inspect
+        Drag to orbit · wheel to zoom · Fit returns to the selected block · click evidence to inspect
       </div>
       <div className="globe-overlay legend-card">
         <span>{legendLabel}</span>
@@ -1649,12 +1702,12 @@ export function OceanGlobe({
           <span>{legendMax?.toFixed(3) ?? "—"}</span>
         </div>
       </div>
-      {volume && (
+      {volume && canCesiumRenderMainBlock(activeMainBlock) && (
         <div className="globe-overlay volume-note">
-          3D WATER COLUMN · stacked verified model layers · visual depth ×{verticalExaggeration}
+          3D WATER COLUMN · {activeMaterialization === "verified-baseline" ? "verified baseline layers" : "source-backed pilot layers"} · visual depth ×{verticalExaggeration}
         </div>
       )}
-      {currents && (
+      {currents && canCesiumRenderMainBlock(activeMainBlock) && (
         <div className="globe-overlay current-note">
           HORIZONTAL u/v FLOW · arrow direction + speed colour · {currents.depth_m.toFixed(2)} m · projected above globe for readability
         </div>

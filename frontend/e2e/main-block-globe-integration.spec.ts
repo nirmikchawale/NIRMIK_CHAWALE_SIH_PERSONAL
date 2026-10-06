@@ -20,8 +20,8 @@ test("Phase 3.5A-G integrates all 140 targets into the primary Cesium Earth work
   await expect(globe).toHaveAttribute("data-main-block-count", "140");
   await expect(globe).toHaveAttribute("data-active-main-block", "BASE-GLORYS-001");
   await expect(hud.getByText("140 blocks", { exact: true })).toBeVisible();
-  await expect(hud.getByText("0 materialized", { exact: true })).toBeVisible();
-  await expect(hud.getByText("1 baseline", { exact: true })).toBeVisible();
+  await expect(hud.getByText("25 materialized", { exact: true })).toBeVisible();
+  await expect(hud.getByText("1 verified", { exact: true })).toBeVisible();
 
   const selector = hud.getByLabel("Active main block");
   await expect(selector.locator("option")).toHaveCount(141);
