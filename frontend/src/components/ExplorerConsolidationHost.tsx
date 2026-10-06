@@ -13,64 +13,100 @@ const WORKSPACE_LABEL: Record<WorkspaceMode, string> = {
   presentation: "Presentation workspace"
 };
 
-function readWorkspaceMode(): WorkspaceMode {
-  const mode = document.querySelector<HTMLElement>(".ocean-workbench")?.dataset.workspaceMode;
+function readWorkspaceMode(workbench?: HTMLElement | null): WorkspaceMode {
+  const mode = workbench?.dataset.workspaceMode;
   return mode === "analysis" || mode === "presentation" ? mode : "explorer";
 }
 
-function readFocusMode(): boolean {
-  return document.querySelector(".ocean-workbench")?.classList.contains("focus-mode") ?? false;
+function readFocusMode(workbench?: HTMLElement | null): boolean {
+  return workbench?.classList.contains("focus-mode") ?? false;
 }
 
 export function ExplorerConsolidationHost() {
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
-  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>(readWorkspaceMode);
-  const [focusMode, setFocusMode] = useState(readFocusMode);
+  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>("explorer");
+  const [focusMode, setFocusMode] = useState(false);
 
   useEffect(() => {
+    let disposed = false;
+    let frameId = 0;
+    let attemptsRemaining = 0;
     let ownedSlot: HTMLElement | null = null;
+    let observedWorkbench: HTMLElement | null = null;
+    let workbenchObserver: MutationObserver | null = null;
 
-    const sync = () => {
-      const workbench = document.querySelector<HTMLElement>(".ocean-workbench");
+    const syncPresentation = () => {
+      const workbench = observedWorkbench ?? document.querySelector<HTMLElement>(".ocean-workbench");
+      const nextWorkspaceMode = readWorkspaceMode(workbench);
+      const nextFocusMode = readFocusMode(workbench);
+      setWorkspaceMode((current) => current === nextWorkspaceMode ? current : nextWorkspaceMode);
+      setFocusMode((current) => current === nextFocusMode ? current : nextFocusMode);
+    };
+
+    const bindWorkbench = () => {
+      const nextWorkbench = document.querySelector<HTMLElement>(".ocean-workbench");
+      if (nextWorkbench === observedWorkbench) return;
+
+      workbenchObserver?.disconnect();
+      workbenchObserver = null;
+      observedWorkbench = nextWorkbench;
+
+      if (observedWorkbench) {
+        workbenchObserver = new MutationObserver(() => {
+          syncPresentation();
+          if (observedWorkbench?.dataset.page === "explore") scheduleAttachment(30);
+          else setPortalTarget((current) => current === null ? current : null);
+        });
+        workbenchObserver.observe(observedWorkbench, {
+          attributes: true,
+          attributeFilter: ["class", "data-workspace-mode", "data-page"]
+        });
+      }
+      syncPresentation();
+    };
+
+    const attachPortal = () => {
+      frameId = 0;
+      if (disposed) return;
+
+      bindWorkbench();
       const workspace = document.querySelector<HTMLElement>(".station-workspace");
-
-      setWorkspaceMode(readWorkspaceMode());
-      setFocusMode(readFocusMode());
-
-      if (!workspace) {
-        setPortalTarget(null);
+      if (workspace) {
+        let slot = workspace.querySelector<HTMLElement>(":scope > [data-rui-nav-02-slot]");
+        if (!slot) {
+          slot = document.createElement("div");
+          slot.className = "explorer-consolidation-slot";
+          slot.dataset.ruiNav02Slot = "true";
+          workspace.prepend(slot);
+          ownedSlot = slot;
+        }
+        setPortalTarget((current) => current === slot ? current : slot);
         return;
       }
 
-      let slot = workspace.querySelector<HTMLElement>(":scope > [data-rui-nav-02-slot]");
-      if (!slot) {
-        slot = document.createElement("div");
-        slot.className = "explorer-consolidation-slot";
-        slot.dataset.ruiNav02Slot = "true";
-        workspace.prepend(slot);
-        ownedSlot = slot;
-      }
-      setPortalTarget((current) => current === slot ? current : slot);
-
-      if (workbench) {
-        setWorkspaceMode(readWorkspaceMode());
-        setFocusMode(readFocusMode());
+      setPortalTarget((current) => current === null ? current : null);
+      if (attemptsRemaining > 0) {
+        attemptsRemaining -= 1;
+        frameId = window.requestAnimationFrame(attachPortal);
       }
     };
 
-    sync();
-    const observer = new MutationObserver(sync);
-    observer.observe(document.body, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      attributeFilter: ["class", "data-workspace-mode", "data-page"]
-    });
-    window.addEventListener("hashchange", sync);
+    function scheduleAttachment(maxFrames = 180) {
+      if (disposed) return;
+      attemptsRemaining = Math.max(attemptsRemaining, maxFrames);
+      if (!frameId) frameId = window.requestAnimationFrame(attachPortal);
+    }
+
+    const handleHashChange = () => scheduleAttachment(180);
+
+    scheduleAttachment(180);
+    window.addEventListener("hashchange", handleHashChange);
 
     return () => {
-      observer.disconnect();
-      window.removeEventListener("hashchange", sync);
+      disposed = true;
+      if (frameId) window.cancelAnimationFrame(frameId);
+      workbenchObserver?.disconnect();
+      window.removeEventListener("hashchange", handleHashChange);
       if (ownedSlot?.isConnected) ownedSlot.remove();
     };
   }, []);
