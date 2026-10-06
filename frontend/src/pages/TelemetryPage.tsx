@@ -529,7 +529,7 @@ function TelemetrySensors({
         </article>
         {importedGroups.map((group) => (
           <article key={group.id}>
-            <span>{group.label.toUpperCase()}</span>
+            <span>{group.label}</span>
             <strong>{group.profiles.length}</strong>
             <small>{group.measurements.toLocaleString()} validated measurement rows</small>
           </article>
