@@ -16,17 +16,19 @@ import {
 import type { CurrentsResponse, FieldResponse, VolumeResponse } from "../src/types";
 
 function scalarField(
-  variable: "thetao" | "so",
+  variable: string,
   time: string,
   west: number,
   east: number,
   south: number,
-  north: number
+  north: number,
+  datasetId = "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+  product = "GLORYS12V1"
 ): FieldResponse {
   return {
     variable,
-    label: variable === "thetao" ? "Temperature" : "Salinity",
-    units: variable === "thetao" ? "degree_Celsius" : "1e-3",
+    label: variable === "thetao" ? "Temperature" : variable === "so" ? "Salinity" : "Chlorophyll-a",
+    units: variable === "thetao" ? "degree_Celsius" : variable === "so" ? "1e-3" : "mg m-3",
     time_index: 0,
     time,
     depth_index: 0,
@@ -37,9 +39,9 @@ function scalarField(
     minimum: 24.1,
     maximum: 24.4,
     provenance: {
-      product: "GLORYS12V1",
-      dataset_id: "cmems_mod_glo_phy_my_0.083deg_P1D-m",
-      freshness_class: "historical_daily_reanalysis",
+      product,
+      dataset_id: datasetId,
+      freshness_class: "source-backed",
       runtime_mode: "static"
     }
   };
@@ -114,6 +116,7 @@ test("3DB-04 freezes a fail-closed Cesium scientific rendering contract", () => 
   );
   expect(plannedAttempt.allowed).toBe(false);
   expect(plannedAttempt.lifecycleStatus).toBe("planned");
+  expect(plannedAttempt.materialization).toBe("planned");
 });
 
 test("3DB-04 binds pilot scalar slices and volumes to canonical block bounds and native time/depth", () => {
@@ -131,6 +134,8 @@ test("3DB-04 binds pilot scalar slices and volumes to canonical block bounds and
   const fieldPlan = buildCesiumFieldRenderPlan(pilot, field);
   expect(fieldPlan.allowed).toBe(true);
   if (!fieldPlan.allowed) throw new Error(fieldPlan.reason);
+  expect(fieldPlan.scientificScope).toBe("main-block");
+  expect(fieldPlan.materialization).toBe("pilot");
   expect(fieldPlan.blockId).toBe("IO-001");
   expect(fieldPlan.sourceDate).toBe("2004-03-15");
   expect(fieldPlan.sampleCount).toBe(4);
@@ -156,7 +161,7 @@ test("3DB-04 binds pilot scalar slices and volumes to canonical block bounds and
   expect(volumePlan.extent.maximumDepthM).toBe(100);
 });
 
-test("3DB-04 rejects coordinates and timestamps that are not genuine for the active block", () => {
+test("3DB-04 rejects coordinates and timestamps that are not genuine for the active GLORYS block", () => {
   const pilot = resolveMainBlock("IO-001");
 
   expect(() => buildCesiumFieldRenderPlan(
@@ -168,6 +173,30 @@ test("3DB-04 rejects coordinates and timestamps that are not genuine for the act
     pilot,
     scalarField("thetao", "2004-03-16T12:00:00Z", pilot.west, pilot.east, pilot.south, pilot.north)
   )).toThrow(/not a genuine available date/);
+});
+
+test("3DB-04 preserves independent non-GLORYS source identity instead of applying GLORYS block dates", () => {
+  const baseline = resolveMainBlock(CURRENT_VERIFIED_BASELINE.id);
+  const external = scalarField(
+    "chlorophyll",
+    "2026-09-24T00:00:00Z",
+    67,
+    70,
+    12,
+    14,
+    "IRS_chlorophyll_datasets",
+    "INCOIS satellite ocean-colour chlorophyll"
+  );
+  const plan = buildCesiumFieldRenderPlan(baseline, external);
+  expect(plan.allowed).toBe(true);
+  if (!plan.allowed) throw new Error(plan.reason);
+  expect(plan.scientificScope).toBe("external-source");
+  expect(plan.blockId).toBeNull();
+  expect(plan.materialization).toBe("external-source");
+  expect(plan.lifecycleStatus).toBe("source-backed-external");
+  expect(plan.evidenceClass).toBe("external-source");
+  expect(plan.variable).toBe("chlorophyll");
+  expect(plan.sourceDate).toBe("2026-09-24");
 });
 
 test("3DB-04 current rendering accepts horizontal uo\/vo only and verifies derived speed", () => {
@@ -206,6 +235,8 @@ test("3DB-04 preserves independently validated baseline rendering separately fro
   );
   expect(plan.allowed).toBe(true);
   if (!plan.allowed) throw new Error(plan.reason);
-  expect(plan.lifecycleStatus).toBe("verified-baseline");
-  expect(plan.evidenceClass).toBe("independently-model-observation-validated-baseline");
+  expect(plan.scientificScope).toBe("main-block");
+  expect(plan.materialization).toBe("verified-baseline");
+  expect(plan.lifecycleStatus).toBe("render-ready");
+  expect(plan.evidenceClass).toBe("immutable-verified-baseline");
 });
