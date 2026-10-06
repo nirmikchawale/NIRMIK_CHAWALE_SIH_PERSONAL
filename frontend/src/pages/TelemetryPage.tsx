@@ -622,6 +622,8 @@ export function TelemetryPage({ catalog, provenance, argoProfiles, importedProfi
 
   const longitude = catalog.coordinates.longitude;
   const latitude = catalog.coordinates.latitude;
+  const temperatureMeta = catalog.variables.find((item) => item.id === "thetao") ?? null;
+  const salinityMeta = catalog.variables.find((item) => item.id === "so") ?? null;
 
   return (
     <main
@@ -632,111 +634,53 @@ export function TelemetryPage({ catalog, provenance, argoProfiles, importedProfi
       data-time-count={telemetry?.time_stats.length ?? 0}
       data-selected-depth={telemetry?.selected_depth_m.toFixed(2) ?? ""}
     >
-      <section className="telemetry-hero">
-        <div>
-          <div className="section-kicker">OCEAN ANALYTICS · EXPLAINABLE OPERATIONS</div>
-          <h2>Depth & telemetry workspace</h2>
-          <p>
-            Read the ocean vertically, temporally and operationally. Ocean Canvas turns the verified
-            GLORYS water column into explainable depth statistics, then places genuine INCOIS
-            multi-time analysis beside it so anyone can see exactly which evidence is static,
-            which evidence changes through time, and why no synthetic timestamp is required.
-          </p>
-        </div>
-        <div className="telemetry-source-card">
-          <span>VERIFIED WINDOW</span>
-          <strong>{catalog.dataset.product}</strong>
-          <small>
-            {longitude[0].toFixed(2)}–{longitude.at(-1)?.toFixed(2)}°E ·
-            {" "}{latitude[0].toFixed(2)}–{latitude.at(-1)?.toFixed(2)}°N
-          </small>
-          <small>{catalog.dataset.freshness_class} · {catalog.dataset.runtime_mode}</small>
-        </div>
-      </section>
+      <TelemetryDirectoryNav />
 
-      <section className="telemetry-reading-guide" aria-label="How to read the telemetry workspace">
-        <article>
-          <span>01 · WATER COLUMN</span>
-          <strong>31 genuine model depth levels</strong>
-          <p>Follow full-grid temperature or salinity statistics from the near-surface layer to the deepest verified GLORYS level.</p>
-        </article>
-        <article>
-          <span>02 · OPERATIONAL TIME</span>
-          <strong>INCOIS provides genuine temporal breadth</strong>
-          <p>Use real INCOIS timestamps to demonstrate change through time without pretending the one-time GLORYS baseline is an animation.</p>
-        </article>
-        <article>
-          <span>03 · EXPLAINABILITY</span>
-          <strong>Every derived summary keeps its evidence trail</strong>
-          <p>Depth, units, spatial grid, source identity and method remain visible so the visualization can be defended scientifically.</p>
-        </article>
-      </section>
-
-      <IncoisOperationalPanel />
-
-      <section className="telemetry-toolbar">
-        <div>
-          <span>Scalar telemetry</span>
-          <div className="telemetry-variable-switcher" aria-label="Telemetry variable">
-            <button
-              className={variable === "thetao" ? "active" : ""}
-              onClick={() => setVariable("thetao")}
-              aria-label="Temperature telemetry"
-            >
-              Temperature
-            </button>
-            <button
-              className={variable === "so" ? "active" : ""}
-              onClick={() => setVariable("so")}
-              aria-label="Salinity telemetry"
-            >
-              Salinity
-            </button>
+      <section id="telemetry-overview" className="telemetry-directory-section telemetry-overview-home" data-telemetry-home="overview">
+        <section className="telemetry-hero">
+          <div>
+            <div className="section-kicker">OCEAN ANALYTICS · EXPLAINABLE OPERATIONS</div>
+            <h2>Depth & telemetry workspace</h2>
+            <p>
+              Read the ocean vertically, temporally and operationally. Ocean Canvas keeps genuine
+              model depths, native timestamps, operational INCOIS breadth and observation context in
+              separate canonical homes so every control has an explainable scientific parent.
+            </p>
           </div>
-        </div>
-        <label>
-          <span>Telemetry depth <strong>{(catalog.coordinates.depth[depthIndex] ?? 0).toFixed(2)} m</strong></span>
-          <input
-            aria-label="Telemetry depth"
-            type="range"
-            min={0}
-            max={catalog.coordinates.depth.length - 1}
-            value={depthIndex}
-            onChange={(event) => setDepthIndex(Number(event.target.value))}
-          />
-        </label>
-        <label>
-          <span>Genuine timestamp <strong>{catalog.coordinates.time[timeIndex]?.replace("T00:00:00Z", "")}</strong></span>
-          <input
-            aria-label="Telemetry time"
-            type="range"
-            min={0}
-            max={Math.max(0, catalog.coordinates.time.length - 1)}
-            value={timeIndex}
-            disabled={catalog.coordinates.time.length < 2}
-            onChange={(event) => setTimeIndex(Number(event.target.value))}
-          />
-        </label>
-        <button
-          type="button"
-          className="telemetry-download"
-          disabled={!telemetry}
-          onClick={() => telemetry && downloadTelemetryCsv(telemetry)}
-        >
-          Download depth telemetry CSV
-        </button>
-      </section>
-
-      {loading && !telemetry ? (
-        <section className="telemetry-state-card">Loading full-grid telemetry…</section>
-      ) : error ? (
-        <section className="telemetry-state-card error">
-          <strong>Telemetry unavailable</strong>
-          <span>{error}</span>
+          <div className="telemetry-source-card">
+            <span>VERIFIED WINDOW</span>
+            <strong>{catalog.dataset.product}</strong>
+            <small>
+              {longitude[0].toFixed(2)}–{longitude.at(-1)?.toFixed(2)}°E ·{" "}
+              {latitude[0].toFixed(2)}–{latitude.at(-1)?.toFixed(2)}°N
+            </small>
+            <small>{catalog.dataset.freshness_class} · {catalog.dataset.runtime_mode}</small>
+          </div>
         </section>
-      ) : telemetry && selectedStat ? (
-        <>
-          <section className="telemetry-overview">
+
+        <details className="telemetry-directory-guide">
+          <summary>How to read this telemetry workspace</summary>
+          <section className="telemetry-reading-guide" aria-label="How to read the telemetry workspace">
+            <article>
+              <span>01 · WATER COLUMN</span>
+              <strong>Genuine model depth levels</strong>
+              <p>Use Depth Series for exact retained model depths, full-grid summaries and local vertical context.</p>
+            </article>
+            <article>
+              <span>02 · OPERATIONAL TIME</span>
+              <strong>INCOIS provides genuine temporal breadth</strong>
+              <p>Use Time Series for real provider timestamps without pretending the one-time GLORYS baseline is an animation.</p>
+            </article>
+            <article>
+              <span>03 · EXPLAINABILITY</span>
+              <strong>Evidence remains inspectable</strong>
+              <p>Use Export / Evidence for statistic definition, product identity, runtime mode and DOI.</p>
+            </article>
+          </section>
+        </details>
+
+        {telemetry && selectedStat && (
+          <section className="telemetry-overview" aria-label="Telemetry overview metrics">
             <article>
               <span>Depth levels</span>
               <strong>{telemetry.depth_stats.length}</strong>
@@ -763,25 +707,175 @@ export function TelemetryPage({ catalog, provenance, argoProfiles, importedProfi
               <small>{displayUnits(telemetry.units)}</small>
             </article>
           </section>
+        )}
+      </section>
 
-          <DepthLadder
-            telemetry={telemetry}
-            selectedDepthIndex={depthIndex}
-            onSelectDepth={setDepthIndex}
-          />
+      {loading && !telemetry ? (
+        <section className="telemetry-state-card">Loading full-grid telemetry…</section>
+      ) : error ? (
+        <section className="telemetry-state-card error">
+          <strong>Telemetry unavailable</strong>
+          <span>{error}</span>
+        </section>
+      ) : null}
 
-          <section className="telemetry-main-grid">
+      <section id="telemetry-time-series" className="telemetry-directory-section" data-telemetry-home="time-series">
+        <header className="telemetry-directory-heading">
+          <div>
+            <span>TIME SERIES</span>
+            <h3>Native baseline time + genuine operational breadth</h3>
+          </div>
+          <small>Native timestamps only · no synthetic playback dates</small>
+        </header>
+        <div className="telemetry-context-control">
+          <label>
+            <span>GLORYS native timestamp <strong>{catalog.coordinates.time[timeIndex]?.replace("T00:00:00Z", "")}</strong></span>
+            <input
+              aria-label="Telemetry time"
+              type="range"
+              min={0}
+              max={Math.max(0, catalog.coordinates.time.length - 1)}
+              value={timeIndex}
+              disabled={catalog.coordinates.time.length < 2}
+              onChange={(event) => setTimeIndex(Number(event.target.value))}
+            />
+          </label>
+          <small>
+            {catalog.coordinates.time.length < 2
+              ? "One genuine GLORYS timestamp is available; the control remains locked instead of fabricating time."
+              : catalog.coordinates.time.length + " genuine GLORYS timestamps available."}
+          </small>
+        </div>
+        {telemetry && selectedStat && <TimeTelemetryCard telemetry={telemetry} />}
+        <IncoisOperationalPanel />
+      </section>
+
+      <section id="telemetry-depth-series" className="telemetry-directory-section" data-telemetry-home="depth-series">
+        <header className="telemetry-directory-heading">
+          <div>
+            <span>DEPTH SERIES</span>
+            <h3>Exact retained source depths</h3>
+          </div>
+          <small>Positive downward · 3DB-06 depth ownership preserved</small>
+        </header>
+        <div className="telemetry-context-control">
+          <label>
+            <span>Telemetry depth <strong>{(catalog.coordinates.depth[depthIndex] ?? 0).toFixed(2)} m</strong></span>
+            <input
+              aria-label="Telemetry depth"
+              type="range"
+              min={0}
+              max={catalog.coordinates.depth.length - 1}
+              value={depthIndex}
+              onChange={(event) => setDepthIndex(Number(event.target.value))}
+            />
+          </label>
+          <small>Selects an existing model depth index; no interpolated depth layer is created.</small>
+        </div>
+        {telemetry && selectedStat && (
+          <>
+            <DepthLadder telemetry={telemetry} selectedDepthIndex={depthIndex} onSelectDepth={setDepthIndex} />
             <DepthTelemetryChart telemetry={telemetry} selectedDepthM={telemetry.selected_depth_m} />
-            <div className="telemetry-side-stack">
-              <SelectedDepthCard stat={selectedStat} telemetry={telemetry} />
-              <CurrentTelemetryCard telemetry={telemetry} />
-            </div>
-          </section>
+            <DepthNeighborhood telemetry={telemetry} selectedDepthIndex={depthIndex} />
+          </>
+        )}
+      </section>
 
-          <DepthNeighborhood telemetry={telemetry} selectedDepthIndex={depthIndex} />
+      <section id="telemetry-sensors" className="telemetry-directory-section" data-telemetry-home="sensors">
+        <TelemetrySensors argoProfiles={argoProfiles} importedProfiles={importedProfiles} />
+      </section>
 
-          <TimeTelemetryCard telemetry={telemetry} />
+      <section id="telemetry-variable-comparison" className="telemetry-directory-section" data-telemetry-home="variable-comparison">
+        <header className="telemetry-directory-heading">
+          <div>
+            <span>VARIABLE COMPARISON</span>
+            <h3>Choose the scalar telemetry context</h3>
+          </div>
+          <small>One authoritative selector updates every GLORYS telemetry result.</small>
+        </header>
+        <div className="telemetry-variable-home">
+          <div className="telemetry-variable-switcher" aria-label="Telemetry variable">
+            <button
+              type="button"
+              className={variable === "thetao" ? "active" : ""}
+              aria-pressed={variable === "thetao"}
+              onClick={() => setVariable("thetao")}
+              aria-label="Temperature telemetry"
+            >
+              Temperature
+            </button>
+            <button
+              type="button"
+              className={variable === "so" ? "active" : ""}
+              aria-pressed={variable === "so"}
+              onClick={() => setVariable("so")}
+              aria-label="Salinity telemetry"
+            >
+              Salinity
+            </button>
+          </div>
+          <div className="telemetry-variable-context-grid">
+            {temperatureMeta && (
+              <article data-active={variable === "thetao" ? "true" : "false"}>
+                <span>{temperatureMeta.label.toUpperCase()}</span>
+                <strong>{displayUnits(temperatureMeta.units)}</strong>
+                <small>{temperatureMeta.minimum.toFixed(3)}–{temperatureMeta.maximum.toFixed(3)} catalog range</small>
+              </article>
+            )}
+            {salinityMeta && (
+              <article data-active={variable === "so" ? "true" : "false"}>
+                <span>{salinityMeta.label.toUpperCase()}</span>
+                <strong>{displayUnits(salinityMeta.units)}</strong>
+                <small>{salinityMeta.minimum.toFixed(3)}–{salinityMeta.maximum.toFixed(3)} catalog range</small>
+              </article>
+            )}
+          </div>
+          <p>Variable selection changes the requested telemetry payload; display switching does not transform source values.</p>
+        </div>
+      </section>
 
+      <section id="telemetry-statistics" className="telemetry-directory-section" data-telemetry-home="statistics">
+        <header className="telemetry-directory-heading">
+          <div>
+            <span>STATISTICS</span>
+            <h3>Selected-depth distribution and horizontal-current summaries</h3>
+          </div>
+          <small>Descriptive full-grid summaries only</small>
+        </header>
+        {telemetry && selectedStat ? (
+          <div className="telemetry-statistics-grid">
+            <SelectedDepthCard stat={selectedStat} telemetry={telemetry} />
+            <CurrentTelemetryCard telemetry={telemetry} />
+          </div>
+        ) : (
+          !loading && !error && <div className="telemetry-inline-warning">Statistics are unavailable for the current telemetry payload.</div>
+        )}
+      </section>
+
+      <section id="telemetry-export-evidence" className="telemetry-directory-section" data-telemetry-home="export-evidence">
+        <header className="telemetry-directory-heading">
+          <div>
+            <span>EXPORT / EVIDENCE</span>
+            <h3>Download the selected telemetry evidence and inspect its method</h3>
+          </div>
+          <small>Export stays tied to the active variable, genuine time index and retained source depths.</small>
+        </header>
+        <div className="telemetry-export-actions">
+          <button
+            type="button"
+            className="telemetry-download"
+            disabled={!telemetry}
+            onClick={() => telemetry && downloadTelemetryCsv(telemetry)}
+          >
+            Download depth telemetry CSV
+          </button>
+          <span>
+            {telemetry
+              ? telemetry.depth_stats.length + " depth rows · " + telemetry.time.replace("T", " ").replace("Z", " UTC")
+              : "No telemetry payload loaded"}
+          </span>
+        </div>
+        {telemetry && selectedStat && (
           <section className="telemetry-method-card">
             <div>
               <span>STATISTIC DEFINITION</span>
@@ -795,8 +889,8 @@ export function TelemetryPage({ catalog, provenance, argoProfiles, importedProfi
               <div><dt>Model DOI</dt><dd>{provenance?.model.doi ?? catalog.dataset.doi}</dd></div>
             </dl>
           </section>
-        </>
-      ) : null}
+        )}
+      </section>
     </main>
   );
 }
