@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
 import {
-  INDIAN_OCEAN_MAIN_BLOCKS,
   MAIN_BLOCK_ENGINE_VERSION,
   MAIN_BLOCK_REGIONS,
   TARGET_BLOCK_COUNT,
