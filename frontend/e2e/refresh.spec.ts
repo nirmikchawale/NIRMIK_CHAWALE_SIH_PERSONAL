@@ -41,6 +41,9 @@ test('mobile refresh accepts a touch pull without stealing document scrolling', 
   await Promise.all([page.waitForEvent('load'), touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })]);
   await expect(refresh).toBeEnabled();
   await expect(page).toHaveURL(/#\/about$/);
-  await page.locator('.science-footer').scrollIntoViewIfNeeded();
-  await expect(page.locator('.science-footer')).toBeInViewport();
+
+  const contextHeader = page.getByTestId('scientific-context-header');
+  await expect(contextHeader).toBeVisible();
+  await expect(contextHeader).toBeInViewport();
+  await expect.poll(() => page.evaluate(() => document.scrollingElement?.scrollTop ?? 0)).toBe(0);
 });
