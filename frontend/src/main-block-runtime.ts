@@ -6,6 +6,7 @@ import {
 } from "./main-block-engine";
 import { deriveMainBlockCapabilities } from "./main-block-capabilities";
 import { findGeographicMainBlockAt } from "./main-block-geography";
+import { isOceanIntersectingMainBlockId } from "./main-block-ocean-mask";
 
 export const ACTIVE_MAIN_BLOCK_STORAGE_KEY = "oceancanvas-active-main-block-v1";
 export const ACTIVE_MAIN_BLOCK_EVENT = "oceancanvas:active-main-block";
@@ -66,7 +67,7 @@ export function pilotAvailableDates(id: string): readonly string[] {
 export function resolveMainBlock(id: string | null | undefined): ActiveMainBlock {
   if (id === CURRENT_VERIFIED_BASELINE.id) return CURRENT_VERIFIED_BASELINE;
   const block = INDIAN_OCEAN_MAIN_BLOCKS.find((candidate) => candidate.id === id);
-  if (!block) return CURRENT_VERIFIED_BASELINE;
+  if (!block || !isOceanIntersectingMainBlockId(block.id)) return CURRENT_VERIFIED_BASELINE;
   if (!isPhase35bPilotId(block.id)) return block;
 
   const dates = pilotAvailableDates(block.id);
@@ -112,7 +113,7 @@ export function readMainBlockFromHash(hash = window.location.hash): string | nul
 
   if (requested === CURRENT_VERIFIED_BASELINE.id) return requested;
   const exact = INDIAN_OCEAN_MAIN_BLOCKS.find((candidate) => candidate.id === requested);
-  return exact?.id ?? null;
+  return exact && isOceanIntersectingMainBlockId(exact.id) ? exact.id : null;
 }
 
 export function writeMainBlockToHash(id: string): void {
@@ -165,18 +166,11 @@ export function publishActiveMainBlockId(id: string): string {
   }
   writeMainBlockToHash(requested.id);
 
-  // Switching into or out of a source-backed pilot changes the actual scientific
-  // payload family. App.tsx builds its catalog once at startup, so perform one
-  // deterministic reload for those source-context transitions. Do not emit the
-  // in-session selection event before that reload: doing so would briefly advertise
-  // a new scientific block while the renderer still owns the previous payload family.
-  // Non-reloading geographic/baseline changes remain immediate.
-  const sourceContextChanged =
-    requested.id !== previous.id &&
-    (requested.materialization === "pilot" || previous.materialization === "pilot");
-  if (sourceContextChanged) {
-    window.setTimeout(() => window.location.reload(), 40);
-  } else {
+  // 3DB-07 removes the historical full-page source-context reload. Scientific
+  // consumers now react to this event and refresh the catalog/payload family in
+  // place. This keeps block selection continuous and prevents a block click from
+  // unexpectedly replacing the whole application session.
+  if (requested.id !== previous.id) {
     window.dispatchEvent(new CustomEvent<string>(ACTIVE_MAIN_BLOCK_EVENT, { detail: requested.id }));
   }
   return requested.id;
@@ -192,7 +186,8 @@ export function subscribeActiveMainBlock(listener: (id: string) => void): () => 
 }
 
 export function findTargetBlockAt(longitude: number, latitude: number): OceanMainBlock | null {
-  return findGeographicMainBlockAt(longitude, latitude);
+  const block = findGeographicMainBlockAt(longitude, latitude);
+  return block && isOceanIntersectingMainBlockId(block.id) ? block : null;
 }
 
 export function activeMainBlockRegion(block: ActiveMainBlock): string {
