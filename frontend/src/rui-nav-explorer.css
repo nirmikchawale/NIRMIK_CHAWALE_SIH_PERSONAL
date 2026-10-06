@@ -32,6 +32,35 @@
     "evidence";
 }
 
+/* Preserve the station's existing inspector/analysis ownership while adding NAV-02 rows.
+   Without an explicit inspector area, the existing evidence/profile/analysis panels are
+   placed into an implicit grid track and can resolve as hidden under size containment. */
+.ocean-workbench[data-page="explore"] .station-workspace[data-inspector="open"],
+.ocean-workbench[data-page="explore"][data-workspace-mode="analysis"] .station-workspace {
+  grid-template-columns:256px minmax(0,1fr) 320px;
+  grid-template-areas:
+    "directory directory directory"
+    "source source source"
+    "controls block inspector"
+    "controls dock inspector"
+    "controls scene inspector"
+    "controls range inspector"
+    "controls evidence inspector";
+}
+
+.ocean-workbench[data-page="explore"][data-control-dock="closed"] .station-workspace[data-inspector="open"],
+.ocean-workbench[data-page="explore"][data-workspace-mode="analysis"][data-control-dock="closed"] .station-workspace {
+  grid-template-columns:minmax(0,1fr) 380px;
+  grid-template-areas:
+    "directory directory"
+    "source source"
+    "block inspector"
+    "dock inspector"
+    "scene inspector"
+    "range inspector"
+    "evidence inspector";
+}
+
 .explorer-directory-shell {
   grid-area:directory;
   display:grid;
@@ -190,6 +219,36 @@
   display:none!important;
 }
 
+@media (max-width:1100px) {
+  .ocean-workbench[data-page="explore"] .station-workspace[data-inspector="open"],
+  .ocean-workbench[data-page="explore"][data-workspace-mode="analysis"] .station-workspace {
+    grid-template-columns:240px minmax(0,1fr);
+    grid-template-areas:
+      "directory directory"
+      "source source"
+      "controls block"
+      "controls dock"
+      "controls scene"
+      "controls range"
+      "controls inspector"
+      "controls evidence";
+  }
+
+  .ocean-workbench[data-page="explore"][data-control-dock="closed"] .station-workspace[data-inspector="open"],
+  .ocean-workbench[data-page="explore"][data-workspace-mode="analysis"][data-control-dock="closed"] .station-workspace {
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:
+      "directory"
+      "source"
+      "block"
+      "dock"
+      "scene"
+      "range"
+      "inspector"
+      "evidence";
+  }
+}
+
 @media (max-width:1000px) {
   .explorer-directory-shell {
     grid-template-columns:1fr;
@@ -214,7 +273,9 @@
 
 @media (max-width:760px) {
   .ocean-workbench[data-page="explore"] .station-workspace,
-  .ocean-workbench[data-page="explore"][data-control-dock="closed"] .station-workspace {
+  .ocean-workbench[data-page="explore"][data-control-dock="closed"] .station-workspace,
+  .ocean-workbench[data-page="explore"] .station-workspace[data-inspector="open"],
+  .ocean-workbench[data-page="explore"][data-workspace-mode="analysis"] .station-workspace {
     grid-template-columns:minmax(0,1fr)!important;
     grid-template-areas:
       "directory"
@@ -223,7 +284,19 @@
       "dock"
       "scene"
       "range"
+      "controls"
+      "inspector"
       "evidence"!important;
+    grid-template-rows:auto auto auto auto 480px auto auto auto auto!important;
+  }
+
+  /* Phase 5 hid the old fixed mobile launchers because the globe HUD owned that
+     interaction. NAV-02 has moved these same controls into a normal-flow canonical
+     Block System home, where they must be reachable again. */
+  body:has(.ocean-workbench[data-page="explore"]) .explorer-block-system-home .phase35-block-launcher,
+  body:has(.ocean-workbench[data-page="explore"]) .explorer-block-system-home .phase3-atlas-launcher {
+    display:flex!important;
+    pointer-events:auto!important;
   }
 
   .explorer-directory-shell {
