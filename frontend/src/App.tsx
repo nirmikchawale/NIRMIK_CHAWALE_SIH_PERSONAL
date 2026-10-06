@@ -31,6 +31,7 @@ import argoLogo4a from "./assets/exact-logo-04a.b64?raw";
 import argoLogo4b from "./assets/exact-logo-04b.b64?raw";
 import { PAGE_ITEMS, routeFromHash, type PageId } from "./navigation";
 import { readScientificWorkspaceContext } from "./scientific-context-runtime";
+import { subscribeActiveMainBlock } from "./main-block-runtime";
 import {
   buildIncoisChlorophyllCatalog,
   buildIncoisChlorophyllField,
@@ -144,6 +145,22 @@ export default function App() {
   const [startupError, setStartupError] = useState("");
   useStartupScreen(Boolean(catalog), Boolean(startupError));
   const [degradedWarnings, setDegradedWarnings] = useState<string[]>([]);
+  const [mainBlockRevision, setMainBlockRevision] = useState(0);
+
+  useEffect(() => subscribeActiveMainBlock(() => {
+    // 3DB-07 replaces the historical block-triggered full-page reload with an
+    // in-session scientific source refresh. Reset only source-coupled state;
+    // navigation, camera shell and the rest of the app session stay intact.
+    setPlaying(false);
+    setTimeIndex(0);
+    setSourceMode("glorys");
+    setVariable((current) => current === "chlorophyll" ? "thetao" : current);
+    setSelectedProfileId("");
+    setProfileDetail(null);
+    setProfilePanelOpen(false);
+    setProfileCalloutOpen(false);
+    setMainBlockRevision((current) => current + 1);
+  }), []);
 
   const operationalCatalog = useMemo(
     () => operationalSnapshot ? buildIncoisExploreCatalog(operationalSnapshot) : null,
@@ -404,7 +421,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [mainBlockRevision]);
 
   useEffect(() => {
     let cancelled = false;
@@ -445,6 +462,8 @@ export default function App() {
               : false;
             setSelectedProfileId(requestedProfileExists ? requestedProfileId! : nextProfiles[0].profile_id);
           } else {
+            setSelectedProfileId("");
+            setProfileDetail(null);
             setDegradedWarnings((current) => current.includes("No eligible Argo comparison profiles") ? current : [...current, "No eligible Argo comparison profiles"]);
           }
         } else {
@@ -456,7 +475,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [mainBlockRevision]);
 
   useEffect(() => {
     if (!exploreCatalog) return;
