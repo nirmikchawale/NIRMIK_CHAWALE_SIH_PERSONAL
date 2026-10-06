@@ -1,4 +1,4 @@
-import { useMemo, useState, type PointerEvent } from "react";
+import { useMemo, useState } from "react";
 
 import type { Catalog, ProfileDetail, VariableCard } from "../types";
 
@@ -104,11 +104,11 @@ export function AnalysisSplitPanel({ catalog, variable, depthM, time, detail, on
     ? chartPoint(activeLevel.observed_temperature, activeLevel.observation_depth_m, xMin, xMax, maxDepth).y
     : CHART_PAD;
 
-  const syncFromPointer = (event: PointerEvent<SVGSVGElement>) => {
+  const syncFromClientY = (target: SVGSVGElement, clientY: number) => {
     if (!detail || detail.levels.length === 0) return;
-    const bounds = event.currentTarget.getBoundingClientRect();
+    const bounds = target.getBoundingClientRect();
     if (bounds.height <= 0) return;
-    const localY = ((event.clientY - bounds.top) / bounds.height) * CHART_HEIGHT;
+    const localY = ((clientY - bounds.top) / bounds.height) * CHART_HEIGHT;
     const fraction = clamp((localY - CHART_PAD) / (CHART_HEIGHT - CHART_PAD * 2), 0, 1);
     const targetDepth = fraction * maxDepth;
     const nextIndex = nearestIndex(
@@ -184,9 +184,12 @@ export function AnalysisSplitPanel({ catalog, variable, depthM, time, detail, on
               viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
               role="application"
               aria-label="Interactive synchronized model and Argo temperature profile"
-              onPointerMove={syncFromPointer}
-              onPointerDown={syncFromPointer}
+              onPointerMove={(event) => syncFromClientY(event.currentTarget, event.clientY)}
+              onPointerDown={(event) => syncFromClientY(event.currentTarget, event.clientY)}
+              onMouseMove={(event) => syncFromClientY(event.currentTarget, event.clientY)}
+              onMouseDown={(event) => syncFromClientY(event.currentTarget, event.clientY)}
               onPointerLeave={() => setHoveredLevelIndex(null)}
+              onMouseLeave={() => setHoveredLevelIndex(null)}
             >
               <rect
                 x="0"
