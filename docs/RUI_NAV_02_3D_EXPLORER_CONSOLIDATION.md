@@ -21,11 +21,12 @@ NAV-02 is reconciled on the production tree containing:
 - RUI-02 workspace-owned scientific context (`ScientificContextHeader` / `WorkspaceContextHost`);
 - 3DB-03 geographic main-block ownership;
 - 3DB-04 fail-closed Cesium rendering contract;
-- 3DB-05 Geographic ↔ Water Column synchronization and canonical baseline/pilot/planned lifecycle identity.
+- 3DB-05 Geographic ↔ Water Column synchronization and canonical baseline/pilot/planned lifecycle identity;
+- 3DB-06 native multi-depth block integration with exact positive-down source-depth ownership.
 
 RUI-VIS-01 remains authoritative for the visual shell. NAV-02 adds Explorer-specific consolidation inside that shell and does not revert its route hierarchy, file-manager presentation, visual tokens, or responsive shell behavior.
 
-3DB-05 remains authoritative for scientific state. NAV-02 does not change block payload values, coordinate/time/depth validation, materialization state, source-backed eligibility, Water Column fail-closed behavior, current-vector semantics, provenance, or QC.
+3DB-05/06 remain authoritative for scientific state and depth ownership. NAV-02 does not change block payload values, coordinate/time/depth validation, native multi-depth selection, materialization state, source-backed eligibility, Water Column fail-closed behavior, current-vector semantics, provenance, or QC.
 
 ## Frozen Explorer hierarchy
 
@@ -108,6 +109,7 @@ NAV-02 must preserve all of the following:
 - source-backed pilot vs planned target distinction;
 - planned cells cannot become scientific renderer sources;
 - 3DB-05 Geographic ↔ Water Column synchronization;
+- 3DB-06 exact positive-down GLORYS source-depth semantics;
 - genuine source coordinates, native timestamps and source depth levels;
 - no synthetic scientific measurements, timestamps, coordinates or depths;
 - horizontal current semantics only; no vertical component inference;
@@ -130,7 +132,7 @@ NAV-02 is not complete until all of the following are true on the exact branch h
 
 1. TypeScript / React / Cesium build succeeds.
 2. Existing scientific API/fallback suite succeeds.
-3. Existing 3DB-03/04/05 browser coverage succeeds.
+3. Existing 3DB-03/04/05/06 browser coverage succeeds.
 4. Existing NAV-01 and VIS-01 shell coverage succeeds.
 5. NAV-02 browser acceptance confirms all eleven Explorer homes.
 6. Workspace mode changes still use production App behavior.
