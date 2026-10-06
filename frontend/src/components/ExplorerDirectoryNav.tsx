@@ -21,26 +21,23 @@ interface Props {
 }
 
 const DIRECTORIES: Array<{ id: ExplorerDirectoryId; label: string; target: string }> = [
-  { id: "overview", label: "Overview", target: "explorer-overview" },
-  { id: "workspace", label: "Workspace", target: "explorer-workspace" },
-  { id: "block-system", label: "Block System", target: "explorer-block-system" },
-  { id: "scene-controls", label: "Scene Controls", target: "explorer-scene-controls" },
-  { id: "variables", label: "Variables", target: "explore-variables" },
-  { id: "display-range", label: "Display Range", target: "explorer-display-range" },
-  { id: "depth-section", label: "Depth & Section", target: "explore-depth" },
-  { id: "time", label: "Time", target: "explore-time" },
-  { id: "observations", label: "Observations", target: "explore-observations" },
-  { id: "render-quality", label: "Render Quality", target: "explorer-render-quality" },
-  { id: "context-info", label: "Context & Info", target: "explorer-context-info" }
+  { id: "overview", label: "Overview", target: ".evidence-status-pill, .evidence-rail" },
+  { id: "workspace", label: "Workspace", target: ".visualization-dock" },
+  { id: "block-system", label: "Block System", target: "[data-testid='rui-nav-02-block-system']" },
+  { id: "scene-controls", label: "Scene Controls", target: ".renderer-tools" },
+  { id: "variables", label: "Variables", target: "#explore-variables" },
+  { id: "display-range", label: "Display Range", target: ".scientific-colorbar-hud" },
+  { id: "depth-section", label: "Depth & Section", target: "#explore-depth" },
+  { id: "time", label: "Time", target: "#explore-time" },
+  { id: "observations", label: "Observations", target: "#explore-observations" },
+  { id: "render-quality", label: "Render Quality", target: ".imagery-control" },
+  { id: "context-info", label: "Context & Info", target: ".source-workbench" }
 ];
 
 function revealDirectory(target: string) {
-  const element = document.getElementById(target);
-  if (!element) return;
+  const element = document.querySelector(target);
+  if (!(element instanceof HTMLElement)) return;
   element.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  if (element instanceof HTMLElement) {
-    element.focus({ preventScroll: true });
-  }
 }
 
 export function ExplorerDirectoryNav({
