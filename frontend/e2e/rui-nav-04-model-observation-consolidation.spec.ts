@@ -66,7 +66,7 @@ test("RUI-NAV-04 preserves profile switching and scientific source context", asy
   await selector.selectOption({ index: 1 });
   await expect(comparison.locator(".comparison-selector-meta strong")).not.toHaveText(initial ?? "");
   await expect(comparison.locator("#comparison-observation-sources")).toContainText("Ifremer Argo GDAC");
-  await expect(comparison.locator("#comparison-observation-sources")).toContainText("GLORYS");
+  await expect(comparison.locator("#comparison-observation-sources")).toContainText("GLOBAL_MULTIYEAR_PHY_001_030");
 });
 
 test("RUI-NAV-04 retains directory and core evidence access on mobile", async ({ page }) => {
