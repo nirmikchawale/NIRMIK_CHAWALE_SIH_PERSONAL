@@ -1,39 +1,55 @@
 # Chat 1 execution ledger
 
-This index records observed evidence, not submission assumptions. Chat 1 owns visual integration only.
+Chat 1 owns presentation only. Repository and run evidence outrank old conversation checkpoints.
+For an interrupted phase, also inspect its named branch for a newer evidence-only checkpoint.
 
 ## Last verified production
 
-- Main: `239806074779b19f12b2c203f0adcf03cc4cdbe8` — Merge RUI-VIS-02 3D Explorer visual integration.
-- RUI-VIS-02: LIVE & VERIFIED; do not rebuild.
-- tests #1804 / run 37632836486: success.
-- final-mvp #642 / run 37632836432: success.
-- Pages #186 / run 37632836434: build, deploy, public HTTPS and live Chromium steps success.
-- Production HTTPS returned 200 and live Telemetry inspected on 2026-10-07.
+Main: `743df7b97a59681ab58468910f61345fa748e876` — merged 3DB-08, containing VIS-03.
+Tests 37648971119, final-mvp 37648970974, Pages 37648970893: SUCCESS.
+Pages build/deploy/HTTPS/live Chromium: SUCCESS; 104 public browser tests passed.
+VIS-02 remains LIVE & VERIFIED; do not rebuild completed phases.
 
 ## RUI-VIS-03
 
-PHASE: RUI-VIS-03 — Telemetry Visual Integration
-STATUS: IN PROGRESS
+PHASE: Telemetry Visual Integration
+STATUS: LIVE & VERIFIED
 STARTING MAIN: 239806074779b19f12b2c203f0adcf03cc4cdbe8
 BRANCH: rui-vis-03-telemetry-visual-integration
-CURRENT BRANCH HEAD: resolve this branch on GitHub; this checkpoint is self-identifying in its commit
-PR: pending creation
-FILES CHANGED: frontend/src/rui-nav-telemetry.css; frontend/e2e/rui-vis-03-telemetry-visual.spec.ts; docs/RUI_VIS_03_TELEMETRY_VISUAL_INTEGRATION.md; this ledger
-LAST GREEN CI: production baseline above; local typecheck/build pass
-FAILED/OPEN GATES: candidate CI and browser acceptance pending; local browser archive download invalid
-MERGE SHA: none
-NEW MAIN SHA: unchanged
-PAGES RUN: no candidate deployment
-LIVE URL: https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/
-LIVE VERIFICATION: previous production only
-SCIENCE CHANGES: none; CSS/test/docs only
-CONCURRENT PRS OBSERVED: #151 3DB-08 at 9094b84a29453470fcb1404871aa4a93f44f6de9; old #140 readiness; no open NAV PR
-NEXT EXACT STEP: run exact-head CI and full browser suite; fix candidate failures; fetch fresh main before protected merge; then verify exact-main CI and public deployment
-TIMESTAMP/SESSION NOTE: 2026-10-07; Chat 1 continuation
+CURRENT BRANCH HEAD: validated runtime 0f2ee698468e8e00e9062ad0e3f97e25e80f4737; later branch checkpoint 0281ffee7c4d83c9b40e68d62fbc3c6d1122bcfd records merge gates
+PR: #152 MERGED
+FILES CHANGED: Telemetry CSS; phase browser tests; phase documentation; ledger
+LAST GREEN CI: candidate tests 37645237014; final-mvp 37645237025 (100 browser tests); exact merge tests 37646905022 and final-mvp 37646905240
+FAILED/OPEN GATES: none; older Pages 37646905230 cancelled during superseding 3DB-08 release, resolved by successful containing-main Pages 37648970893
+MERGE SHA: 89e6754603b615a75a9890c75eb2a88c498e0d31
+NEW MAIN SHA: latest verified containing main 743df7b97a59681ab58468910f61345fa748e876
+PAGES RUN: 37648970893 SUCCESS
+LIVE URL: https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/#/telemetry
+LIVE VERIFICATION: 104 public Chromium tests including four VIS-03 viewports; manual directory/depth-ladder inspection
+SCIENCE CHANGES: none
+CONCURRENT PRS OBSERVED: #151 merged, fully preserved
+NEXT EXACT STEP: VIS-04, below
+TIMESTAMP/SESSION NOTE: closure verified 2026-10-08 IST
 
 ## RUI-VIS-04
 
-STATUS: PLANNED. Start only after VIS-03 is LIVE & VERIFIED, from fresh main, on its own branch.
-Scope: visual integration of the existing eight RUI-NAV-04 Model vs Observation homes.
-After VIS-04, leave VIS-05 as the next session's phase; do not start a third phase here.
+PHASE: Model vs Observation Visual Integration
+STATUS: IN PROGRESS
+STARTING MAIN: 743df7b97a59681ab58468910f61345fa748e876
+BRANCH: rui-vis-04-model-observation-visual-integration
+CURRENT BRANCH HEAD: resolve named branch; this commit identifies the initial candidate
+PR: pending creation
+FILES CHANGED: comparison CSS; VIS-04 browser tests; VIS-04 document; VIS-03 closure document; ledger
+LAST GREEN CI: starting production above; local typecheck/build
+FAILED/OPEN GATES: candidate CI/full browser, fresh-main merge gate, exact-main CI/deployment/live acceptance
+MERGE SHA: none
+NEW MAIN SHA: unchanged
+PAGES RUN: none for candidate
+LIVE URL: https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/#/compare
+LIVE VERIFICATION: previous production only
+SCIENCE CHANGES: none; CSS/test/docs only
+CONCURRENT PRS OBSERVED: no open new NAV/3DB PR; old #140 readiness unrelated
+NEXT EXACT STEP: verify candidate tests/final-mvp/full browser; reconcile fresh main if advanced; protected merge; verify exact-main and public Pages before marking live
+TIMESTAMP/SESSION NOTE: 2026-10-08 IST
+
+Next after VIS-04 closure: RUI-VIS-05 Anomaly Screening. Do not begin a third phase in this session.

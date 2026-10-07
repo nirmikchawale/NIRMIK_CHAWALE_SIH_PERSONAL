@@ -155,3 +155,133 @@
   .comparison-directory-shell *,
   .comparison-directory-section * { scroll-behavior:auto!important; }
 }
+
+/* RUI-VIS-04: visual integration only; NAV-04 homes and comparison science unchanged. */
+.ocean-workbench .comparison-page {
+  padding:20px clamp(12px,2vw,28px) 40px;
+  font-variant-numeric:tabular-nums;
+  --comparison-cool:#91d8ef;
+  --comparison-warm:#f6b7b0;
+}
+:root[data-theme="light"] .ocean-workbench .comparison-page {
+  --comparison-cool:#075b82;
+  --comparison-warm:#9a313b;
+}
+.ocean-workbench .comparison-page .comparison-directory-shell {
+  grid-template-columns:1fr;
+  gap:8px;
+  padding:12px;
+  border-radius:12px;
+  background:var(--station-panel);
+  border-color:var(--station-line);
+}
+.ocean-workbench .comparison-page .comparison-directory-title {
+  display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 12px;
+}
+.ocean-workbench .comparison-page .comparison-directory-nav {
+  flex-wrap:wrap; overflow:visible; gap:6px;
+}
+.ocean-workbench .comparison-page .comparison-directory-section {
+  padding:16px;
+  border-color:var(--station-line);
+  background:color-mix(in srgb,var(--station-panel) 55%,transparent);
+  scroll-margin-top:155px;
+}
+.ocean-workbench .comparison-page .comparison-hero {
+  padding:0;
+  grid-template-columns:minmax(0,1fr) minmax(230px,.55fr);
+  align-items:start;
+  gap:16px;
+}
+.ocean-workbench .comparison-page .comparison-hero h2 {
+  font-size:clamp(24px,2.3vw,32px); line-height:1.15; margin:6px 0 10px;
+}
+.ocean-workbench .comparison-page :is(h2,h3,strong,dd) { color:var(--station-text); }
+.ocean-workbench .comparison-page :is(p,label) { font-size:13px; line-height:1.55; color:var(--station-muted); }
+.ocean-workbench .comparison-page :is(small,dt,dd) { font-size:12px; line-height:1.45; overflow-wrap:anywhere; }
+.ocean-workbench .comparison-page :is(small,dt) { color:var(--station-muted); }
+.ocean-workbench .comparison-page :is(.comparison-selector-card,.comparison-source-summary,
+ .comparison-location-card,.comparison-levels-card,.comparison-chart-card,.comparison-depth-inspector,
+ .comparison-diagnostic-summary,.comparison-method-card,.comparison-provenance-card,.comparison-state-card) {
+  min-width:0; background:var(--station-panel); border:1px solid var(--station-line);
+  border-radius:10px; box-shadow:none;
+}
+.ocean-workbench .comparison-page .comparison-overview-guardrail {
+  padding:12px; border-radius:10px;
+  border-color:var(--station-line); border-left:3px solid var(--station-accent);
+  background:var(--station-raised);
+}
+.ocean-workbench .comparison-page :is(.comparison-directory-title,.comparison-directory-heading,
+ .comparison-overview-guardrail,.comparison-selector-meta,.comparison-source-summary,
+ .comparison-card-heading,.comparison-depth-values,.comparison-diagnostic-grid,
+ .comparison-metrics,.comparison-provenance-card) span {
+  font-size:11px; line-height:1.45; color:var(--station-muted);
+}
+.ocean-workbench .comparison-page :is(.comparison-source-summary strong,.comparison-selector-meta strong,
+ .comparison-card-heading > strong,.comparison-provenance-card strong) { font-size:13px; }
+.ocean-workbench .comparison-page .comparison-directory-heading { border-color:var(--station-line); }
+.ocean-workbench .comparison-page .comparison-directory-heading > small { max-width:34ch; }
+.ocean-workbench .comparison-page :is(button,select) {
+  min-height:40px; max-width:100%; font-size:12px; line-height:1.4;
+  border-color:var(--station-line); color:var(--station-text); background:var(--station-raised);
+}
+.ocean-workbench .comparison-page select { width:100%; margin-top:8px; border:1px solid var(--station-accent); }
+.ocean-workbench .comparison-page input[type="range"] { min-height:44px; accent-color:var(--station-accent); }
+.ocean-workbench .comparison-page :is(button,select,input,a):focus-visible {
+  outline:3px solid var(--station-accent); outline-offset:3px;
+}
+.ocean-workbench .comparison-page button:hover:not(:disabled) { border-color:var(--station-accent); }
+.ocean-workbench .comparison-page :disabled { cursor:not-allowed; opacity:.6; }
+.ocean-workbench .comparison-page :is(.comparison-depth-values,.comparison-diagnostic-grid) > div,
+.ocean-workbench .comparison-page .comparison-metrics article {
+  background:var(--station-raised); border-color:var(--station-line); box-shadow:none;
+}
+.ocean-workbench .comparison-page .comparison-depth-values strong { font-size:18px; }
+.ocean-workbench .comparison-page .comparison-diagnostic-grid strong { font-size:16px; }
+.ocean-workbench .comparison-page .comparison-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.ocean-workbench .comparison-page .comparison-metrics article { min-height:84px; }
+.ocean-workbench .comparison-page .comparison-metrics strong { font-size:22px; }
+.ocean-workbench .comparison-page .comparison-depth-inspector { border-left:3px solid var(--station-accent); }
+.ocean-workbench .comparison-page .comparison-chart-legend { font-size:12px; color:var(--station-muted); line-height:1.45; }
+.ocean-workbench .comparison-page .comparison-bias-meter { background:var(--station-raised); border-color:var(--station-line); }
+.ocean-workbench .comparison-page .cooler-label { color:var(--comparison-cool); font-size:11px; }
+.ocean-workbench .comparison-page .warmer-label { color:var(--comparison-warm); font-size:11px; }
+.ocean-workbench .comparison-page .positive-bias { color:var(--comparison-warm)!important; }
+.ocean-workbench .comparison-page .negative-bias { color:var(--comparison-cool)!important; }
+.ocean-workbench .comparison-page .bias-meter-zero { background:var(--station-text); }
+.ocean-workbench .comparison-page .comparison-table-wrap { border-color:var(--station-line); }
+.ocean-workbench .comparison-page .comparison-table-wrap th {
+  font-size:11px; background:var(--station-raised); color:var(--station-text);
+}
+.ocean-workbench .comparison-page .comparison-table-wrap td { font-size:12px; color:var(--station-text); border-color:var(--station-line); }
+.ocean-workbench .comparison-page .comparison-method-pipeline { flex-wrap:wrap; }
+.ocean-workbench .comparison-page .comparison-method-pipeline span { font-size:12px; color:var(--station-text); background:var(--station-raised); border-color:var(--station-line); }
+.ocean-workbench .comparison-page .comparison-provenance-card { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.ocean-workbench .comparison-page .comparison-downloads { grid-column:1/-1; }
+@media (max-width:1100px) {
+  .ocean-workbench .comparison-page .comparison-hero { grid-template-columns:1fr; }
+  .ocean-workbench .comparison-page :is(.comparison-source-grid,.comparison-matchup-grid) { grid-template-columns:1fr; }
+}
+@media (max-width:900px) {
+  .ocean-workbench .comparison-page .comparison-directory-section { scroll-margin-top:16px; }
+}
+@media (max-width:600px) {
+  .ocean-workbench .comparison-page .comparison-directory-section { padding:10px; }
+  .ocean-workbench .comparison-page :is(button,select) { min-height:44px; }
+  .ocean-workbench .comparison-page .comparison-directory-nav { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .ocean-workbench .comparison-page :is(.comparison-depth-values,.comparison-diagnostic-grid,.comparison-metrics) { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .ocean-workbench .comparison-page .comparison-card-heading { flex-wrap:wrap; gap:6px; }
+  .ocean-workbench .comparison-page .comparison-card-heading > strong { white-space:normal; }
+  .ocean-workbench .comparison-page :is(.comparison-provenance-card,.comparison-downloads) { grid-template-columns:1fr; }
+  .ocean-workbench .comparison-page :is(.comparison-location-card,.comparison-method-card) dl > div { grid-template-columns:1fr; gap:4px; }
+  .ocean-workbench .comparison-page .comparison-directory-heading > small { max-width:none; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .ocean-workbench .comparison-page,.ocean-workbench .comparison-page * {
+    scroll-behavior:auto!important; transition:none!important; animation:none!important;
+  }
+}
+@media (forced-colors:active) {
+  .ocean-workbench .comparison-page :focus-visible { outline-color:Highlight; }
+  .ocean-workbench .comparison-page :is(.positive-bias,.negative-bias) { color:CanvasText!important; }
+}

@@ -36,3 +36,18 @@ Inherited NAV, VIS and scientific browser suites remain unchanged and required.
 Pending: exact-head tests/final-mvp/full browser acceptance, fresh-main race check,
 protected merge, exact-main tests/final-mvp, Pages build/deploy/public HTTPS/live Chromium.
 See `RUI_CHAT1_EXECUTION_LEDGER.md` for the restart checkpoint.
+
+## Verified closure — 2026-10-07 / resumed 2026-10-08 IST
+
+Status: **LIVE & VERIFIED**. This closure supersedes the candidate status above.
+PR #152 merged validated head `0f2ee698468e8e00e9062ad0e3f97e25e80f4737` as
+`89e6754603b615a75a9890c75eb2a88c498e0d31`. Candidate final-mvp 37645237025
+passed all 100 browser tests. Exact merge tests 37646905022 and final-mvp 37646905240 passed.
+Pages 37646905230 built and deployed, then its public check was superseded by concurrent 3DB-08.
+
+The containing production main `743df7b97a59681ab58468910f61345fa748e876` (PR #151)
+passed tests 37648971119, final-mvp 37648970974 and Pages 37648970893.
+That Pages run passed build, deploy, HTTPS and **104 live Chromium tests**, including
+all four VIS-03 viewport cases. This is the final live acceptance evidence; the cancelled
+older Pages run is not represented as green. Manual live inspection confirmed directory
+containment and the exact-depth ladder. No Telemetry science changes were made.
