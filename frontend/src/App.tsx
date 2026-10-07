@@ -1163,6 +1163,7 @@ export default function App() {
                     profiles={activeComparisonProfiles}
                     selectedProfileId={sourceMode === "glorys" ? selectedProfileId : ""}
                     importedProfiles={importedProfiles}
+                    verifiedObservationProfiles={verifiedObservationProfiles}
                     selectedImportedProfileId={selectedImportedProfileId}
                     verticalExaggeration={verticalExaggeration}
                     colorPalette={colorPalette}

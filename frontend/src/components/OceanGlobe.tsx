@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArcGisMapServerImageryProvider,
   Cartesian2,
@@ -51,6 +51,7 @@ import {
   oceanCoverageYellow
 } from "../main-block-ocean-mask";
 import { fetchPilotMainBlockManifest } from "../pilot-main-block-loader";
+import { deriveMainBlockObservationIntegration } from "../main-block-observations";
 import {
   buildCesiumCurrentsRenderPlan,
   buildCesiumFieldRenderPlan,
@@ -88,6 +89,7 @@ interface Props {
   profiles: ProfileSummary[];
   selectedProfileId: string;
   importedProfiles: ImportedObservationProfile[];
+  verifiedObservationProfiles: ImportedObservationProfile[];
   selectedImportedProfileId: string;
   verticalExaggeration: number;
   colorPalette: ColorPalette;
@@ -130,6 +132,7 @@ export function OceanGlobe({
   profiles,
   selectedProfileId,
   importedProfiles,
+  verifiedObservationProfiles,
   selectedImportedProfileId,
   verticalExaggeration,
   colorPalette,
@@ -172,6 +175,13 @@ export function OceanGlobe({
   const [introPhase, setIntroPhase] = useState<"idle" | "earth" | "india" | "flying" | "region">("idle");
   const [activeMainBlockId, setActiveMainBlockId] = useState(readActiveMainBlockId);
   const activeMainBlock = resolveMainBlock(activeMainBlockId);
+  const observationIntegration = useMemo(
+    () => deriveMainBlockObservationIntegration(activeMainBlock, {
+      comparisonProfiles: profiles,
+      verifiedProfiles: verifiedObservationProfiles
+    }),
+    [activeMainBlockId, profiles, verifiedObservationProfiles]
+  );
 
   useEffect(() => subscribeActiveMainBlock(setActiveMainBlockId), []);
 
@@ -1322,6 +1332,9 @@ export function OceanGlobe({
       data-main-block-count={OCEAN_INTERSECTING_BLOCK_COUNT}
       data-active-main-block={activeMainBlock.id}
       data-active-main-block-materialization={activeMaterialization}
+      data-active-block-observation-count={observationIntegration.observationCount}
+      data-active-block-observation-evidence={observationIntegration.evidenceClass}
+      data-active-block-observation-validation={observationIntegration.modelObservationValidated ? "true" : "false"}
       data-cesium-scientific-render-ready={canCesiumRenderMainBlock(activeMainBlock) ? "true" : "false"}
     >
       <div ref={containerRef} className="cesium-host" />
@@ -1381,12 +1394,23 @@ export function OceanGlobe({
             Open in Water Column 3D
           </button>
         </div>
-        <p className="main-block-globe-boundary-note">
+        <p
+          className="main-block-globe-boundary-note"
+          data-testid="active-block-observation-context"
+          data-observation-evidence={observationIntegration.evidenceClass}
+        >
           {activeMaterialization === "verified-baseline"
             ? <>The independently validated GLORYS baseline remains <strong>reference science only</strong> and is not drawn as a block footprint.</>
             : activeMaterialization === "pilot"
               ? <>This footprint carries a <strong>genuine source-backed GLORYS pilot</strong>; no pilot-specific independent observation validation is implied.</>
               : <>This footprint is integrated into the Earth model but carries <strong>no copied or synthetic ocean values</strong> until materialized from source data.</>}
+          <br />
+          <strong>Observation context:</strong>{" "}
+          {observationIntegration.modelObservationValidated
+            ? `${observationIntegration.independentComparisonCount} verified Argo comparison profile${observationIntegration.independentComparisonCount === 1 ? "" : "s"} are independently compared to this active verified baseline.`
+            : observationIntegration.observationCount > 0
+              ? `${observationIntegration.observationCount} source-backed observation profile${observationIntegration.observationCount === 1 ? "" : "s"} fall inside this block footprint as spatial context only; no block validation is implied.`
+              : "No source-backed observation profile currently falls inside this footprint; no observation validation is claimed."}
         </p>
       </section>
       <div className="renderer-tools" aria-label="Ocean view tools">
