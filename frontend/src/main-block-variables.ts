@@ -51,7 +51,7 @@ export type MainBlockVariableIntegration =
   | LockedMainBlockVariableIntegration;
 
 const SUPPORTED_SOURCE_COMPONENTS = new Set<MainBlockSourceComponent>(["thetao", "so", "uo", "vo"]);
-const RANGE_EPSILON = 1e-9;
+// Pilot payload summary ranges are serialized to six decimal places; tolerate only that metadata rounding.\nconst RANGE_EPSILON = 1e-5;
 
 function expectedSampleCount(blockId: string, evidence: NativeVariableEvidence): number {
   const { depth, latitude, longitude } = evidence.shape;
