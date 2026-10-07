@@ -128,7 +128,7 @@ test("3DB-08 live pilot exposes exactly the three source-backed GLORYS block var
   const currents = switcher.getByRole("button", { name: /Horizontal current speed/ });
   await currents.click();
   await expect(currents).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByText(/No vertical-current component is inferred/i)).toBeVisible();
+  await expect(page.locator(".microcopy").filter({ hasText: /No vertical current is inferred/i })).toBeVisible();
 
   expect(pageErrors).toEqual([]);
 });
