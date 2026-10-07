@@ -9,6 +9,172 @@
   margin-right:auto;
 }
 
+/* RUI-VIS-03: presentation of NAV-03's seven existing homes.
+   All selectors are workspace-scoped; no data, navigation or science ownership changes. */
+.ocean-workbench .telemetry-page {
+  padding: 20px clamp(12px, 2vw, 28px) 40px;
+  font-variant-numeric: tabular-nums;
+}
+.ocean-workbench .telemetry-page .telemetry-directory-shell {
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--station-panel);
+  border-color: var(--station-line);
+}
+.ocean-workbench .telemetry-directory-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+}
+.ocean-workbench .telemetry-directory-nav {
+  flex-wrap: wrap;
+  overflow: visible;
+  gap: 6px;
+}
+.ocean-workbench .telemetry-page .telemetry-directory-section {
+  padding: 16px;
+  background: color-mix(in srgb, var(--station-panel) 55%, transparent);
+  border-color: var(--station-line);
+  scroll-margin-top: 150px;
+}
+.ocean-workbench .telemetry-page .telemetry-hero {
+  min-height: 0;
+  padding: 0 0 14px;
+  gap: 16px;
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, .55fr);
+}
+.ocean-workbench .telemetry-page .telemetry-hero h2 {
+  font-size: clamp(24px, 2.3vw, 32px);
+  line-height: 1.15;
+  margin: 6px 0 10px;
+}
+.ocean-workbench .telemetry-page :is(p, label) { font-size: 13px; line-height: 1.55; }
+.ocean-workbench .telemetry-page :is(small, dt) { font-size: 12px; line-height: 1.45; }
+.ocean-workbench .telemetry-page :is(h2, h3, strong, dd) { color: var(--station-text); }
+.ocean-workbench .telemetry-page :is(p, small, dt, label, td, th) { color: var(--station-muted); }
+.ocean-workbench .telemetry-page :is(.telemetry-card, .telemetry-source-card, .telemetry-state-card,
+  .telemetry-method-card, .telemetry-context-control, .telemetry-variable-home,
+  .telemetry-export-actions, .telemetry-directory-guide) {
+  background: var(--station-panel);
+  border: 1px solid var(--station-line);
+  border-radius: 10px;
+  box-shadow: none;
+}
+.ocean-workbench .telemetry-page :is(.telemetry-overview, .telemetry-selected-metrics,
+  .telemetry-current-metrics, .telemetry-time-values, .telemetry-sensor-grid,
+  .telemetry-sensor-list, .telemetry-variable-context-grid, .telemetry-neighborhood-metrics) article,
+.ocean-workbench .telemetry-page :is(.telemetry-method-card dl > div, .telemetry-current-vector) {
+  background: var(--station-raised);
+  border-color: var(--station-line);
+  box-shadow: none;
+  min-width: 0;
+}
+.ocean-workbench .telemetry-page :is(.telemetry-source-card, .telemetry-card-heading,
+  .telemetry-overview, .telemetry-selected-metrics, .telemetry-current-metrics,
+  .telemetry-time-values, .telemetry-sensor-grid, .telemetry-sensor-list,
+  .telemetry-variable-context-grid, .telemetry-neighborhood-metrics,
+  .telemetry-directory-title, .telemetry-directory-heading, .telemetry-context-control) span {
+  font-size: 11px;
+  color: var(--station-muted);
+  line-height: 1.45;
+}
+.ocean-workbench .telemetry-page :is(.telemetry-card-heading > strong, .telemetry-source-card strong,
+  .telemetry-selected-metrics strong, .telemetry-current-metrics strong,
+  .telemetry-time-values strong, .telemetry-current-vector strong) { font-size: 13px; }
+.ocean-workbench .telemetry-page .telemetry-overview article { min-height: 80px; padding: 12px; }
+.ocean-workbench .telemetry-page .telemetry-overview strong { font-size: 20px; }
+.ocean-workbench .telemetry-page .telemetry-directory-heading { border-color: var(--station-line); }
+.ocean-workbench .telemetry-page .telemetry-directory-heading > small { max-width: 34ch; }
+.ocean-workbench .telemetry-page :is(button, summary, select) {
+  min-height: 40px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--station-text);
+  border-color: var(--station-line);
+}
+.ocean-workbench .telemetry-page button { background: var(--station-raised); }
+.ocean-workbench .telemetry-page input[type="range"] { min-height: 32px; accent-color: var(--station-accent); }
+.ocean-workbench .telemetry-page :is(button, a, summary, select, input):focus-visible {
+  outline: 3px solid var(--station-accent);
+  outline-offset: 3px;
+}
+.ocean-workbench .telemetry-page button:hover:not(:disabled) { border-color: var(--station-accent); }
+.ocean-workbench .telemetry-page button[aria-pressed="true"],
+.ocean-workbench .telemetry-page article[data-active="true"] {
+  border-color: var(--station-accent);
+  box-shadow: inset 3px 0 var(--station-accent);
+  background: color-mix(in srgb, var(--station-accent) 16%, var(--station-panel));
+}
+.ocean-workbench .telemetry-page :disabled { cursor: not-allowed; opacity: .6; }
+.ocean-workbench .telemetry-page .telemetry-time-plot:has(.telemetry-time-lock) { min-height: 0; }
+.ocean-workbench .telemetry-page .telemetry-time-plot:has(.telemetry-time-lock) svg { max-height: 90px; }
+.ocean-workbench .telemetry-page .telemetry-time-lock {
+  position: static;
+  transform: none;
+  width: 100%;
+  margin: 0 0 12px;
+  text-align: left;
+  background: var(--station-raised);
+  border-color: var(--station-accent);
+  border-left-width: 3px;
+  color: var(--station-text);
+}
+.ocean-workbench .telemetry-page .telemetry-time-lock :is(span, strong) { font-size: 12px; }
+.ocean-workbench .telemetry-page .telemetry-depth-ladder-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.ocean-workbench .telemetry-page .telemetry-depth-ladder-grid button { min-height: 44px; }
+.ocean-workbench .telemetry-page .telemetry-depth-ladder-grid button :is(span, strong) { font-size: 12px; color: var(--station-text); }
+.ocean-workbench .telemetry-page .telemetry-axis-label { fill: var(--station-muted); }
+.ocean-workbench .telemetry-page .telemetry-percentile-line { stroke: var(--station-muted); }
+.ocean-workbench .telemetry-page .telemetry-mean-line { stroke: var(--station-accent); }
+.ocean-workbench .telemetry-page .telemetry-range-labels { font-size: 11px; color: var(--station-muted); }
+.ocean-workbench .telemetry-page .telemetry-range-labels strong { font-size: 12px; }
+.ocean-workbench .telemetry-page .telemetry-sensor-list article > :is(div strong, small) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.ocean-workbench .telemetry-page .telemetry-sensor-integrity { flex-wrap: wrap; }
+.ocean-workbench .telemetry-page .telemetry-method-card dd { font-size: 12px; }
+.ocean-workbench .telemetry-page .incois-operational-contrast article { min-height: 0; padding: 12px; }
+.ocean-workbench .telemetry-page .incois-operational-contrast article > strong { font-size: 17px; }
+.ocean-workbench .telemetry-page .telemetry-reading-guide article { min-height: 0; padding: 12px; }
+@media (max-width: 1100px) {
+  .ocean-workbench .telemetry-page .telemetry-hero { grid-template-columns: 1fr; }
+  .ocean-workbench .telemetry-page .telemetry-depth-ladder-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .ocean-workbench .telemetry-page .telemetry-directory-section { scroll-margin-top: 16px; }
+  .ocean-workbench .telemetry-page .telemetry-overview { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .ocean-workbench .telemetry-page .telemetry-directory-section { padding: 10px; }
+  .ocean-workbench .telemetry-page :is(button, summary, select, input[type="range"]) { min-height: 44px; }
+  .ocean-workbench .telemetry-page .telemetry-directory-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ocean-workbench .telemetry-page .telemetry-overview,
+  .ocean-workbench .telemetry-page .telemetry-depth-ladder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ocean-workbench .telemetry-page .telemetry-card-heading { flex-wrap: wrap; gap: 6px; }
+  .ocean-workbench .telemetry-page .telemetry-card-heading > strong { white-space: normal; }
+  .ocean-workbench .telemetry-page .telemetry-method-card,
+  .ocean-workbench .telemetry-page .telemetry-method-card dl { grid-template-columns: 1fr; }
+  .ocean-workbench .telemetry-page .telemetry-range-labels { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ocean-workbench .telemetry-page .telemetry-depth-chart { min-height: 0; }
+  .ocean-workbench .telemetry-page .telemetry-directory-heading > small { max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ocean-workbench .telemetry-page, .ocean-workbench .telemetry-page * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
+@media (forced-colors: active) {
+  .ocean-workbench .telemetry-page button[aria-pressed="true"] { outline: 2px solid Highlight; }
+  .ocean-workbench .telemetry-page :focus-visible { outline-color: Highlight; }
+}
+
 .telemetry-directory-shell {
   position:sticky;
   top:0;
