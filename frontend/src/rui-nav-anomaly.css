@@ -1,0 +1,29 @@
+/* RUI-NAV-05 — canonical Anomaly Screening hierarchy. */
+.anomaly-directory-shell,.anomaly-directory-section{width:min(1220px,100%);margin-left:auto;margin-right:auto}
+.anomaly-directory-shell{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:minmax(200px,.8fr) minmax(0,3fr);align-items:center;gap:12px 18px;margin-bottom:14px;padding:10px 12px;border:1px solid rgba(55,98,121,.76);border-radius:11px;background:color-mix(in srgb,#051824 94%,transparent);backdrop-filter:blur(14px)}
+.anomaly-directory-title{display:grid;gap:2px;min-width:0}
+.anomaly-directory-title>span,.anomaly-directory-heading>div>span{color:#64d9ed;font-size:9px;font-weight:800;letter-spacing:.13em}
+.anomaly-directory-title strong{color:#e5f4f8;font-size:13px}
+.anomaly-directory-title small,.anomaly-directory-heading>small{color:#6f91a3;font-size:9px;line-height:1.35}
+.anomaly-directory-nav{display:flex;gap:5px;min-width:0;overflow-x:auto;padding:2px;scrollbar-width:thin}
+.anomaly-directory-nav button{flex:0 0 auto;min-height:32px;padding:7px 10px;border:1px solid rgba(55,98,121,.72);border-radius:7px;color:#7f9faf;background:#071a27;font-size:10px;font-weight:720;cursor:pointer}
+.anomaly-directory-nav button:hover,.anomaly-directory-nav button:focus-visible{color:#e9faff;border-color:#64d9ed;background:#0b2b3b}
+.anomaly-directory-section{scroll-margin-top:76px;margin-bottom:16px;padding:14px;border:1px solid rgba(55,98,121,.46);border-radius:14px;background:rgba(3,16,26,.42)}
+.anomaly-overview-home{padding-top:0}.anomaly-overview-home .anomaly-hero{padding-inline:0}
+.anomaly-directory-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(55,98,121,.5)}
+.anomaly-directory-heading h3{margin:4px 0 0;color:#e5f4f8;font-size:18px;letter-spacing:-.018em}
+.anomaly-overview-guardrail{display:grid;gap:5px;padding:14px;border:1px solid rgba(188,138,72,.62);border-radius:12px;background:rgba(95,66,27,.14)}
+.anomaly-overview-guardrail span{color:#c9a36d;font-size:8px;font-weight:800;letter-spacing:.12em}.anomaly-overview-guardrail strong{color:#f0dcc0;font-size:12px}.anomaly-overview-guardrail small{color:#ad9273;font-size:9px;line-height:1.4}
+.anomaly-context-control{display:grid;gap:8px;margin-bottom:12px;padding:12px 14px;border:1px solid rgba(55,98,121,.76);border-radius:11px;background:rgba(5,24,36,.88)}
+.anomaly-context-control>span,.anomaly-context-control label>span{color:#7b9caf;font-size:8px;font-weight:800;letter-spacing:.08em}.anomaly-context-control label{display:grid;gap:5px;margin:0}.anomaly-context-control strong{color:#e0f0f5;font-size:10px}.anomaly-context-control small{color:#7798aa;font-size:8px;line-height:1.45}
+.anomaly-variable-context{grid-template-columns:minmax(150px,.45fr) minmax(220px,.7fr) minmax(0,1.2fr);align-items:center}.anomaly-variable-context .anomaly-variable-switcher{margin-top:0}.anomaly-variable-context>small{align-self:center}
+.anomaly-threshold-grid{display:grid;grid-template-columns:minmax(240px,.55fr) minmax(0,1.45fr);gap:10px}.anomaly-threshold-grid .anomaly-method-chip,.anomaly-threshold-grid .anomaly-card{margin:0}
+.anomaly-detected-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}.anomaly-detected-grid article{display:grid;gap:4px;padding:12px;border:1px solid rgba(55,98,121,.76);border-radius:10px;background:rgba(5,24,36,.89)}
+.anomaly-detected-grid span{color:#7b9caf;font-size:8px;font-weight:800;letter-spacing:.08em}.anomaly-detected-grid strong{color:#e6f5f9;font-size:22px}.anomaly-detected-grid small{color:#7798aa;font-size:8px}
+.anomaly-detected-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border:1px solid rgba(55,98,121,.55);border-radius:10px;background:rgba(5,24,36,.68)}.anomaly-detected-actions p{margin:0;color:#8eabba;font-size:9px;line-height:1.5}
+.anomaly-directory-section .anomaly-context-card,.anomaly-directory-section .anomaly-card,.anomaly-directory-section .anomaly-focus-card{width:100%;margin-left:0;margin-right:0}
+#anomaly-spatial .anomaly-context-card{margin-bottom:10px}.anomaly-depth-results,.anomaly-spatial-results{margin-top:10px}
+#anomaly-explainability .anomaly-focus-card{margin-bottom:10px}
+@media(max-width:900px){.anomaly-directory-shell{position:static;grid-template-columns:1fr}.anomaly-directory-section{scroll-margin-top:12px}.anomaly-variable-context,.anomaly-threshold-grid{grid-template-columns:1fr}.anomaly-detected-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.anomaly-directory-section{padding:10px}.anomaly-directory-heading{display:grid;gap:6px}.anomaly-detected-grid{grid-template-columns:1fr}.anomaly-detected-actions{display:grid}.anomaly-detected-actions .anomaly-download{width:100%;min-height:42px}}
+@media(prefers-reduced-motion:reduce){.anomaly-directory-shell *,.anomaly-directory-section *{scroll-behavior:auto!important}}
