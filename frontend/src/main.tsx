@@ -34,6 +34,7 @@ import "./rui-nav-file-manager.css";
 import "./rui-nav-explorer.css";
 import "./rui-nav-telemetry.css";
 import "./rui-nav-comparison.css";
+import "./rui-nav-anomaly.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
