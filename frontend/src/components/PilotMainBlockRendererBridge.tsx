@@ -62,8 +62,8 @@ export function PilotMainBlockRendererBridge() {
   }, [pilot, activeId]);
 
   // 3DB-05 synchronization bridge for the legacy WaterColumn3D presentation
-  // surface. Phase 3.5D already hydrates the scientific payload family through
-  // api.ts after a deterministic source-context reload. The remaining legacy
+  // surface. 3DB-07 now refreshes the scientific payload family in-session
+  // through api.ts after an active-block event. The remaining legacy
   // component still stamps a materialized pilot as BASE-GLORYS-001 in its DOM
   // context. Reconcile only identity/lifecycle metadata here; scientific arrays,
   // timestamps, depths, values and renderer geometry are never rewritten.
@@ -164,7 +164,7 @@ export function PilotMainBlockRendererBridge() {
         data-testid="pilot-return-baseline"
         onClick={() => publishActiveMainBlockId("BASE-GLORYS-001")}
       >
-        Return to verified demo baseline
+        Return to verified reference science
       </button>
     </aside>
   );

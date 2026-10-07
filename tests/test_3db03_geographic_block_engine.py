@@ -96,7 +96,8 @@ def test_3db03_runtime_uses_the_single_canonical_geographic_resolver() -> None:
     assert "easternEdgeOwner" in geography
     assert "southernEdgeOwner" in geography
     assert 'from "./main-block-geography"' in runtime
-    assert "return findGeographicMainBlockAt(longitude, latitude);" in runtime
+    assert "const block = findGeographicMainBlockAt(longitude, latitude);" in runtime
+    assert "isOceanIntersectingMainBlockId(block.id)" in runtime
 
     # The previous inclusive scan made a shared edge eligible for both adjacent
     # cells. The public runtime must no longer contain that implementation.

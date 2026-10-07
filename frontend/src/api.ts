@@ -28,6 +28,7 @@ import {
   type PilotBlockPayload
 } from "./pilot-main-block-loader";
 import { isPhase35bPilotId, readActiveMainBlockId } from "./main-block-runtime";
+import { assertNativeTimeAxis } from "./main-block-time";
 
 export const API_BASE = (
   import.meta.env.VITE_API_BASE_URL ??
@@ -97,7 +98,9 @@ async function pilotPayload(id: string, timeIndex: number): Promise<PilotBlockPa
 async function allPilotPayloads(id: string): Promise<PilotBlockPayload[]> {
   const manifest = await pilotManifest();
   const entry = await pilotEntry(id, manifest);
-  return Promise.all(entry.available_dates.map((_date, index) => pilotPayload(id, index)));
+  const payloads = await Promise.all(entry.available_dates.map((_date, index) => pilotPayload(id, index)));
+  assertNativeTimeAxis(id, payloads.map((payload) => payload.time), entry.available_dates);
+  return payloads;
 }
 
 function finite(values: Array<number | null>): number[] {

@@ -10,21 +10,22 @@ async function openExplore(page: import("@playwright/test").Page) {
   }
 }
 
-test("Phase 3.5A-G integrates all 140 targets into the primary Cesium Earth workflow", async ({ page }) => {
+test("3DB-07 integrates 112 ocean-intersecting targets into the primary Cesium Earth workflow", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openExplore(page);
 
   const globe = page.locator(".globe-visualization-layer.active .globe-shell");
   const hud = page.getByTestId("integrated-main-block-hud");
   await expect(hud).toBeVisible();
-  await expect(globe).toHaveAttribute("data-main-block-count", "140");
+  await expect(globe).toHaveAttribute("data-main-block-count", "112");
   await expect(globe).toHaveAttribute("data-active-main-block", "BASE-GLORYS-001");
-  await expect(hud.getByText("140 blocks", { exact: true })).toBeVisible();
+  await expect(hud.getByText("112 retained", { exact: true })).toBeVisible();
   await expect(hud.getByText("25 materialized", { exact: true })).toBeVisible();
-  await expect(hud.getByText("1 verified", { exact: true })).toBeVisible();
+  await expect(hud.getByText("28", { exact: true })).toBeVisible();
 
   const selector = hud.getByLabel("Active main block");
-  await expect(selector.locator("option")).toHaveCount(141);
+  await expect(selector.locator("option")).toHaveCount(113);
+  await expect(selector.locator('option[value="BASE-GLORYS-001"]')).toHaveCount(0);
   await selector.selectOption("IO-047");
 
   await expect(globe).toHaveAttribute("data-active-main-block", "IO-047");

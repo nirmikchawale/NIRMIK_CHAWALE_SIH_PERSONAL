@@ -54,7 +54,11 @@ test("Phase 6 materialized-block controls are live across workspaces and deep-li
   await expect(bar).toHaveAttribute("data-block-materialization", "pilot");
 
   const restoredDetails = bar.locator("details.scientific-context-details");
-  await restoredDetails.locator("summary").click();
+  // 3DB-07 keeps block/deep-link changes in-session, so this disclosure may
+  // already be open. Only toggle when necessary; never close a valid restored state.
+  if ((await restoredDetails.getAttribute("open")) === null) {
+    await restoredDetails.locator("summary").click();
+  }
   await expect(restoredDetails).toHaveAttribute("open", "");
 
   const copied = page.getByRole("button", { name: "Copy shareable scientific context link" });
