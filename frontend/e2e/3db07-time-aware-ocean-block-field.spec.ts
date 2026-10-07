@@ -54,8 +54,12 @@ test("3DB-07 keeps only ocean-intersecting blocks and switches genuine pilot tim
     page.evaluate(() => (window as typeof window & { __3db07NoReload?: string }).__3db07NoReload)
   ).toBe("alive");
   await expect(page.getByTestId("scientific-context-bar")).toHaveAttribute("data-block-id", "IO-002", { timeout: 30_000 });
-  await expect(timeline).toHaveAttribute("data-native-count", "1", { timeout: 30_000 });
-  await expect(timeline.getByRole("button", { name: "Play genuine Explore time playback" })).toBeDisabled();
+  await expect(timeline).toHaveCount(0);
+  const staticTime = page.locator(".static-time-row");
+  await expect(staticTime).toBeVisible({ timeout: 30_000 });
+  await expect(staticTime).toContainText("2004-03-15");
+  await expect(staticTime).toContainText("One genuine model timestamp");
+  await expect(page.getByRole("button", { name: "Play genuine Explore time playback" })).toHaveCount(0);
 
   await expect(page.getByRole("button", { name: "Enable field-click entry" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Inspect points on map" })).toHaveCount(0);
