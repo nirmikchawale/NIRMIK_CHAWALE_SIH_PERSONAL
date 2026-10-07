@@ -14,7 +14,7 @@ The governing rule remains:
 
 NAV-05 starts from production `e36baf916cd8dbfb83d98faac6cb476162a35947`, containing NAV-01 through NAV-04, RUI-VIS-01, RUI-02, and 3DB-03 through 3DB-06.
 
-At phase start, RUI-VIS-02 and 3DB-07 are open but unmerged. NAV-05 does not import unmerged visual or scientific work and must reconcile if either reaches `main` before merge.
+At phase start, RUI-VIS-02 and 3DB-07 were open. During NAV-05 validation, 3DB-07 merged to production as `3d2dce3a1f07ec05d3aa38d07db27a2018d7ac60`; NAV-05 was therefore reconciled onto that exact production tree before merge. RUI-VIS-02 remains unmerged at this reconciliation checkpoint.
 
 ## Frozen hierarchy
 
@@ -59,6 +59,8 @@ Owns consolidated flag counts and the screening-evidence export. The export payl
 Owns the Model Cell / Argo Residual focus switch, robust-z magnitude/threshold margin, “Why flagged?” source values, and interpretation guardrail. Magnitude bands remain descriptions of statistical departure only.
 
 ## Scientific invariants
+
+NAV-05 also preserves the merged 3DB-07 native-time ocean-block contract without changing its block lifecycle, ocean-mask, time-selection or renderer behavior.
 
 NAV-05 preserves:
 
