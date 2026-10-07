@@ -433,3 +433,503 @@
     min-width:0;
   }
 }
+
+
+/* RUI-VIS-02 — 3D Explorer visual integration.
+   Presentation only. RUI-NAV-02 remains authoritative for hierarchy and 3DB remains
+   authoritative for scientific values, source eligibility, depths, time, QC and rendering truth. */
+
+.ocean-workbench[data-page="explore"] {
+  --rui-vis2-surface: color-mix(in srgb, var(--station-panel) 92%, transparent);
+  --rui-vis2-surface-raised: color-mix(in srgb, var(--station-raised) 92%, transparent);
+  --rui-vis2-border: color-mix(in srgb, var(--station-line) 88%, var(--station-accent) 12%);
+  --rui-vis2-border-strong: color-mix(in srgb, var(--station-line) 58%, var(--station-accent) 42%);
+  --rui-vis2-shadow: 0 14px 34px color-mix(in srgb, #000 24%, transparent);
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace {
+  gap: 14px;
+  padding: 18px clamp(14px, 2vw, 24px) 24px;
+}
+
+.ocean-workbench[data-page="explore"] .explorer-directory-shell {
+  min-height: 66px;
+  padding: 12px 14px;
+  border-color: var(--rui-vis2-border-strong);
+  border-radius: 14px;
+  background: var(--rui-vis2-surface);
+  box-shadow: var(--rui-vis2-shadow), inset 0 1px color-mix(in srgb, var(--station-text) 7%, transparent);
+  backdrop-filter: blur(14px) saturate(1.08);
+}
+
+.ocean-workbench[data-page="explore"] .explorer-directory-title {
+  gap: 4px;
+}
+
+.ocean-workbench[data-page="explore"] .explorer-directory-title > span,
+.ocean-workbench[data-page="explore"] .explorer-directory-workspace > span,
+.ocean-workbench[data-page="explore"] .explorer-block-system-heading > span {
+  font-size: 10px;
+  letter-spacing: .13em;
+}
+
+.ocean-workbench[data-page="explore"] .explorer-directory-title strong,
+.ocean-workbench[data-page="explore"] .explorer-block-system-heading strong {
+  color: var(--station-text);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.ocean-workbench[data-page="explore"] .explorer-directory-title small,
+.ocean-workbench[data-page="explore"] .explorer-block-system-heading small {
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.ocean-workbench[data-page="explore"] .explorer-directory-nav {
+  gap: 6px;
+  padding: 3px;
+}
+
+.ocean-workbench[data-page="explore"] .explorer-directory-nav button,
+.ocean-workbench[data-page="explore"] .explorer-focus-button,
+.ocean-workbench[data-page="explore"] .explorer-workspace-mode-switcher button {
+  min-height: 38px;
+  padding: 8px 10px;
+  border-color: var(--rui-vis2-border);
+  border-radius: 9px;
+  color: var(--station-muted);
+  background: color-mix(in srgb, var(--station-bg) 82%, var(--station-panel));
+  font-size: 10px;
+  font-weight: 680;
+  transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.ocean-workbench[data-page="explore"] .explorer-directory-nav button:hover,
+.ocean-workbench[data-page="explore"] .explorer-focus-button:hover,
+.ocean-workbench[data-page="explore"] .explorer-workspace-mode-switcher button:hover:not(:disabled) {
+  color: var(--station-text);
+  border-color: var(--station-accent);
+  background: color-mix(in srgb, var(--station-accent) 10%, var(--station-raised));
+  transform: translateY(-1px);
+}
+
+.ocean-workbench[data-page="explore"] .explorer-workspace-mode-switcher button[aria-pressed="true"] {
+  color: var(--station-text);
+  border-color: var(--station-accent);
+  background: color-mix(in srgb, var(--station-accent) 14%, var(--station-raised));
+  box-shadow: inset 0 -2px var(--station-accent);
+}
+
+.ocean-workbench[data-page="explore"] .explorer-block-system-home {
+  min-height: 86px;
+  padding: 14px 16px;
+  border-color: var(--rui-vis2-border);
+  border-radius: 13px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--station-accent) 5%, transparent), transparent 52%),
+    var(--rui-vis2-surface);
+  box-shadow: 0 10px 26px color-mix(in srgb, #000 15%, transparent);
+}
+
+.ocean-workbench[data-page="explore"] .explorer-block-system-launchers {
+  gap: 10px;
+}
+
+.ocean-workbench[data-page="explore"] .explorer-block-system-home .phase35-block-launcher,
+.ocean-workbench[data-page="explore"] .explorer-block-system-home .phase3-atlas-launcher {
+  min-height: 58px;
+  border-radius: 10px !important;
+  border-color: var(--rui-vis2-border-strong) !important;
+  box-shadow: none !important;
+}
+
+.ocean-workbench[data-page="explore"] .source-workbench {
+  gap: 14px 22px;
+  padding: 15px 16px;
+  border: 1px solid var(--rui-vis2-border);
+  border-radius: 13px;
+  background: var(--rui-vis2-surface);
+  box-shadow: 0 10px 26px color-mix(in srgb, #000 13%, transparent);
+}
+
+.ocean-workbench[data-page="explore"] .source-workbench-title h2 {
+  margin-top: 4px;
+  font-size: 22px;
+  line-height: 1.06;
+}
+
+.ocean-workbench[data-page="explore"] .source-workbench-choices {
+  gap: 9px;
+}
+
+.ocean-workbench[data-page="explore"] .source-workbench-choices button {
+  min-height: 72px;
+  padding: 12px 13px;
+  border-color: var(--rui-vis2-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--station-bg) 78%, var(--station-panel));
+  transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+
+.ocean-workbench[data-page="explore"] .source-workbench-choices button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--station-accent);
+  background: color-mix(in srgb, var(--station-accent) 8%, var(--station-raised));
+}
+
+.ocean-workbench[data-page="explore"] .source-workbench-choices button[aria-pressed="true"] {
+  border-color: var(--station-accent);
+  background: color-mix(in srgb, var(--station-accent) 12%, var(--station-raised));
+  box-shadow: inset 0 -3px var(--station-accent);
+}
+
+.ocean-workbench[data-page="explore"] .source-workbench-actions {
+  gap: 12px;
+}
+
+.ocean-workbench[data-page="explore"] .source-workbench-actions button {
+  min-height: 30px;
+  padding: 4px 0;
+  font-weight: 620;
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace > .control-panel {
+  padding: 14px;
+  border: 1px solid var(--rui-vis2-border);
+  border-radius: 13px;
+  background: var(--rui-vis2-surface);
+  box-shadow: 0 10px 26px color-mix(in srgb, #000 13%, transparent);
+}
+
+.ocean-workbench[data-page="explore"] .control-section-nav {
+  top: -14px;
+  gap: 6px;
+  margin: -2px -2px 4px;
+  padding: 10px 2px 9px;
+  border-bottom: 1px solid var(--rui-vis2-border);
+  background: color-mix(in srgb, var(--station-panel) 94%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.ocean-workbench[data-page="explore"] .control-section-nav button {
+  min-height: 34px;
+  padding: 7px 9px;
+  border-color: var(--rui-vis2-border);
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 680;
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .control-panel section {
+  padding: 16px 0;
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .control-panel section + section {
+  border-top: 1px solid color-mix(in srgb, var(--station-line) 74%, transparent);
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .variable-switcher button {
+  min-height: 52px;
+  padding: 9px 10px;
+  border-color: var(--rui-vis2-border);
+  border-radius: 9px;
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .advanced-control-group {
+  border: 1px solid var(--rui-vis2-border);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--station-bg) 55%, transparent);
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .advanced-control-group summary {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .selected-depth-hero {
+  padding: 12px;
+  border: 1px solid var(--rui-vis2-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--station-accent) 7%, var(--station-bg));
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .selected-depth-hero strong {
+  font-size: 26px;
+  letter-spacing: -.025em;
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace > .visualization-dock {
+  min-height: 56px;
+  border: 1px solid var(--rui-vis2-border-strong);
+  border-radius: 12px;
+  background: var(--rui-vis2-surface);
+  box-shadow: 0 10px 26px color-mix(in srgb, #000 14%, transparent);
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .visualization-dock-modes button {
+  min-height: 42px;
+  border-color: var(--rui-vis2-border);
+  border-radius: 8px;
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .visualization-dock-modes button.active {
+  border-color: var(--station-accent);
+  background: color-mix(in srgb, var(--station-accent) 12%, var(--station-raised));
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace > .visualization-stage {
+  border-color: var(--rui-vis2-border-strong);
+  border-radius: 14px;
+  background: var(--station-bg);
+  box-shadow: 0 16px 38px color-mix(in srgb, #000 20%, transparent);
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .renderer-tools {
+  gap: 7px;
+  padding: 10px 12px;
+  border-top-color: var(--rui-vis2-border);
+  background: color-mix(in srgb, var(--station-panel) 96%, transparent);
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .renderer-tools button {
+  min-height: 36px;
+  border-radius: 7px;
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .renderer-tools :is(.depth-indicator,.water-column-selected) {
+  min-height: 34px;
+  border: 1px solid var(--rui-vis2-border);
+  border-radius: 7px;
+  background: var(--rui-vis2-surface-raised);
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace > .scientific-colorbar-hud {
+  padding: 15px 16px;
+  border: 1px solid var(--rui-vis2-border);
+  border-radius: 13px;
+  background: var(--rui-vis2-surface);
+  box-shadow: 0 10px 26px color-mix(in srgb, #000 13%, transparent);
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .colorbar-interactive-track {
+  height: 30px;
+  border-radius: 7px;
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .range-controls {
+  gap: 18px;
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace .range-controls label {
+  min-height: 34px;
+  font-size: 11px;
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace > .evidence-status-pill {
+  min-height: 48px;
+  align-items: center;
+  border: 1px solid var(--rui-vis2-border);
+  border-radius: 11px;
+  background: var(--rui-vis2-surface);
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace > :is(.evidence-rail,.profile-panel,.analysis-split-panel) {
+  border-color: var(--rui-vis2-border);
+  border-radius: 13px;
+  background: var(--rui-vis2-surface);
+  box-shadow: 0 12px 30px color-mix(in srgb, #000 15%, transparent);
+}
+
+.ocean-workbench[data-page="explore"] .station-workspace :is(button,summary,select,input):focus-visible {
+  outline: 2px solid var(--station-accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 1100px) and (min-width: 761px) {
+  .ocean-workbench[data-page="explore"] .station-workspace {
+    padding-inline: 16px;
+  }
+
+  .ocean-workbench[data-page="explore"] .explorer-directory-shell {
+    gap: 10px;
+  }
+
+  .ocean-workbench[data-page="explore"] .source-workbench {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 760px) {
+  .ocean-workbench[data-page="explore"] .station-workspace {
+    gap: 11px;
+    padding: 11px;
+  }
+
+  .ocean-workbench[data-page="explore"] .explorer-directory-shell {
+    min-height: 0;
+    padding: 10px;
+    border-radius: 12px;
+    backdrop-filter: none;
+  }
+
+  .ocean-workbench[data-page="explore"] .explorer-directory-nav {
+    gap: 6px;
+    padding-bottom: 6px;
+  }
+
+  .ocean-workbench[data-page="explore"] .explorer-directory-nav button,
+  .ocean-workbench[data-page="explore"] .explorer-focus-button,
+  .ocean-workbench[data-page="explore"] .explorer-workspace-mode-switcher button {
+    min-height: 44px;
+    padding: 9px 10px;
+    font-size: 10px;
+  }
+
+  .ocean-workbench[data-page="explore"] .explorer-block-system-home {
+    min-height: 0;
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .ocean-workbench[data-page="explore"] .explorer-block-system-home .phase35-block-launcher,
+  .ocean-workbench[data-page="explore"] .explorer-block-system-home .phase3-atlas-launcher {
+    min-height: 58px;
+  }
+
+  .ocean-workbench[data-page="explore"] .source-workbench {
+    gap: 11px;
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .ocean-workbench[data-page="explore"] .source-workbench-title h2 {
+    font-size: 19px;
+  }
+
+  .ocean-workbench[data-page="explore"] .source-workbench-choices button {
+    min-height: 84px;
+    padding: 10px 8px;
+  }
+
+  .ocean-workbench[data-page="explore"] .source-workbench-choices strong {
+    font-size: 11px;
+  }
+
+  .ocean-workbench[data-page="explore"] .source-workbench-choices small {
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  .ocean-workbench[data-page="explore"] .station-workspace > .control-panel,
+  .ocean-workbench[data-page="explore"] .station-workspace > .scientific-colorbar-hud,
+  .ocean-workbench[data-page="explore"] .station-workspace > :is(.evidence-rail,.profile-panel,.analysis-split-panel) {
+    border-radius: 12px;
+  }
+
+  .ocean-workbench[data-page="explore"] .control-section-nav {
+    top: -14px;
+    gap: 5px;
+    padding-block: 8px;
+  }
+
+  .ocean-workbench[data-page="explore"] .control-section-nav button {
+    min-height: 44px;
+    flex: 1 1 calc(50% - 5px);
+    font-size: 10px;
+  }
+
+  .ocean-workbench[data-page="explore"] .station-workspace > .visualization-stage {
+    border-radius: 12px;
+  }
+
+  .ocean-workbench[data-page="explore"] .station-workspace .renderer-tools button {
+    min-height: 40px;
+  }
+
+  .ocean-workbench[data-page="explore"] .station-workspace .range-controls {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ocean-workbench[data-page="explore"] .station-workspace .range-controls label {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ocean-workbench[data-page="explore"] .explorer-directory-nav button,
+  .ocean-workbench[data-page="explore"] .explorer-focus-button,
+  .ocean-workbench[data-page="explore"] .explorer-workspace-mode-switcher button,
+  .ocean-workbench[data-page="explore"] .source-workbench-choices button {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .ocean-workbench[data-page="explore"] :is(
+    .explorer-directory-shell,
+    .explorer-block-system-home,
+    .source-workbench,
+    .control-panel,
+    .visualization-dock,
+    .visualization-stage,
+    .scientific-colorbar-hud,
+    .evidence-status-pill,
+    .evidence-rail,
+    .profile-panel,
+    .analysis-split-panel
+  ) {
+    border-color: CanvasText !important;
+    box-shadow: none !important;
+  }
+
+  .ocean-workbench[data-page="explore"] :is(button,summary,select,input):focus-visible {
+    outline-color: Highlight !important;
+  }
+}
+
+
+/* RUI-VIS-02 compact scroll/pointer correction.
+   Keep directory and source controls physically separated during automatic mobile
+   scrolling. Scientific controls, block state and navigation ownership are unchanged. */
+@media (max-width: 760px) {
+  .ocean-workbench[data-page="explore"] .explorer-directory-shell {
+    position: static;
+    z-index: auto;
+    min-height: 236px;
+    height: max-content;
+    grid-auto-rows: max-content;
+    align-content: start;
+    margin-bottom: 16px;
+  }
+
+  .ocean-workbench[data-page="explore"] .explorer-directory-workspace {
+    min-height: 96px;
+    align-content: start;
+  }
+
+  .ocean-workbench[data-page="explore"] .source-workbench {
+    position: static;
+    z-index: auto;
+    margin-top: 0;
+  }
+
+  .ocean-workbench[data-page="explore"] .source-workbench-actions button,
+  .ocean-workbench[data-page="explore"] .explorer-workspace-mode-switcher button,
+  .ocean-workbench[data-page="explore"] .explorer-focus-button {
+    scroll-margin-block: 96px;
+  }
+}
+
+@media (max-width: 430px) {
+  .station-workspace .main-block-globe-hud {
+    max-height: min(148px, calc(100% - 28px)) !important;
+    margin-block: 8px 12px !important;
+    scroll-margin-block: 4px;
+  }
+}
