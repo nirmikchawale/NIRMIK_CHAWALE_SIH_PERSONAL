@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { ComparisonDirectoryNav } from "../components/ComparisonDirectoryNav";
+
 import type {
   ComparisonLevel,
   ProfileDetail,
@@ -318,39 +320,71 @@ export function ComparisonPage({
 
   return (
     <main className="comparison-page" data-page="compare">
-      <header className="comparison-hero">
-        <div>
-          <span className="section-kicker">EVIDENCE · MODEL VS OBSERVATION</span>
-          <h2>Argo–GLORYS12V1 profile comparison</h2>
-          <p>
-            Matched-depth diagnostic evidence using the existing verified collocation pipeline.
-            Model values are interpolated to observation depths; this page does not create new
-            measurements, timestamps or independent validation claims.
-          </p>
-        </div>
+      <ComparisonDirectoryNav />
 
-        <div className="comparison-selector-card">
-          <label>
-            Verified Argo profile
-            <select
-              value={selectedProfileId}
-              disabled={profiles.length === 0}
-              onChange={(event) => onProfileChange(event.target.value)}
-            >
-              {profiles.length === 0 && <option value="">No verified profile available</option>}
-              {profiles.map((profile) => (
-                <option key={profile.profile_id} value={profile.profile_id}>
-                  {profile.platform_id} · cycle {profile.cycle} {profile.direction}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="comparison-selector-meta">
-            <span>{profiles.length} verified comparison profile{profiles.length === 1 ? "" : "s"}</span>
-            <strong>{summary ? `Argo ${summary.platform_id} · cycle ${summary.cycle}` : "Awaiting profile"}</strong>
+      <section id="comparison-overview" className="comparison-directory-section comparison-overview-home" data-comparison-home="overview">
+        <header className="comparison-hero">
+          <div>
+            <span className="section-kicker">EVIDENCE · MODEL VS OBSERVATION</span>
+            <h2>Argo–GLORYS12V1 profile comparison</h2>
+            <p>
+              Matched-depth diagnostic evidence using the existing verified collocation pipeline.
+              Model values are interpolated to observation depths; this page does not create new
+              measurements, timestamps or independent validation claims.
+            </p>
           </div>
+          <div className="comparison-overview-guardrail">
+            <span>INTERPRETATION BOUNDARY</span>
+            <strong>Diagnostic consistency, not independent validation</strong>
+            <small>MAE, RMSE and signed bias describe the selected verified collocated sample only.</small>
+          </div>
+        </header>
+      </section>
+
+      <section id="comparison-observation-sources" className="comparison-directory-section" data-comparison-home="observation-sources">
+        <header className="comparison-directory-heading">
+          <div>
+            <span>OBSERVATION SOURCES</span>
+            <h3>Select verified Argo evidence</h3>
+          </div>
+          <small>Provider-QC accepted source profiles only</small>
+        </header>
+        <div className="comparison-source-grid">
+          <div className="comparison-selector-card">
+            <label>
+              Verified Argo profile
+              <select
+                value={selectedProfileId}
+                disabled={profiles.length === 0}
+                onChange={(event) => onProfileChange(event.target.value)}
+              >
+                {profiles.length === 0 && <option value="">No verified profile available</option>}
+                {profiles.map((profile) => (
+                  <option key={profile.profile_id} value={profile.profile_id}>
+                    {profile.platform_id} · cycle {profile.cycle} {profile.direction}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="comparison-selector-meta">
+              <span>{profiles.length} verified comparison profile{profiles.length === 1 ? "" : "s"}</span>
+              <strong>{summary ? `Argo ${summary.platform_id} · cycle ${summary.cycle}` : "Awaiting profile"}</strong>
+            </div>
+          </div>
+          <article className="comparison-source-summary">
+            <div>
+              <span>MODEL SOURCE</span>
+              <strong>{provenance?.model.product ?? "Copernicus GLORYS12V1"}</strong>
+              <small>{provenance?.model.dataset_id ?? "Verified cached reanalysis"}</small>
+            </div>
+            <div>
+              <span>OBSERVATION SOURCE</span>
+              <strong>{provenance?.observations.provider ?? "Ifremer Argo GDAC"}</strong>
+              <small>{provenance?.observations.doi ?? "Verified comparison evidence"}</small>
+            </div>
+          </article>
         </div>
-      </header>
+      </section>
 
       {loading ? (
         <div className="comparison-state-card">Loading verified matched-depth evidence…</div>
@@ -358,43 +392,90 @@ export function ComparisonPage({
         <div className="comparison-state-card">Select a verified Argo comparison profile.</div>
       ) : (
         <>
-          <section className="comparison-metrics" aria-label="Comparison summary metrics">
-            <article>
-              <span>Matched levels</span>
-              <strong>{summary.matched_level_count}</strong>
-              <small>provider-QC accepted matched depths</small>
-            </article>
-            <article>
-              <span>MAE</span>
-              <strong>{summary.mae_celsius.toFixed(3)} °C</strong>
-              <small>mean absolute temperature error</small>
-            </article>
-            <article>
-              <span>RMSE</span>
-              <strong>{summary.rmse_celsius.toFixed(3)} °C</strong>
-              <small>root mean squared temperature error</small>
-            </article>
-            <article>
-              <span>Cell distance</span>
-              <strong>{summary.spatial_distance_km.toFixed(2)} km</strong>
-              <small>observation to selected model cell</small>
-            </article>
-            <article>
-              <span>Time offset</span>
-              <strong>{summary.time_offset_hours.toFixed(2)} h</strong>
-              <small>observation vs cached model timestamp</small>
-            </article>
-            <article>
-              <span>Matched depth</span>
-              <strong>
-                {summary.shallowest_matched_depth_m.toFixed(0)}–{summary.deepest_matched_depth_m.toFixed(0)} m
-              </strong>
-              <small>no extrapolation beyond matched evidence</small>
-            </article>
+          <section id="comparison-matchups" className="comparison-directory-section" data-comparison-home="matchups">
+            <header className="comparison-directory-heading">
+              <div>
+                <span>MATCHUPS</span>
+                <h3>Collocation context and matched-level evidence</h3>
+              </div>
+              <small>{detail.levels.length} QC-accepted matched levels</small>
+            </header>
+            <div className="comparison-matchup-grid">
+              <article className="comparison-location-card">
+                <div className="comparison-card-heading">
+                  <div>
+                    <span>COLLOCATION</span>
+                    <h3>Observation and model-cell context</h3>
+                  </div>
+                </div>
+                <ComparisonCollocationMiniMap summary={summary} />
+                <dl>
+                  <div>
+                    <dt>Argo observation</dt>
+                    <dd>{summary.observation_latitude.toFixed(4)}°N · {summary.observation_longitude.toFixed(4)}°E</dd>
+                  </div>
+                  <div>
+                    <dt>Model cell</dt>
+                    <dd>{summary.model_cell_latitude.toFixed(4)}°N · {summary.model_cell_longitude.toFixed(4)}°E</dd>
+                  </div>
+                  <div>
+                    <dt>Observation time</dt>
+                    <dd>{summary.observation_time_utc.replace("T", " ").replace("Z", " UTC")}</dd>
+                  </div>
+                  <div>
+                    <dt>QC status</dt>
+                    <dd>Accepted provider QC · no depth extrapolation</dd>
+                  </div>
+                </dl>
+              </article>
+
+              <section className="comparison-levels-card">
+                <div className="comparison-card-heading">
+                  <div>
+                    <span>MATCHED LEVELS</span>
+                    <h3>Depth-by-depth evidence table</h3>
+                  </div>
+                  <strong>{detail.levels.length} rows</strong>
+                </div>
+                <div className="comparison-table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Depth (m)</th>
+                        <th>Argo (°C)</th>
+                        <th>Model (°C)</th>
+                        <th>Bias M−O (°C)</th>
+                        <th>|Error| (°C)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detail.levels.map((level) => (
+                        <tr key={level.observation_depth_m}>
+                          <td>{level.observation_depth_m.toFixed(2)}</td>
+                          <td>{level.observed_temperature.toFixed(4)}</td>
+                          <td>{level.model_temperature_interpolated.toFixed(4)}</td>
+                          <td className={level.signed_bias_celsius >= 0 ? "positive-bias" : "negative-bias"}>
+                            {level.signed_bias_celsius >= 0 ? "+" : ""}{level.signed_bias_celsius.toFixed(4)}
+                          </td>
+                          <td>{level.absolute_error_celsius.toFixed(4)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
           </section>
 
-          {selectedLevel && diagnostics && (
-            <section className="comparison-interactive-grid">
+          <section id="comparison-profile-comparison" className="comparison-directory-section" data-comparison-home="profile-comparison">
+            <header className="comparison-directory-heading">
+              <div>
+                <span>PROFILE COMPARISON</span>
+                <h3>Observed and interpolated model temperature</h3>
+              </div>
+              <small>Exact matched depths from the verified profile</small>
+            </header>
+            {selectedLevel && diagnostics && (
               <article className="comparison-depth-inspector">
                 <div className="comparison-card-heading">
                   <div>
@@ -435,7 +516,62 @@ export function ComparisonPage({
                   <span className="warmer-label">MODEL WARMER</span>
                 </div>
               </article>
+            )}
+            <ComparisonProfileChart detail={detail} />
+          </section>
 
+          <section id="comparison-bias-by-depth" className="comparison-directory-section" data-comparison-home="bias-by-depth">
+            <header className="comparison-directory-heading">
+              <div>
+                <span>BIAS BY DEPTH</span>
+                <h3>Model − Observation residual structure</h3>
+              </div>
+              <small>Signed residuals only · positive means model warmer</small>
+            </header>
+            <ComparisonBiasChart detail={detail} />
+          </section>
+
+          <section id="comparison-metrics" className="comparison-directory-section" data-comparison-home="metrics">
+            <header className="comparison-directory-heading">
+              <div>
+                <span>METRICS</span>
+                <h3>Profile summary and residual diagnostics</h3>
+              </div>
+              <small>Selected collocated sample only</small>
+            </header>
+            <section className="comparison-metrics" aria-label="Comparison summary metrics">
+              <article>
+                <span>Matched levels</span>
+                <strong>{summary.matched_level_count}</strong>
+                <small>provider-QC accepted matched depths</small>
+              </article>
+              <article>
+                <span>MAE</span>
+                <strong>{summary.mae_celsius.toFixed(3)} °C</strong>
+                <small>mean absolute temperature error</small>
+              </article>
+              <article>
+                <span>RMSE</span>
+                <strong>{summary.rmse_celsius.toFixed(3)} °C</strong>
+                <small>root mean squared temperature error</small>
+              </article>
+              <article>
+                <span>Cell distance</span>
+                <strong>{summary.spatial_distance_km.toFixed(2)} km</strong>
+                <small>observation to selected model cell</small>
+              </article>
+              <article>
+                <span>Time offset</span>
+                <strong>{summary.time_offset_hours.toFixed(2)} h</strong>
+                <small>observation vs cached model timestamp</small>
+              </article>
+              <article>
+                <span>Matched depth</span>
+                <strong>{summary.shallowest_matched_depth_m.toFixed(0)}–{summary.deepest_matched_depth_m.toFixed(0)} m</strong>
+                <small>no extrapolation beyond matched evidence</small>
+              </article>
+            </section>
+            {diagnostics && (
               <article className="comparison-diagnostic-summary">
                 <div className="comparison-card-heading">
                   <div>
@@ -456,15 +592,17 @@ export function ComparisonPage({
                   <small>Counts describe signed Model − Observation residuals in this selected profile only.</small>
                 </div>
               </article>
-            </section>
-          )}
+            )}
+          </section>
 
-          <div className="comparison-chart-grid">
-            <ComparisonProfileChart detail={detail} />
-            <ComparisonBiasChart detail={detail} />
-          </div>
-
-          <section className="comparison-evidence-grid">
+          <section id="comparison-qc" className="comparison-directory-section" data-comparison-home="qc">
+            <header className="comparison-directory-heading">
+              <div>
+                <span>QC</span>
+                <h3>Comparison method and quality-control contract</h3>
+              </div>
+              <small>Provider QC · positive-down depth · no extrapolation</small>
+            </header>
             <article className="comparison-method-card">
               <div className="comparison-card-heading">
                 <div>
@@ -473,22 +611,10 @@ export function ComparisonPage({
                 </div>
               </div>
               <dl>
-                <div>
-                  <dt>Horizontal</dt>
-                  <dd>{detail.comparison_semantics.horizontal}</dd>
-                </div>
-                <div>
-                  <dt>Vertical</dt>
-                  <dd>{detail.comparison_semantics.vertical}</dd>
-                </div>
-                <div>
-                  <dt>Bias</dt>
-                  <dd>{detail.comparison_semantics.bias}</dd>
-                </div>
-                <div>
-                  <dt>Interpretation</dt>
-                  <dd>{detail.comparison_semantics.interpretation}</dd>
-                </div>
+                <div><dt>Horizontal</dt><dd>{detail.comparison_semantics.horizontal}</dd></div>
+                <div><dt>Vertical</dt><dd>{detail.comparison_semantics.vertical}</dd></div>
+                <div><dt>Bias</dt><dd>{detail.comparison_semantics.bias}</dd></div>
+                <div><dt>Interpretation</dt><dd>{detail.comparison_semantics.interpretation}</dd></div>
               </dl>
               <div className="comparison-method-pipeline" aria-label="Comparison method pipeline">
                 <span>Provider QC</span>
@@ -504,104 +630,42 @@ export function ComparisonPage({
                 <span>Bias = Model − Observation</span>
               </div>
             </article>
-
-            <article className="comparison-location-card">
-              <div className="comparison-card-heading">
-                <div>
-                  <span>COLLOCATION</span>
-                  <h3>Observation and model-cell context</h3>
-                </div>
-              </div>
-              <ComparisonCollocationMiniMap summary={summary} />
-              <dl>
-                <div>
-                  <dt>Argo observation</dt>
-                  <dd>{summary.observation_latitude.toFixed(4)}°N · {summary.observation_longitude.toFixed(4)}°E</dd>
-                </div>
-                <div>
-                  <dt>Model cell</dt>
-                  <dd>{summary.model_cell_latitude.toFixed(4)}°N · {summary.model_cell_longitude.toFixed(4)}°E</dd>
-                </div>
-                <div>
-                  <dt>Observation time</dt>
-                  <dd>{summary.observation_time_utc.replace("T", " ").replace("Z", " UTC")}</dd>
-                </div>
-                <div>
-                  <dt>QC status</dt>
-                  <dd>Accepted provider QC · no depth extrapolation</dd>
-                </div>
-              </dl>
-            </article>
           </section>
 
-          <section className="comparison-levels-card">
-            <div className="comparison-card-heading">
+          <section id="comparison-evidence" className="comparison-directory-section" data-comparison-home="evidence">
+            <header className="comparison-directory-heading">
               <div>
-                <span>MATCHED LEVELS</span>
-                <h3>Depth-by-depth evidence table</h3>
+                <span>EVIDENCE</span>
+                <h3>Download the verified comparison bundle</h3>
               </div>
-              <strong>{detail.levels.length} rows</strong>
-            </div>
-            <div className="comparison-table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Depth (m)</th>
-                    <th>Argo (°C)</th>
-                    <th>Model (°C)</th>
-                    <th>Bias M−O (°C)</th>
-                    <th>|Error| (°C)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detail.levels.map((level) => (
-                    <tr key={level.observation_depth_m}>
-                      <td>{level.observation_depth_m.toFixed(2)}</td>
-                      <td>{level.observed_temperature.toFixed(4)}</td>
-                      <td>{level.model_temperature_interpolated.toFixed(4)}</td>
-                      <td className={level.signed_bias_celsius >= 0 ? "positive-bias" : "negative-bias"}>
-                        {level.signed_bias_celsius >= 0 ? "+" : ""}{level.signed_bias_celsius.toFixed(4)}
-                      </td>
-                      <td>{level.absolute_error_celsius.toFixed(4)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+              <small>Profile data + provenance + interpretation boundary</small>
+            </header>
+            <section className="comparison-provenance-card">
+              <div>
+                <span>MODEL SOURCE</span>
+                <strong>{provenance?.model.product ?? "Copernicus GLORYS12V1"}</strong>
+                <small>{provenance?.model.dataset_id ?? "Verified cached reanalysis"}</small>
+              </div>
+              <div>
+                <span>OBSERVATION SOURCE</span>
+                <strong>{provenance?.observations.provider ?? "Ifremer Argo GDAC"}</strong>
+                <small>{provenance?.observations.doi ?? "Verified comparison evidence"}</small>
+              </div>
+              <div className="comparison-downloads">
+                <button disabled={!provenance} onClick={() => provenance && downloadComparisonCsv(detail, provenance)}>
+                  Download comparison CSV
+                </button>
+                <button disabled={!provenance} onClick={() => provenance && downloadEvidenceJson(detail, provenance)}>
+                  Download evidence JSON
+                </button>
+              </div>
+            </section>
+            <p className="comparison-diagnostic-note">
+              Diagnostic model–observation consistency, not independent validation. MAE, RMSE and
+              signed bias describe this verified collocated sample only; they are not a claim of
+              global model accuracy.
+            </p>
           </section>
-
-          <section className="comparison-provenance-card">
-            <div>
-              <span>MODEL SOURCE</span>
-              <strong>{provenance?.model.product ?? "Copernicus GLORYS12V1"}</strong>
-              <small>{provenance?.model.dataset_id ?? "Verified cached reanalysis"}</small>
-            </div>
-            <div>
-              <span>OBSERVATION SOURCE</span>
-              <strong>{provenance?.observations.provider ?? "Ifremer Argo GDAC"}</strong>
-              <small>{provenance?.observations.doi ?? "Verified comparison evidence"}</small>
-            </div>
-            <div className="comparison-downloads">
-              <button
-                disabled={!provenance}
-                onClick={() => provenance && downloadComparisonCsv(detail, provenance)}
-              >
-                Download comparison CSV
-              </button>
-              <button
-                disabled={!provenance}
-                onClick={() => provenance && downloadEvidenceJson(detail, provenance)}
-              >
-                Download evidence JSON
-              </button>
-            </div>
-          </section>
-
-          <p className="comparison-diagnostic-note">
-            Diagnostic model–observation consistency, not independent validation. MAE, RMSE and
-            signed bias describe this verified collocated sample only; they are not a claim of
-            global model accuracy.
-          </p>
         </>
       )}
     </main>
