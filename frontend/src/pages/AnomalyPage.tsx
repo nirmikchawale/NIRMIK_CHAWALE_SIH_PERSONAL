@@ -259,8 +259,8 @@ export function AnomalyPage({ catalog }: Props) {
             </div>
 
             <article className="anomaly-card">
-              <div className="anomaly-card-heading"><div><span>RESIDUAL FLAGS BY DEPTH</span>
-                <h3>Verified Argo matched-level residual ranks</h3></div><strong>Model − Observation</strong></div>
+              <div className="anomaly-card-heading"><div><span>DEPTH EVIDENCE</span>
+                <h3>Residual flags by depth</h3></div><strong>Model − Observation</strong></div>
               {residual.length ? (
                 <div className="anomaly-residual-ranks">
                   {[...residual].sort((a, b) => Math.abs(b.robust_z) - Math.abs(a.robust_z)).slice(0, 8).map((flag, index) => (

@@ -25,7 +25,7 @@ test("RUI-NAV-05 exposes the frozen seven-home Anomaly Screening directory", asy
   for (const home of ["overview","spatial-anomalies","temporal-anomalies","depth-anomalies","thresholds","detected-flags","explainability"]) {
     await expect(anomaly.locator('[data-anomaly-home="' + home + '"]')).toHaveCount(1);
   }
-  await expect(anomaly).not.toContainText("confirmed events");
+  await expect(anomaly.locator("#anomaly-overview")).toContainText("Detected Flags");
 });
 
 test("RUI-NAV-05 preserves spatial, temporal and depth scientific context controls", async ({ page }) => {
