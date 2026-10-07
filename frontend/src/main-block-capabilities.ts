@@ -30,6 +30,11 @@ export interface MainBlockValidation {
   modelObservationValidated: boolean;
 }
 
+export interface MainBlockObservationCapabilityEvidence {
+  observationsAvailable: boolean;
+  modelObservationValidated: boolean;
+}
+
 export interface MainBlockCapabilityContract {
   id: string;
   name: string;
@@ -79,10 +84,19 @@ function isVerifiedBaselineBlock(block: ScientificMainBlock): block is VerifiedB
     && block.materialization === "verified-baseline";
 }
 
-export function deriveMainBlockCapabilities(block: ScientificMainBlock): MainBlockCapabilityContract {
+export function deriveMainBlockCapabilities(
+  block: ScientificMainBlock,
+  observationEvidence?: MainBlockObservationCapabilityEvidence
+): MainBlockCapabilityContract {
   const isBaseline = isVerifiedBaselineBlock(block);
   const isPilot = !isBaseline && block.materialization === "pilot";
   const sourceBacked = isBaseline || isPilot;
+
+  if (!isBaseline && observationEvidence?.modelObservationValidated) {
+    throw new Error(
+      "Observation context cannot promote a non-baseline main block to model-observation validated."
+    );
+  }
 
   const validation: MainBlockValidation = isBaseline
     ? {
@@ -176,7 +190,7 @@ export function deriveMainBlockCapabilities(block: ScientificMainBlock): MainBlo
     availableVariables: sourceBacked ? [...block.variables] : [],
     availableTimes: sourceBacked ? [...block.availableDates] : [],
     depthRange,
-    observationsAvailable: isBaseline,
+    observationsAvailable: observationEvidence?.observationsAvailable ?? isBaseline,
     provenance: {
       sourceProduct: sourceBacked ? block.sourceProduct : null,
       evidenceClass: isBaseline
