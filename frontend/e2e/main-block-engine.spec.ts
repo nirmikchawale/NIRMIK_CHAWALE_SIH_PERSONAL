@@ -6,7 +6,7 @@ async function startFromBaseline(page: Page) {
   await page.addInitScript((storageKey) => localStorage.removeItem(storageKey), ACTIVE_BLOCK_KEY);
 }
 
-test("Phase 3.5D exposes 140 targets and exactly 25 source-backed pilots", async ({ page }) => {
+test("3DB-07 exposes 112 ocean-intersecting blocks and exactly 25 source-backed pilots", async ({ page }) => {
   await startFromBaseline(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(process.env.OCEANTWIN_LIVE_URL!);
@@ -18,12 +18,14 @@ test("Phase 3.5D exposes 140 targets and exactly 25 source-backed pilots", async
 
   const dialog = page.getByRole("dialog", { name: "Indian Ocean Main Block Engine" });
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator(".phase35-block-cell")).toHaveCount(140);
+  await expect(dialog.locator(".phase35-block-cell")).toHaveCount(112);
   await expect(dialog.getByTestId("phase35-materialization-summary")).toContainText("SOURCE-BACKED PILOTS");
   await expect(dialog.getByTestId("phase35-materialization-summary")).toContainText("25");
   await expect(dialog.getByTestId("phase35-materialization-summary")).toContainText("MULTI-DATE PILOTS");
-  await expect(dialog.getByText("BASE-GLORYS-001")).toBeVisible();
-  await expect(dialog.getByText("02 Jan 2024 · daily mean")).toBeVisible();
+  await expect(dialog.getByText("LAND-ONLY EXCLUDED")).toBeVisible();
+  await expect(dialog.getByText("28", { exact: true })).toBeVisible();
+  await expect(dialog.locator('[data-block-id="IO-004"]')).toHaveCount(0);
+  await expect(dialog.locator('[data-block-id="IO-019"]')).toHaveCount(1);
 
   const pilot = dialog.locator('[data-block-id="IO-001"]');
   await expect(pilot).toHaveAttribute("data-materialization", "pilot", { timeout: 20_000 });
@@ -51,7 +53,7 @@ test("planned-region browsing cannot replace the active scientific renderer sour
 
   const filteredCount = await dialog.locator(".phase35-block-cell").count();
   expect(filteredCount).toBeGreaterThan(0);
-  expect(filteredCount).toBeLessThan(140);
+  expect(filteredCount).toBeLessThan(112);
 
   const planned = dialog.locator('[data-materialization="planned"]').first();
   await planned.click();
