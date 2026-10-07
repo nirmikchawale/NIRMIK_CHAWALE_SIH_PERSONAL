@@ -1,6 +1,6 @@
 # RUI-VIS-03 — Telemetry Visual Integration
 
-Status: IN PROGRESS. Not merged, deployed or live.
+Status: MERGED through PR #152; deployment and live acceptance pending.
 
 Starting main: `239806074779b19f12b2c203f0adcf03cc4cdbe8`.
 Branch: `rui-vis-03-telemetry-visual-integration`.
@@ -33,6 +33,7 @@ Phase tests cover 1440/768/390/360px, directory containment, target sizing, exac
 selection, variable switching, genuine-time lock, keyboard focus and theme surfaces.
 Inherited NAV, VIS and scientific browser suites remain unchanged and required.
 
-Pending: exact-head tests/final-mvp/full browser acceptance, fresh-main race check,
-protected merge, exact-main tests/final-mvp, Pages build/deploy/public HTTPS/live Chromium.
+Candidate tests and final-mvp 37645237025 passed, including all 100 browser tests.
+Fresh-main check was unchanged and expected-head merge succeeded: `89e6754603b615a75a9890c75eb2a88c498e0d31`.
+Pending exact-main tests 37646905022, final-mvp 37646905240 and Pages/public acceptance 37646905230.
 See `RUI_CHAT1_EXECUTION_LEDGER.md` for the restart checkpoint.

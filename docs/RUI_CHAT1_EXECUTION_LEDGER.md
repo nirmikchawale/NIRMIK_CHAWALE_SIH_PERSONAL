@@ -14,22 +14,22 @@ This index records observed evidence, not submission assumptions. Chat 1 owns vi
 ## RUI-VIS-03
 
 PHASE: RUI-VIS-03 — Telemetry Visual Integration
-STATUS: IN PROGRESS
+STATUS: MERGED
 STARTING MAIN: 239806074779b19f12b2c203f0adcf03cc4cdbe8
 BRANCH: rui-vis-03-telemetry-visual-integration
-CURRENT BRANCH HEAD: resolve this branch on GitHub; this checkpoint is self-identifying in its commit
-PR: pending creation
+CURRENT BRANCH HEAD: validated runtime head 0f2ee698468e8e00e9062ad0e3f97e25e80f4737; later branch commits record evidence only
+PR: #152 (merged)
 FILES CHANGED: frontend/src/rui-nav-telemetry.css; frontend/e2e/rui-vis-03-telemetry-visual.spec.ts; docs/RUI_VIS_03_TELEMETRY_VISUAL_INTEGRATION.md; this ledger
-LAST GREEN CI: production baseline above; local typecheck/build pass
-FAILED/OPEN GATES: candidate CI and browser acceptance pending; local browser archive download invalid
-MERGE SHA: none
-NEW MAIN SHA: unchanged
-PAGES RUN: no candidate deployment
+LAST GREEN CI: candidate tests 37645237014 and 37645195764; final-mvp 37645237025; 100 browser tests passed
+FAILED/OPEN GATES: exact-main tests/final-mvp and Pages/public acceptance in progress
+MERGE SHA: 89e6754603b615a75a9890c75eb2a88c498e0d31
+NEW MAIN SHA: 89e6754603b615a75a9890c75eb2a88c498e0d31
+PAGES RUN: 37646905230 (in progress)
 LIVE URL: https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/
 LIVE VERIFICATION: previous production only
 SCIENCE CHANGES: none; CSS/test/docs only
 CONCURRENT PRS OBSERVED: #151 3DB-08 at 9094b84a29453470fcb1404871aa4a93f44f6de9; old #140 readiness; no open NAV PR
-NEXT EXACT STEP: run exact-head CI and full browser suite; fix candidate failures; fetch fresh main before protected merge; then verify exact-main CI and public deployment
+NEXT EXACT STEP: verify main tests 37646905022, final-mvp 37646905240 and Pages/public browser 37646905230; then VIS-04 from fresh main
 TIMESTAMP/SESSION NOTE: 2026-10-07; Chat 1 continuation
 
 ## RUI-VIS-04
