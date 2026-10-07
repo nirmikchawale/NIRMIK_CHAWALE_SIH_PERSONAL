@@ -34,22 +34,22 @@ TIMESTAMP/SESSION NOTE: closure verified 2026-10-08 IST
 ## RUI-VIS-04
 
 PHASE: Model vs Observation Visual Integration
-STATUS: IN PROGRESS
+STATUS: MERGED
 STARTING MAIN: 743df7b97a59681ab58468910f61345fa748e876
 BRANCH: rui-vis-04-model-observation-visual-integration
-CURRENT BRANCH HEAD: resolve named branch; this commit identifies the initial candidate
-PR: pending creation
+CURRENT BRANCH HEAD: validated runtime 323f327b6f13507d894f4d4d1bea0b9c819aa656; later commits are documentation checkpoints
+PR: #153 MERGED
 FILES CHANGED: comparison CSS; VIS-04 browser tests; VIS-04 document; VIS-03 closure document; ledger
-LAST GREEN CI: starting production above; local typecheck/build
-FAILED/OPEN GATES: candidate CI/full browser, fresh-main merge gate, exact-main CI/deployment/live acceptance
-MERGE SHA: none
-NEW MAIN SHA: unchanged
-PAGES RUN: none for candidate
+LAST GREEN CI: tests 37692361426 and 37692356518; final-mvp 37692361335; 108 browser tests passed
+FAILED/OPEN GATES: exact-main CI/deployment/live acceptance
+MERGE SHA: b252547cac5732405b4bfbca47da64e9029ea3db
+NEW MAIN SHA: b252547cac5732405b4bfbca47da64e9029ea3db
+PAGES RUN: 37694522481 (pending)
 LIVE URL: https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/#/compare
 LIVE VERIFICATION: previous production only
 SCIENCE CHANGES: none; CSS/test/docs only
 CONCURRENT PRS OBSERVED: no open new NAV/3DB PR; old #140 readiness unrelated
-NEXT EXACT STEP: verify candidate tests/final-mvp/full browser; reconcile fresh main if advanced; protected merge; verify exact-main and public Pages before marking live
+NEXT EXACT STEP: verify exact-main runs final-mvp 37694522375; deploy-oceantwin-pages 37694522481; tests 37694522437; inspect live comparison; then record LIVE & VERIFIED and leave VIS-05 for next session
 TIMESTAMP/SESSION NOTE: 2026-10-08 IST
 
 Next after VIS-04 closure: RUI-VIS-05 Anomaly Screening. Do not begin a third phase in this session.

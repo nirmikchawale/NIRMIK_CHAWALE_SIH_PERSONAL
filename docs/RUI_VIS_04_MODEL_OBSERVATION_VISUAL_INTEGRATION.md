@@ -1,6 +1,6 @@
 # RUI-VIS-04 — Model vs Observation Visual Integration
 
-Status: IN PROGRESS — candidate, not deployed.
+Status: MERGED via PR #153; exact-main deployment/live gates pending.
 Starting main: `743df7b97a59681ab58468910f61345fa748e876`.
 Branch: `rui-vis-04-model-observation-visual-integration`.
 Consumes merged NAV-04 and verified VIS-03/3DB-08 production.
@@ -32,3 +32,10 @@ acceptance then protected merge and exact-main tests/final-mvp/Pages/HTTPS/live 
 are required. Phase tests cover 1440/768/390/360px, profile/depth interaction, containment,
 focus, touch targets, theme, motion, QC and evidence. Inherited tests are unchanged.
 See RUI_CHAT1_EXECUTION_LEDGER.md for current gates and recovery.
+
+
+## Candidate and merge evidence
+
+Validated runtime head `323f327b6f13507d894f4d4d1bea0b9c819aa656` passed tests 37692361426 and final-mvp 37692361335, including all 108 browser tests. Fresh main was unchanged; expected-head merge produced `b252547cac5732405b4bfbca47da64e9029ea3db`. No race reconciliation was needed.
+
+Production gates: final-mvp 37694522375; deploy-oceantwin-pages 37694522481; tests 37694522437. Pending at this checkpoint.
