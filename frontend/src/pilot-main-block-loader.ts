@@ -1,5 +1,10 @@
 import type { CurrentsResponse, CurrentsVolumeResponse, FieldResponse, VolumeResponse } from "./types";
 import { assertNativeDepthAxis, resolveNativeDepthSelection } from "./main-block-depth";
+import {
+  assertMainBlockVariableSelection,
+  deriveMainBlockVariableIntegration
+} from "./main-block-variables";
+import { resolveMainBlock } from "./main-block-runtime";
 
 export type PilotOceanRelevance = "ocean" | "coastal" | "land";
 
@@ -129,6 +134,13 @@ function nativeDepthAxis(payload: PilotBlockPayload): readonly number[] {
   );
 }
 
+function nativeVariableIntegration(payload: PilotBlockPayload) {
+  return deriveMainBlockVariableIntegration(resolveMainBlock(payload.block_id), {
+    shape: payload.shape,
+    variables: payload.variables
+  });
+}
+
 export async function fetchPilotMainBlock(
   blockId: string,
   date: string,
@@ -155,6 +167,7 @@ export async function fetchPilotMainBlock(
     throw new Error(`Pilot payload failed scientific-integrity policy for ${blockId} ${date}.`);
   }
   nativeDepthAxis(payload);
+  nativeVariableIntegration(payload);
   return payload;
 }
 
@@ -164,6 +177,7 @@ function flatIndex(payload: PilotBlockPayload, depth: number, latitude: number, 
 }
 
 function scalarMetadata(payload: PilotBlockPayload, variable: "thetao" | "so") {
+  assertMainBlockVariableSelection(nativeVariableIntegration(payload), variable);
   const source = payload.variables[variable];
   const label = variable === "thetao" ? "Temperature" : "Salinity";
   return {
@@ -247,6 +261,7 @@ export function pilotBlockField(
 }
 
 export function pilotBlockCurrentsVolume(payload: PilotBlockPayload): CurrentsVolumeResponse {
+  assertMainBlockVariableSelection(nativeVariableIntegration(payload), "currents");
   const vectors: CurrentsVolumeResponse["vectors"] = [];
   const { longitude, latitude } = payload.coordinates;
   const depth_m = nativeDepthAxis(payload);
@@ -281,6 +296,7 @@ export function pilotBlockCurrentsVolume(payload: PilotBlockPayload): CurrentsVo
 }
 
 export function pilotBlockCurrents(payload: PilotBlockPayload, depthIndex: number): CurrentsResponse {
+  assertMainBlockVariableSelection(nativeVariableIntegration(payload), "currents");
   const selectedDepth = resolveNativeDepthSelection(
     payload.block_id,
     payload.coordinates.depth_m,
