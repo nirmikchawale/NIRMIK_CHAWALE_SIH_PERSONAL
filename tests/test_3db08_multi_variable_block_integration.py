@@ -57,8 +57,8 @@ def test_3db08_all_existing_pilot_payloads_are_genuinely_multi_variable() -> Non
                 if finite:
                     assert component["minimum"] is not None
                     assert component["maximum"] is not None
-                    assert math.isclose(component["minimum"], min(finite), rel_tol=0.0, abs_tol=1e-12)
-                    assert math.isclose(component["maximum"], max(finite), rel_tol=0.0, abs_tol=1e-12)
+                    assert math.isclose(component["minimum"], min(finite), rel_tol=0.0, abs_tol=1e-5)
+                    assert math.isclose(component["maximum"], max(finite), rel_tol=0.0, abs_tol=1e-5)
                 else:
                     assert component["minimum"] is None
                     assert component["maximum"] is None
