@@ -33,6 +33,7 @@ import "./rui-context-header-mobile-fix.css";
 import "./rui-nav-file-manager.css";
 import "./rui-nav-explorer.css";
 import "./rui-nav-telemetry.css";
+import "./rui-nav-comparison.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
