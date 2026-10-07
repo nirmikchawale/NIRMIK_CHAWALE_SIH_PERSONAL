@@ -165,7 +165,7 @@ export function deriveMainBlockProvenanceEvidence(
     modelEvidenceAvailable = true;
     sourceProduct = block.sourceProduct;
     productId = GLORYS_PRODUCT_ID;
-    datasetId = block.sourceDatasetId;
+    datasetId = "sourceDatasetId" in block ? block.sourceDatasetId : null;
     doi = input.runtimeProvenance?.model.doi ?? GLORYS_DOI;
     archiveProvider = input.runtimeProvenance?.model.label ?? "Copernicus Marine";
     runtimeMode = input.runtimeProvenance?.model.runtime_mode ?? "verified bundled reference";
