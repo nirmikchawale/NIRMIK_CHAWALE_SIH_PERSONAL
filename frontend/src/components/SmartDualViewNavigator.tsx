@@ -36,6 +36,7 @@ export function SmartDualViewNavigator({ mode, waterColumnAvailable, onChange }:
       <button type="button"
         className={mode === "globe" ? "active" : ""}
         aria-pressed={mode === "globe"}
+        aria-label="Geographic View"
         aria-controls="mpr-3d-stage"
         onClick={() => moveToView("globe")}>
         <span className="mode-number">VIEW 1</span>
@@ -48,6 +49,7 @@ export function SmartDualViewNavigator({ mode, waterColumnAvailable, onChange }:
       <button type="button"
         className={mode === "water-column" ? "active" : ""}
         aria-pressed={mode === "water-column"}
+        aria-label="Water Column 3D"
         aria-controls="mpr-3d-stage"
         disabled={!waterColumnAvailable}
         title={waterColumnAvailable ? "Open actual water-column 3D" : "Water-column 3D unavailable for this source"}
