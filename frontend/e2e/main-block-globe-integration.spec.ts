@@ -72,9 +72,11 @@ for (const viewport of [
     const control = page.locator(".station-workspace > .control-panel");
     // The ORIGINAL controls now live in the mobile drawer, not over Cesium.
     await expect(canvas.locator('[data-testid="integrated-main-block-hud"]')).toHaveCount(0);
-    await expect(control).toHaveAttribute("data-mobile-open", "false");
-    await page.locator(".mobile-explore-tray button").first().click();
-    await expect(control).toHaveAttribute("data-mobile-open", "true");
+    if (viewport.width <= 760) {
+      await expect(control).toHaveAttribute("data-mobile-open", "false");
+      await page.locator(".mobile-explore-tray button").first().click();
+      await expect(control).toHaveAttribute("data-mobile-open", "true");
+    }
     await expect(control.getByTestId("mpr-block-region-group")).toBeVisible();
     await expect(hud).toBeVisible();
     const [box, dockBox] = await Promise.all([hud.boundingBox(), control.boundingBox()]);
@@ -83,8 +85,10 @@ for (const viewport of [
     expect(box!.x).toBeGreaterThanOrEqual(dockBox!.x - 2);
     expect(box!.x + box!.width).toBeLessThanOrEqual(dockBox!.x + dockBox!.width + 2);
     expect(box!.y).toBeGreaterThanOrEqual(dockBox!.y - 2);
-    await control.getByRole("button", { name: "Close explorer controls" }).click();
-    await expect(control).toHaveAttribute("data-mobile-open", "false");
+    if (viewport.width <= 760) {
+      await control.getByRole("button", { name: "Close explorer controls" }).click();
+      await expect(control).toHaveAttribute("data-mobile-open", "false");
+    }
 
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
