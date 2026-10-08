@@ -51,6 +51,10 @@ for (const width of [1440, 1024, 390]) {
     await mode.getByRole("button", { name: "Presentation workspace" }).click();
     const root = page.locator(".ocean-workbench");
     await expect(root).toHaveAttribute("data-workspace-mode", "presentation");
+    // P0 historical bug: hiding only .feature-rail leaves the 100%-height
+    // .app-navigation-root flex child occupying the entire presentation screen.
+    await expect(page.getByTestId("app-navigation-root")).toBeHidden();
+    await expect(page.locator(".workspace-frame > .scientific-context-header")).toBeHidden();
     const exit = page.getByRole("button", { name: "Exit presentation workspace" });
     await expect(exit).toBeVisible();
     const workspace = page.locator(".station-workspace");
