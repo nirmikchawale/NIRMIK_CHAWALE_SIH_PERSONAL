@@ -60,9 +60,15 @@ test("3DB-05 Water Column presents the active pilot identity instead of the veri
   await expect(context).toHaveAttribute("data-block-id", "IO-001", { timeout: 30_000 });
   await expect(context).toHaveAttribute("data-block-materialization", "pilot");
 
+  const trigger = page.getByTestId("pilot-block-details-trigger");
+  await expect(trigger).toBeVisible({ timeout: 30_000 });
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await trigger.click();
   const bridge = page.getByTestId("pilot-renderer-bridge");
   await expect(bridge).toHaveAttribute("data-water-column-sync", "ready", { timeout: 30_000 });
   await expect(bridge).toHaveAttribute("data-water-column-sync-version", "3db-05-v1");
+  await page.getByRole("button", { name: "Close source-backed main block details" }).last().click();
+  await expect(bridge).toHaveCount(0);
 
   const openWaterColumn = page.getByRole("button", { name: "Open in Water Column 3D" });
   await expect(openWaterColumn).toBeEnabled({ timeout: 30_000 });

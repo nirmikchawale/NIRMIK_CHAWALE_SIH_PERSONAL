@@ -1,4 +1,5 @@
 import { SourceWorkbench } from "./components/SourceWorkbench";
+import { ExplorerDirectoryNav } from "./components/ExplorerDirectoryNav";
 import { RefreshControl } from "./components/RefreshControl";
 import { useOceanMotion } from "./useOceanMotion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -1083,10 +1084,18 @@ export default function App() {
           }} />}
           {page === "explore" ? (
             <div className="station-workspace" data-inspector={evidenceOpen || profilePanelOpen || workspaceMode === "analysis" ? "open" : "closed"}>
-              <SourceWorkbench source={sourceMode} operationalAvailable={Boolean(operationalCatalog) && !operationalError}
-                chlorophyllAvailable={Boolean(chlorophyllCatalog) && !chlorophyllError} onSource={handleSourceModeChange}
-                onOverview={() => { setProfilePanelOpen(false); setWorkspaceMode("explorer"); setEvidenceOpen(true); }}
-                onCompare={() => navigate("compare")} onData={() => navigate("data-lab")} />
+              <div className="explorer-landing-islands" data-testid="explorer-landing-islands" aria-label="Explorer feature and ocean source islands">
+                <ExplorerDirectoryNav
+                  workspaceMode={workspaceMode}
+                  focusMode={focusMode}
+                  onWorkspaceModeChange={handleWorkspaceModeChange}
+                  onFocus3D={() => setFocusMode(true)}
+                />
+                <SourceWorkbench source={sourceMode} operationalAvailable={Boolean(operationalCatalog) && !operationalError}
+                  chlorophyllAvailable={Boolean(chlorophyllCatalog) && !chlorophyllError} onSource={handleSourceModeChange}
+                  onOverview={() => { setProfilePanelOpen(false); setWorkspaceMode("explorer"); setEvidenceOpen(true); }}
+                  onCompare={() => navigate("compare")} onData={() => navigate("data-lab")} />
+              </div>
               {workspaceMode === "presentation" && (
                 <button
                   type="button"

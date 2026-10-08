@@ -1,0 +1,132 @@
+/*
+ * Explorer landing — two independent dynamic islands.
+ *
+ * Both sections now live in one React-owned normal-flow flex stack; the 3D
+ * directory is no longer portalled into a different grid item. This explicitly
+ * prevents one island from borrowing row height from the other, including at
+ * narrow widths, zoom, translated copy and horizontal directory scrolling.
+ * Scientific sources, block payloads and route semantics remain untouched.
+ */
+.ocean-workbench[data-page="explore"] .explorer-landing-islands {
+  grid-area: directory;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: clamp(18px, 1.7vw, 28px);
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: max-content;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  isolation: isolate;
+  align-self: start;
+}
+
+.ocean-workbench[data-page="explore"] .explorer-landing-islands > .explorer-directory-shell,
+.ocean-workbench[data-page="explore"] .explorer-landing-islands > .source-workbench {
+  /* Direct siblings, but NEVER overlapping grid-area residents. */
+  position: relative;
+  inset: auto;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  border-radius: clamp(17px, 1.4vw, 24px);
+  border: 1px solid var(--rui-vis2-border-strong, var(--station-line));
+  box-shadow: 0 10px 26px color-mix(in srgb, #000 12%, transparent);
+  backdrop-filter: blur(14px) saturate(1.08);
+}
+
+/* Each island owns its internal grid and intrinsic vertical height. */
+.ocean-workbench[data-page="explore"] .explorer-landing-islands > .explorer-directory-shell {
+  display: grid;
+  align-content: start;
+  grid-auto-rows: max-content;
+  padding: clamp(14px, 1.2vw, 20px);
+}
+
+.ocean-workbench[data-page="explore"] .explorer-landing-islands > .source-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "source-heading" "source-cards" "source-actions";
+  grid-template-rows: max-content max-content max-content;
+  align-items: start;
+  gap: clamp(12px, 1.2vw, 18px);
+  padding: clamp(16px, 1.8vw, 25px);
+}
+
+.ocean-workbench[data-page="explore"] .explorer-landing-islands .explorer-directory-nav {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+.ocean-workbench[data-page="explore"] .explorer-landing-islands .source-workbench-title,
+.ocean-workbench[data-page="explore"] .explorer-landing-islands .source-workbench-choices,
+.ocean-workbench[data-page="explore"] .explorer-landing-islands .source-workbench-actions {
+  min-width: 0;
+  max-width: 100%;
+}
+.ocean-workbench[data-page="explore"] .explorer-landing-islands .source-workbench-choices button {
+  min-width: 0;
+  max-width: 100%;
+}
+.ocean-workbench[data-page="explore"] .explorer-landing-islands .source-workbench-choices button > span:last-child {
+  min-width: 0;
+}
+.ocean-workbench[data-page="explore"] .explorer-landing-islands .source-workbench-choices :is(strong, small) {
+  white-space: normal;
+  overflow-wrap: break-word;
+  text-overflow: clip;
+}
+
+/* In focused and presentation workspaces the directory is intentionally hidden;
+   keep the source island in the existing 'source' grid cell, without an orphan. */
+.ocean-workbench[data-page="explore"].focus-mode .explorer-landing-islands,
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .explorer-landing-islands {
+  grid-area: source;
+}
+.ocean-workbench[data-page="explore"].focus-mode .explorer-landing-islands > .explorer-directory-shell,
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .explorer-landing-islands > .explorer-directory-shell {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .ocean-workbench[data-page="explore"] .explorer-landing-islands {
+    gap: 16px;
+  }
+  .ocean-workbench[data-page="explore"] .explorer-landing-islands > :is(.explorer-directory-shell,.source-workbench) {
+    padding: 14px;
+    border-radius: 17px;
+  }
+  .ocean-workbench[data-page="explore"] .explorer-landing-islands .source-workbench-choices {
+    grid-template-columns: minmax(0,1fr);
+  }
+  /* Keep each stacked ocean-source island target touch-sized. */
+  .ocean-workbench[data-page="explore"] .explorer-landing-islands .source-workbench-choices button {
+    min-height: 86px;
+  }
+}
+
+@media (forced-colors: active) {
+  .ocean-workbench[data-page="explore"] .explorer-landing-islands > :is(.explorer-directory-shell,.source-workbench) {
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ocean-workbench[data-page="explore"] .explorer-landing-islands *,
+  .ocean-workbench[data-page="explore"] .explorer-landing-islands *::before,
+  .ocean-workbench[data-page="explore"] .explorer-landing-islands *::after {
+    scroll-behavior: auto !important;
+  }
+}
