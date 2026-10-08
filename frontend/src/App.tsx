@@ -896,6 +896,43 @@ export default function App() {
   const activeComparisonProfiles = sourceMode === "glorys" ? profiles : [];
   const activeSelectedProfile = sourceMode === "glorys" ? selectedProfile : null;
 
+  // MPR-12: update the navigator from ACTUAL scroll visibility, without
+  // reissuing scientific requests or triggering scroll from a scroll observer.
+  useEffect(() => {
+    if (page !== "explore") return;
+    const root = document.querySelector<HTMLElement>('.ocean-workbench[data-page="explore"]');
+    if (!root) return;
+    let pending = 0;
+    const reflectVisibleSection = () => {
+      pending = 0;
+      const geo = document.getElementById("mpr-3d-stage");
+      const water = document.getElementById("mpr-water-column-section");
+      if (!geo || !water) return;
+      const rootBox = root.getBoundingClientRect();
+      const center = rootBox.top + rootBox.height * 0.48;
+      const isVisible = (rect: DOMRect) =>
+        rect.bottom > rootBox.top && rect.top < rootBox.bottom;
+      const g = geo.getBoundingClientRect();
+      const w = water.getBoundingClientRect();
+      if (!isVisible(g) && !isVisible(w)) return;
+      const distance = (rect: DOMRect) => Math.abs((rect.top + rect.bottom) / 2 - center);
+      const next: VisualizationMode = isVisible(w) &&
+        (!isVisible(g) || distance(w) < distance(g)) ? "water-column" : "globe";
+      setVisualizationMode(current => current === next ? current : next);
+    };
+    const onScroll = () => {
+      if (!pending) pending = window.requestAnimationFrame(reflectVisibleSection);
+    };
+    root.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      root.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (pending) window.cancelAnimationFrame(pending);
+    };
+  }, [page]);
+
+
   return (
     <div
       className={`app-shell ocean-workbench ${focusMode ? "focus-mode" : ""}`}
@@ -1211,8 +1248,8 @@ export default function App() {
                 aria-label="Connected geographic and water-column visualization stage"
               >
                 <div
-                  className={`visualization-layer globe-visualization-layer ${visualizationMode === "globe" ? "active" : ""}`}
-                  aria-hidden={visualizationMode !== "globe"}
+                  className="visualization-layer globe-visualization-layer active"
+                  aria-hidden={false}
                 >
                   <OceanGlobe
                     field={field}
