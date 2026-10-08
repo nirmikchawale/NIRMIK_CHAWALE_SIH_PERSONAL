@@ -914,6 +914,9 @@ useEffect(() => {
     }
   };
 
+  // Capture the actual runtime materialization before the legacy renderability
+  // guard narrows types to its historical baseline-only TypeScript shape.
+  const selectedSourceIsPilot = activeMainBlock.materialization === "pilot";
   if (!isVerifiedBaseline(activeMainBlock)) {
     return <PlannedMainBlockShell block={activeMainBlock} theme={theme} />;
   }
@@ -947,12 +950,12 @@ useEffect(() => {
       data-current-vector-count={currentsVolume?.vectors.length ?? 0}
       data-current-depth-count={currentsVolume?.depths_m.length ?? 0}
       data-main-block-id={activeMainBlock.id}
-      data-materialization={activeMainBlock.materialization}
+      data-materialization={selectedSourceIsPilot ? "pilot" : "verified-baseline"}
     >
       <div className="water-column-main-block-context" aria-label="Active verified main block">
         <span>ACTIVE MAIN BLOCK</span>
-        <strong>{activeMainBlock.id} · {activeMainBlock.materialization === "pilot" ? "SOURCE-BACKED PILOT VOLUME" : "VERIFIED REFERENCE VOLUME"}</strong>
-        <small>{blockBoundsLabel(activeMainBlock)} · {depthLevels.length} native depth levels · {activeMainBlock.materialization === "pilot" ? "GLORYS pilot; independent observation validation not asserted" : "independently validated GLORYS baseline"}</small>
+        <strong>{activeMainBlock.id} · {selectedSourceIsPilot ? "SOURCE-BACKED PILOT VOLUME" : "VERIFIED REFERENCE VOLUME"}</strong>
+        <small>{blockBoundsLabel(activeMainBlock)} · {depthLevels.length} native depth levels · {selectedSourceIsPilot ? "GLORYS pilot; independent observation validation not asserted" : "independently validated GLORYS baseline"}</small>
       </div>
       <canvas
         ref={canvasRef}
