@@ -245,7 +245,7 @@ export function ControlPanel({
       </header>
       <nav className="mpr-geographic-tool-links" aria-label="Geographic tools">
         {([
-          ["Block & region", ".explorer-block-system-home"],
+          ["Block & region", "#explore-block-region"],
           ["Display range", ".scientific-colorbar-hud"],
           ["Camera", "#mpr-3d-stage .camera-control-stack"],
           ["Basemap", "#mpr-3d-stage .imagery-control"]
@@ -255,6 +255,8 @@ export function ControlPanel({
             onClick={() => {
               const element = document.querySelector<HTMLElement>(selector);
               if (!element) return;
+              const disclosure = element.closest<HTMLDetailsElement>("details.mpr-geographic-control-group");
+              if (disclosure && !disclosure.open) disclosure.open = true;
               element.scrollIntoView({ block: "nearest", behavior: "auto" });
               const focusTarget = element.querySelector<HTMLElement>("button,select,input,[tabindex]");
               focusTarget?.focus({ preventScroll: true });
@@ -262,6 +264,17 @@ export function ControlPanel({
           >{label} ↗</button>
         ))}
       </nav>
+      <details className="mpr-geographic-control-group mpr-block-region-group" open data-testid="mpr-block-region-group">
+        <summary>Block &amp; Region</summary>
+        <section id="explore-block-region" aria-label="Indian Ocean geographic block field controls">
+          <p className="mpr-block-region-description">
+            Original Indian Ocean block selection, geographic fitting, materialization and
+            observation evidence. The full catalog remains in 3D Explorer → Block System.
+          </p>
+          <div className="mpr-block-region-slot" data-mpr-block-region-slot="true"
+            data-testid="mpr-block-region-slot" />
+        </section>
+      </details>
       <nav className="control-section-nav" aria-label="Jump to exploration controls">
         {[["Variables", "explore-variables"], ["Depth", "explore-depth"], ["Time", "explore-time"], ["Observations", "explore-observations"]].map(([label, id]) =>
           <button key={id} type="button" onClick={() => {

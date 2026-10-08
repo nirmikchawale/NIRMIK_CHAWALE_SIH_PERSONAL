@@ -16,9 +16,14 @@ for(const width of [1440,1024,390,320]){
   }
   await expect(dock).toHaveAttribute("data-mpr-geographic-dock","true");
   await expect(dock.getByTestId("mpr-11-geographic-dock")).toContainText("Explore controls");
+  const blockRegion=dock.getByTestId("mpr-block-region-group");
+  await expect(blockRegion).toBeVisible();
+  await expect(blockRegion.getByTestId("integrated-main-block-hud")).toHaveCount(1);
+  await expect(page.locator("#mpr-3d-stage .main-block-globe-hud")).toHaveCount(0);
   const links=dock.getByRole("navigation",{name:"Geographic tools"});
   await expect(links.getByRole("button")).toHaveCount(4);
   const selectors=[
+   "Block & Region",
    "Variables & field layers",
    "Depth & section",
    "Native time",
@@ -26,14 +31,14 @@ for(const width of [1440,1024,390,320]){
    "Source status & scientific quality"
   ];
   const groups=dock.locator("details.mpr-geographic-control-group");
-  await expect(groups).toHaveCount(5);
+  await expect(groups).toHaveCount(6);
   for (const title of selectors){
    await expect(dock.getByText(title,{exact:true})).toBeVisible();
   }
   for(const sectionId of ["explore-variables","explore-depth","explore-time","explore-observations"]){
    await expect(dock.locator("#"+sectionId)).toBeVisible();
   }
-  const depthGroup=groups.nth(1);
+  const depthGroup=groups.nth(2);
   await depthGroup.locator("summary").click();
   await expect(depthGroup).not.toHaveAttribute("open","");
   await dock.getByRole("navigation",{name:"Jump to exploration controls"}).getByRole("button",{name:"Depth"}).click();
