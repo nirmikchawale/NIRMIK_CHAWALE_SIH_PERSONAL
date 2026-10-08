@@ -52,5 +52,5 @@ test("MPR-07 materialized block navigation updates canonical shared context", as
   await selector.selectOption(next!);
   await expect(block).toHaveAttribute("data-block-id", next!);
   await expect(page.getByTestId("scientific-context-bar")).toHaveAttribute("data-block-id", next!);
-  await expect(block.getByRole("term", { name: "Scientific source" })).toBeVisible();
+  await expect(block.locator("dt").filter({ hasText: "Scientific source" })).toBeVisible();
 });
