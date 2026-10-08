@@ -15,14 +15,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          RELEASE_HEAD: da36b4edd704a9112db866a7b1775ee4f7f7b9d6
+          RELEASE_HEAD: 3ced4764e70e2fe14438ef9a928e2213339e4cba
           CURRENT_3DB_HEAD: e253fde2871af634333e2b8d7045f1b1ce7e4c53
           PROTECTED_MAIN: 955038443470119b213f65a6a0e090168a270c32
         shell: bash
         run: |
           set -euo pipefail
           cancelled=0
-          for id in 37835701312 37835701377 37833882571 37833882593 37833689550 37833689543 37833157166 37835942362 37835942367 37835917701 37835917704 37835893232 37835893239 37835865704 37835865918; do
+          for id in 37835972156 37835972245 37835962552 37835972178; do
             info="$(gh api "repos/$REPO/actions/runs/$id" 2>/dev/null || true)"
             if [[ -z "$info" ]]; then echo "Skip unavailable $id"; continue; fi
             status="$(jq -r '.status' <<< "$info")"
