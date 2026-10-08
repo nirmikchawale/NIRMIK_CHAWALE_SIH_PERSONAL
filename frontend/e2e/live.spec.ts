@@ -235,7 +235,9 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await dataLabPage.getByRole("button", { name: "Load validated profiles into 3D Explorer" }).click();
   await expect(page).toHaveURL(/#\/explore$/);
   const importedGlobeShell = page.locator(".globe-shell:not(.water-column-shell)");
-  await expect.poll(async () => Number(await importedGlobeShell.getAttribute("data-imported-profile-count"))).toBeGreaterThanOrEqual(4);
+  // Four validated rows at the same instrument, time and position are one
+  // profile with four measurements, not four distinct sensor profiles.
+  await expect.poll(async () => Number(await importedGlobeShell.getAttribute("data-imported-profile-count"))).toBeGreaterThanOrEqual(1);
   await revealCanvasTools(page);
   const importedSelector = page.locator(".imported-observation-chips");
   await importedSelector.getByRole("button", { name: /^Sensor profiles/ }).click();
@@ -246,6 +248,7 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await importedSelector.getByRole("button", { name: /GLIDER.*glider_demo_01/i }).click();
   await expect(page.locator(".imported-profile-panel")).toBeVisible();
   await expect(page.locator(".imported-profile-panel")).toContainText("Glider");
+  await expect(page.locator(".imported-profile-panel")).toContainText("4 validated measurements");
   await expect(page.locator(".imported-profile-panel")).toContainText("temperature vs depth");
   await openWorkspace(page, "data-lab");
   await expect(page).toHaveURL(/#\/data-lab$/);
