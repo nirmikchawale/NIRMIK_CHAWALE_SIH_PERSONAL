@@ -9,6 +9,11 @@ for(const width of [1440,1024,390,320]){
   await page.emulateMedia({reducedMotion:"reduce"});
   await page.goto(live!.replace(/#.*$/,"")+"#/explore",{waitUntil:"domcontentloaded"});
   const dock=page.locator(".station-workspace > .control-panel");
+  if(width<=760){
+    await expect(dock).toHaveAttribute("data-mobile-open","false");
+    await page.locator(".mobile-explore-tray button").first().click();
+    await expect(dock).toHaveAttribute("data-mobile-open","true");
+  }
   await expect(dock).toHaveAttribute("data-mpr-geographic-dock","true");
   await expect(dock.getByTestId("mpr-11-geographic-dock")).toContainText("Explore controls");
   const links=dock.getByRole("navigation",{name:"Geographic tools"});
