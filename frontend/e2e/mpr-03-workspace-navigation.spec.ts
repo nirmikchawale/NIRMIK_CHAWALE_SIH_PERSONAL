@@ -43,7 +43,7 @@ test("MPR-03 directory keyboard trap and dismissal preserves underlying 3D width
   await expect(nav).toBeVisible();
   await expect(nav.getByRole("button", { name: "Analyze", exact: true })).toBeFocused();
   // Wrap backward only when focus is on the first available directory control.
-  await nav.getByRole("button", { name: "Explore", exact: true }).focus();
+  await nav.getByRole("button", { name: "Close workspace directory" }).focus();
   await page.keyboard.press("Shift+Tab");
   await expect(nav.getByRole("button", { name: "Anomaly Screening" })).toBeFocused();
   expect(Math.abs((await scene.boundingBox())!.width - width)).toBeLessThanOrEqual(1);
