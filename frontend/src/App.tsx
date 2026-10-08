@@ -1164,7 +1164,7 @@ export default function App() {
           onNavigate={navigate}
         />
 
-        <div className="workspace">
+        <div className="workspace" data-judge-guide={guideOpen ? "open" : "closed"}>
           {guideOpen && <PresentationGuide onClose={() => setGuideOpen(false)} onStep={(step) => {
             setFocusMode(false);
             setWorkspaceMode("explorer");
