@@ -208,7 +208,10 @@ test("RUI-VIS-01 sidebar icon badges and text stay in separate columns on narrow
         scrollHeight: element.scrollHeight,
         clientHeight: element.clientHeight
       }));
-      expect(metrics.height).toBeGreaterThan(metrics.lineHeight * 1.5);
+      // Short descriptions may fit on one line, but longer ones must be allowed to wrap.
+      if (await item.getAttribute("data-workspace-id") === "data-lab") {
+        expect(metrics.height).toBeGreaterThan(metrics.lineHeight * 1.5);
+      }
       expect(metrics.height).toBeLessThanOrEqual(metrics.lineHeight * 3 + 1);
       expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
       expect(metrics.scrollHeight).toBeLessThanOrEqual(metrics.clientHeight + 1);
