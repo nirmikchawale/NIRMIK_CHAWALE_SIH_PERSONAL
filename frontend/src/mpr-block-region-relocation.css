@@ -1,0 +1,131 @@
+/* MPR geographic consolidation: the original OceanGlobe control DOM is
+   portalled to Block & Region; its state/camera/science handlers stay put.
+   Never position the full block field panel on top of Cesium again. */
+.ocean-workbench[data-page="explore"] .control-panel[data-mpr-geographic-dock="true"] .mpr-block-region-group {
+  border-color: var(--mpr-border-active);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-description {
+  margin: 0 0 12px;
+  color: var(--mpr-text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-slot {
+  min-width: 0;
+  width: 100%;
+}
+.ocean-workbench[data-page="explore"] .control-panel[data-mpr-geographic-dock="true"] .main-block-globe-hud {
+  position: static;
+  inset: auto;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  display: grid;
+  width: 100%;
+  max-width: 100%;
+  max-height: none;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  gap: 12px;
+  overflow: visible;
+  opacity: 1;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-heading > div {
+  min-width: 0;
+  max-width: 100%;
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-heading strong {
+  color: var(--mpr-text);
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-heading small,
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-heading > div > span,
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-hud label > span {
+  color: var(--mpr-text-muted);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-status-pill {
+  color: var(--mpr-accent);
+  border-color: var(--mpr-border-active);
+  background: var(--mpr-surface);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-hud select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 44px;
+  background: var(--mpr-surface);
+  color: var(--mpr-text);
+  border-color: var(--mpr-border);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-stats > div {
+  min-width: 0;
+  background: var(--mpr-surface);
+  border-color: var(--mpr-border);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-stats > div:last-child {
+  grid-column: 1 / -1;
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-stats :is(span, strong),
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-grid-key,
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-boundary-note {
+  color: var(--mpr-text-muted);
+  overflow-wrap: anywhere;
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-stats strong {
+  color: var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-actions {
+  grid-template-columns: minmax(0, 1fr);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-actions button {
+  min-height: 44px;
+  max-width: 100%;
+  padding: 8px 10px;
+  background: var(--mpr-surface);
+  border-color: var(--mpr-border);
+  color: var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-actions button.primary {
+  border-color: var(--mpr-border-active);
+  background: var(--mpr-surface-raised);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-region-group :is(button, select):focus-visible {
+  outline: 2px solid var(--mpr-focus);
+  outline-offset: 2px;
+}
+@media (max-width: 760px) {
+  /* The ControlPanel is the existing on-demand mobile sheet. Nothing floats
+     above Cesium while the sheet is closed. */
+  .ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-hud {
+    max-height: none;
+    overflow: visible;
+  }
+}
+@media (forced-colors: active) {
+  .ocean-workbench[data-page="explore"] .mpr-block-region-group .main-block-globe-hud {
+    background: Canvas;
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+}
