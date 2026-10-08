@@ -1154,6 +1154,19 @@ export default function App() {
                 onIsoValueChange={setIsoValue}
               />
 
+              <header className="mpr-geographic-heading" data-testid="mpr-10-geographic-heading">
+                <span>GEOGRAPHIC 3D · SCIENTIFIC OCEAN VIEW</span>
+                <div className="mpr-geographic-heading-main">
+                  <h2>Explore the ocean in three dimensions</h2>
+                  <p>{selectedVariable?.label ?? variable} · {activeExploreCatalog.dataset.region} · native scientific field</p>
+                </div>
+                <small>{sourceMode === "chlorophyll"
+                  ? "Satellite surface only · no artificial subsurface field"
+                  : scienceLoading
+                    ? "Updating the selected genuine scientific field"
+                    : "Interactive Cesium globe · connected to active source and block"}</small>
+              </header>
+
               <VisualizationDock
                 mode={visualizationMode}
                 waterColumnAvailable={sourceMode !== "chlorophyll" && (sourceMode === "glorys" || variable !== "currents")}
