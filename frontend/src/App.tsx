@@ -1,5 +1,6 @@
 import { SourceWorkbench } from "./components/SourceWorkbench";
 import { WaterColumnControlDock } from "./components/WaterColumnControlDock";
+import { linkedSelectionKey, matchesGeographicPayload, matchesWaterColumnPayload } from "./linked-view-integrity";
 import { ExplorerDirectoryNav } from "./components/ExplorerDirectoryNav";
 import { ExplorerWorkspaceModeIsland } from "./components/ExplorerWorkspaceModeIsland";
 import { RefreshControl } from "./components/RefreshControl";
@@ -192,6 +193,15 @@ export default function App() {
       : sourceMode === "chlorophyll" && chlorophyllCatalog
         ? chlorophyllCatalog
         : catalog;
+  const linkedExpectation = {
+    sourceId: exploreCatalog?.dataset.dataset_id ?? "",
+    mainBlockId: activeMainBlockId, mainBlockRevision, variable, timeIndex,
+    time: exploreCatalog?.coordinates.time[timeIndex] ?? "",
+    depthIndex, depthM: exploreCatalog?.coordinates.depth[depthIndex] ?? 0
+  };
+  const linkedKey = linkedSelectionKey(linkedExpectation);
+  const [geographicAcceptedKey, setGeographicAcceptedKey] = useState("");
+  const [waterAcceptedKey, setWaterAcceptedKey] = useState("");
   const activeMainBlock = useMemo(
     () => resolveMainBlock(activeMainBlockId),
     [activeMainBlockId]
@@ -583,6 +593,10 @@ export default function App() {
     setVolume(null);
     setCurrents(null);
     setCurrentsVolume(null);
+    setGeographicAcceptedKey("");
+    setWaterAcceptedKey("");
+    const selection = linkedExpectation;
+    const requestKey = linkedKey;
 
     if (sourceMode === "incois") {
       try {
@@ -592,8 +606,14 @@ export default function App() {
         }
         // Two independently mounted genuine views use the SAME native source/time.
         // The field remains depth-indexed; the water column retains source depth values.
-        setField(buildIncoisField(operationalSnapshot, variable, timeIndex, depthIndex));
-        setVolume(buildIncoisVolume(operationalSnapshot, variable, timeIndex));
+        const geo = buildIncoisField(operationalSnapshot, variable, timeIndex, depthIndex);
+        const deep = buildIncoisVolume(operationalSnapshot, variable, timeIndex);
+        if (matchesGeographicPayload(geo, selection)) {
+          setField(geo); setGeographicAcceptedKey(requestKey);
+        } else setError("INCOIS geographic native source/time/depth mismatch; field withheld.");
+        if (matchesWaterColumnPayload(deep, selection)) {
+          setVolume(deep); setWaterAcceptedKey(requestKey);
+        } else setError("INCOIS water-column native source/time mismatch; volume withheld.");
       } catch (reason) {
         setError(reason instanceof Error ? reason.message : String(reason));
       } finally {
@@ -608,7 +628,10 @@ export default function App() {
         if (variable !== "chlorophyll") {
           throw new Error("Only chlorophyll is available in the selected ocean-colour source.");
         }
-        setField(buildIncoisChlorophyllField(chlorophyllSnapshot, timeIndex));
+        const geo = buildIncoisChlorophyllField(chlorophyllSnapshot, timeIndex);
+        if (matchesGeographicPayload(geo, selection)) {
+          setField(geo); setGeographicAcceptedKey(requestKey);
+        } else setError("INCOIS chlorophyll native source/time mismatch; surface field withheld.");
       } catch (reason) {
         setError(reason instanceof Error ? reason.message : String(reason));
       } finally {
@@ -628,18 +651,18 @@ export default function App() {
     const requests = variable === "currents"
       ? [
           api.currents(timeIndex, depthIndex).then(payload => {
-            if (!cancelled) setCurrents(payload);
+            if (!cancelled && matchesGeographicPayload(payload, selection)) { setCurrents(payload); setGeographicAcceptedKey(requestKey); }
           }),
           api.currentsVolume(timeIndex).then(payload => {
-            if (!cancelled) setCurrentsVolume(payload);
+            if (!cancelled && matchesWaterColumnPayload(payload, selection)) { setCurrentsVolume(payload); setWaterAcceptedKey(requestKey); }
           })
         ]
       : [
           api.field(variable, timeIndex, depthIndex).then(payload => {
-            if (!cancelled) setField(payload);
+            if (!cancelled && matchesGeographicPayload(payload, selection)) { setField(payload); setGeographicAcceptedKey(requestKey); }
           }),
           api.volume(variable, timeIndex).then(payload => {
-            if (!cancelled) setVolume(payload);
+            if (!cancelled && matchesWaterColumnPayload(payload, selection)) { setVolume(payload); setWaterAcceptedKey(requestKey); }
           })
         ];
 
@@ -656,7 +679,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [exploreCatalog, sourceMode, operationalSnapshot, chlorophyllSnapshot, variable, depthIndex, timeIndex]);
+  }, [exploreCatalog, sourceMode, operationalSnapshot, chlorophyllSnapshot, variable, depthIndex, timeIndex, activeMainBlockId, mainBlockRevision]);
 
   const handleProfileSelection = useCallback((profileId: string) => {
     setSelectedImportedProfileId("");
