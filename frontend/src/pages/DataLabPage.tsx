@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { api, resolveServiceUrl } from "../api";
+import { DataLabDirectoryNav } from "../components/DataLabDirectoryNav";
+import "../data-lab-consolidation.css";
 import { parseBrowserNetcdf, type NetcdfBrowserInspection } from "../netcdfImport";
 import { writeImportedObservationRecords } from "../observationSession";
 import type {
@@ -540,6 +542,36 @@ function downloadReport(result: ValidationResult) {
   );
 }
 
+
+/** Only validated, locally inspected rows can be exported. Scientific values are never inferred. */
+function downloadFilteredRecords(records: NormalizedRecord[], format: "csv" | "json", filename: string) {
+  const fields: Array<keyof NormalizedRecord> = [
+    "longitude", "latitude", "depth_m", "timestamp", "variable", "value", "units", "source",
+    "platform_id", "sensor_type", "qc_flag", "dataset_id"
+  ];
+  const basename = filename.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 72) || "dataset";
+  if (format === "json") {
+    const exportPayload = {
+      exported_by: "Ocean Canvas · Data Lab",
+      processed_locally: true,
+      source_filename: filename,
+      exported_utc: new Date().toISOString(),
+      filtered_validated_rows: records.length,
+      records: records.map((record) => Object.fromEntries(fields.map((field) => [field, record[field] ?? null])))
+    };
+    downloadText("OceanCanvas_" + basename + "_filtered.json", JSON.stringify(exportPayload, null, 2), "application/json;charset=utf-8");
+    return;
+  }
+  const cell = (value: unknown) => {
+    const raw = value == null ? "" : String(value);
+    // Spreadsheet formula injection: do not permit untrusted *text* to execute as a formula.
+    const safe = typeof value === "string" && /^\s*[=+\-@]/.test(raw) ? "'" + raw : raw;
+    return '"' + safe.replace(/"/g, '""') + '"';
+  };
+  const csv = [fields.join(","), ...records.map((record) => fields.map((field) => cell(record[field])).join(","))].join("\r\n");
+  downloadText("OceanCanvas_" + basename + "_filtered.csv", csv, "text/csv;charset=utf-8");
+}
+
 export function DataLabPage() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [result, setResult] = useState<ValidationResult | null>(null);
@@ -548,6 +580,56 @@ export function DataLabPage() {
   const [netcdfInspection, setNetcdfInspection] = useState<NetcdfBrowserInspection | null>(null);
   const [connectorRegistry, setConnectorRegistry] = useState<ConnectorRegistryResponse | null>(null);
   const [connectorError, setConnectorError] = useState("");
+  const [variableFilter, setVariableFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
+  const [sensorFilter, setSensorFilter] = useState("all");
+  const [timeFilter, setTimeFilter] = useState("all");
+  const [depthMinFilter, setDepthMinFilter] = useState("");
+  const [depthMaxFilter, setDepthMaxFilter] = useState("");
+
+  const resetFilters = () => {
+    setVariableFilter("all");
+    setSourceFilter("all");
+    setSensorFilter("all");
+    setTimeFilter("all");
+    setDepthMinFilter("");
+    setDepthMaxFilter("");
+  };
+
+  const filterOptions = useMemo(() => {
+    const records = result?.records ?? [];
+    const unique = (values: string[]) => [...new Set(values)].sort((a, b) => a.localeCompare(b));
+    return {
+      variables: unique(records.map((record) => record.variable)),
+      sources: unique(records.map((record) => record.source)),
+      sensors: unique(records.map((record) => record.sensor_type)),
+      timestamps: unique(records.map((record) => record.timestamp))
+    };
+  }, [result]);
+
+  const filteredRecords = useMemo(() => {
+    if (!result) return [];
+    const min = depthMinFilter.trim() === "" ? null : Number(depthMinFilter);
+    const max = depthMaxFilter.trim() === "" ? null : Number(depthMaxFilter);
+    return result.records.filter((record) =>
+      (variableFilter === "all" || record.variable === variableFilter) &&
+      (sourceFilter === "all" || record.source === sourceFilter) &&
+      (sensorFilter === "all" || record.sensor_type === sensorFilter) &&
+      (timeFilter === "all" || record.timestamp === timeFilter) &&
+      (min === null || record.depth_m >= min) &&
+      (max === null || record.depth_m <= max)
+    );
+  }, [result, variableFilter, sourceFilter, sensorFilter, timeFilter, depthMinFilter, depthMaxFilter]);
+
+  const sourceNames = filterOptions.sources;
+  const datasetIds = useMemo(
+    () => [...new Set((result?.records ?? []).map((record) => record.dataset_id).filter((id): id is string => Boolean(id)))].sort(),
+    [result]
+  );
+  const qcFlags = useMemo(
+    () => [...new Set((result?.records ?? []).map((record) => record.qc_flag).filter((flag): flag is string => Boolean(flag)))].sort(),
+    [result]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -582,6 +664,7 @@ export function DataLabPage() {
     const file = event.target.files?.[0];
     if (!file) return;
     setProcessing(true);
+    resetFilters();
     setProcessingError("");
     setResult(null);
     setNetcdfInspection(null);
@@ -629,6 +712,7 @@ export function DataLabPage() {
   };
 
   const clear = () => {
+    resetFilters();
     setResult(null);
     setNetcdfInspection(null);
     setProcessingError("");
@@ -668,7 +752,8 @@ export function DataLabPage() {
       data-validation-status={result?.status ?? "empty"}
       data-row-count={result?.totalRows ?? 0}
     >
-      <section className="data-lab-hero">
+      <DataLabDirectoryNav />
+      <section id="data-lab-overview" data-data-lab-home="overview" className="data-lab-hero">
         <div>
           <div className="section-kicker">GUARDED USER DATA</div>
           <h2>Additional dataset lab</h2>
@@ -692,6 +777,7 @@ export function DataLabPage() {
         </aside>
       </section>
 
+      <div id="data-lab-sources" data-data-lab-home="sources">
       <section className="data-source-launchpad" aria-labelledby="official-data-launchpad-title">
         <div className="data-source-heading">
           <div>
@@ -702,7 +788,6 @@ export function DataLabPage() {
               into Ocean Canvas&apos;s guarded CSV/JSON contract for local validation.
             </p>
           </div>
-          <button type="button" onClick={downloadSchema}>Download import schema</button>
         </div>
 
         <div className="data-source-cards">
@@ -826,6 +911,8 @@ export function DataLabPage() {
           </>
         )}
       </section>
+      </div>
+            <section id="data-lab-datasets" data-data-lab-home="datasets" className="data-lab-nav-section">
       <section className="data-lab-grid" id="data-lab-validator">
         <article className="data-lab-upload-card">
           <div className="data-lab-card-heading">
@@ -833,7 +920,6 @@ export function DataLabPage() {
               <span>1 · LOAD</span>
               <h3>NetCDF / CSV / TSV / ASCII / JSON validator</h3>
             </div>
-            <button type="button" onClick={downloadSchema}>Download schema CSV</button>
           </div>
           <label className="data-lab-file-picker">
             <strong>{processing ? "Reading file…" : "Choose an ocean dataset"}</strong>
@@ -858,6 +944,169 @@ export function DataLabPage() {
               convert unknown unit strings.
             </p>
           </div>
+          {processingError && (
+            <div className="data-lab-processing-error" role="alert">
+              <strong>File rejected before schema validation</strong>
+              <span>{processingError}</span>
+            </div>
+          )}
+        </article>
+
+      </section>
+
+      {!result && !processingError && (
+        <section className="data-lab-empty">
+          <div className="data-lab-empty-icon">DATA</div>
+          <div>
+            <strong>No user dataset loaded</strong>
+            <span>Use the documented schema above. Validation begins locally after file selection.</span>
+          </div>
+        </section>
+      )}
+
+
+      {result && (
+        <>
+          <section className={`data-lab-status ${result.status === "validated" ? "valid" : "invalid"}`}>
+            <div>
+              <span>{result.status === "validated" ? "VALIDATED" : "REJECTED"}</span>
+              <strong>{result.filename}</strong>
+              <small>
+                {result.status === "validated"
+                  ? "Schema and required scientific checks passed. Eligible for downstream analysis."
+                  : "One or more required scientific checks failed. Dataset is not eligible for analysis."}
+              </small>
+            </div>
+            <div className="data-lab-status-actions">
+              {result.status === "validated" && result.records.length > 0 && (
+                <button type="button" className="primary" onClick={loadIntoExplorer}>
+                  Load validated profiles into 3D Explorer
+                </button>
+              )}
+              <button type="button" onClick={() => document.getElementById("data-lab-downloads")?.scrollIntoView({ behavior: "smooth", block: "start" })}>View downloads</button>
+              <button type="button" onClick={clear}>Clear dataset</button>
+            </div>
+          </section>
+
+          <section className="data-lab-metrics">
+            <article><span>Total rows</span><strong>{result.totalRows.toLocaleString()}</strong></article>
+            <article><span>Valid rows</span><strong>{result.validRows.toLocaleString()}</strong></article>
+            <article><span>Invalid rows</span><strong>{result.invalidRows.toLocaleString()}</strong></article>
+            <article><span>Variables</span><strong>{result.variables.length}</strong></article>
+            <article><span>Genuine timestamps</span><strong>{result.timestamps.length}</strong></article>
+            <article><span>Warnings</span><strong>{warningIssues.length}</strong></article>
+          </section>
+
+        </>
+      )}
+
+      </section>
+
+      <section id="data-lab-variables" data-data-lab-home="variables" className="data-lab-nav-section">
+        <div className="data-lab-nav-heading">
+          <div><span>VARIABLES</span><h3>Available measured variables</h3></div>
+          <p>Numeric summaries use only rows passing scientific validation. No automatic unit conversion.</p>
+        </div>
+        {result ? (
+          <>
+          <section className="data-lab-result-card data-lab-variable-card">
+            <div className="data-lab-card-heading">
+              <div>
+                <span>4 · VARIABLES</span>
+                <h3>Validated numeric summaries</h3>
+              </div>
+              <small>Computed only from rows that pass required checks</small>
+            </div>
+            {result.variables.length === 0 ? (
+              <div className="data-lab-inline-empty">No valid measurement rows are available for variable summaries.</div>
+            ) : (
+              <div className="data-lab-variable-grid">
+                {result.variables.map((variable) => (
+                  <article key={variable.variable}>
+                    <span>{variable.variable}</span>
+                    <strong>{variable.rows.toLocaleString()} rows</strong>
+                    <dl>
+                      <div><dt>Mean</dt><dd>{variable.mean.toFixed(5)}</dd></div>
+                      <div><dt>Min</dt><dd>{variable.minimum.toFixed(5)}</dd></div>
+                      <div><dt>Max</dt><dd>{variable.maximum.toFixed(5)}</dd></div>
+                      <div><dt>Units</dt><dd>{variable.units.join(", ")}</dd></div>
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+
+          </>
+        ) : <p className="data-lab-nav-empty">Load a dataset to inspect genuine measurement variables and units.</p>}
+      </section>
+
+      <section id="data-lab-filters" data-data-lab-home="filters" className="data-lab-nav-section" data-filtered-count={filteredRecords.length}>
+        <div className="data-lab-nav-heading">
+          <div><span>FILTERS</span><h3>Local validated-row filters</h3></div>
+          <p>Scope the browser-inspected records; these controls do not query remote providers or alter source measurements.</p>
+        </div>
+        <div className="data-lab-filter-grid">
+          <label>Variable
+            <select aria-label="Filter variable" value={variableFilter} disabled={!result} onChange={(event) => setVariableFilter(event.target.value)}>
+              <option value="all">All variables</option>
+              {filterOptions.variables.map((value) => <option key={value} value={value}>{value}</option>)}
+            </select>
+          </label>
+          <label>Source
+            <select aria-label="Filter source" value={sourceFilter} disabled={!result} onChange={(event) => setSourceFilter(event.target.value)}>
+              <option value="all">All sources</option>
+              {filterOptions.sources.map((value) => <option key={value} value={value}>{value}</option>)}
+            </select>
+          </label>
+          <label>Sensor
+            <select aria-label="Filter sensor" value={sensorFilter} disabled={!result} onChange={(event) => setSensorFilter(event.target.value)}>
+              <option value="all">All sensor types</option>
+              {filterOptions.sensors.map((value) => <option key={value} value={value}>{value}</option>)}
+            </select>
+          </label>
+          <label>Genuine timestamp
+            <select aria-label="Filter timestamp" value={timeFilter} disabled={!result} onChange={(event) => setTimeFilter(event.target.value)}>
+              <option value="all">All timestamps</option>
+              {filterOptions.timestamps.map((value) => <option key={value} value={value}>{value}</option>)}
+            </select>
+          </label>
+          <label>Minimum depth (m)
+            <input aria-label="Minimum depth filter" type="number" min="0" max="12000" step="any" placeholder="Any" disabled={!result} value={depthMinFilter} onChange={(event) => setDepthMinFilter(event.target.value)} />
+          </label>
+          <label>Maximum depth (m)
+            <input aria-label="Maximum depth filter" type="number" min="0" max="12000" step="any" placeholder="Any" disabled={!result} value={depthMaxFilter} onChange={(event) => setDepthMaxFilter(event.target.value)} />
+          </label>
+        </div>
+        <div className="data-lab-filter-footer">
+          <p role="status">{result ? filteredRecords.length.toLocaleString() + " / " + result.records.length.toLocaleString() + " accepted rows in current inspection scope" : "Load a dataset to activate local filters"}</p>
+          <button type="button" disabled={!result} onClick={resetFilters}>Reset filters</button>
+        </div>
+        {result && result.status !== "validated" && <p className="data-lab-nav-warning">This dataset failed validation. Inspection of accepted rows is available; downstream import and filtered export remain disabled.</p>}
+      </section>
+
+      <section id="data-lab-inspection" data-data-lab-home="inspection" className="data-lab-nav-section">
+        <div className="data-lab-nav-heading">
+          <div><span>INSPECTION</span><h3>Quality, coverage and row-level evidence</h3></div>
+          <p>Examine CF metadata, fail-closed validation rules, retained quality findings and the currently filtered preview.</p>
+        </div>
+        <article className="data-lab-policy-card">
+          <div className="data-lab-card-heading">
+            <div>
+              <span>VALIDATION CONTRACT</span>
+              <h3>Fail closed, not “best guess”</h3>
+            </div>
+          </div>
+          <ul>
+            <li>Longitude −180…180° and latitude −90…90°.</li>
+            <li>Depth 0…12,000 m, positive downward.</li>
+            <li>Finite numeric measurement values only.</li>
+            <li>Timezone-aware timestamps only.</li>
+            <li>Units and source provenance are mandatory.</li>
+            <li>Duplicate keys and multi-unit variables are surfaced as warnings.</li>
+          </ul>
+          <p>Uploaded text is treated as untrusted data, never as instructions or executable content.</p>
+        </article>
           {netcdfInspection && (
             <div className="netcdf-inspection-card" data-cf-profile-ready={netcdfInspection.cf_profile_ready ? "true" : "false"}>
               <div className="data-lab-card-heading">
@@ -888,75 +1137,9 @@ export function DataLabPage() {
               </p>
             </div>
           )}
-          {processingError && (
-            <div className="data-lab-processing-error" role="alert">
-              <strong>File rejected before schema validation</strong>
-              <span>{processingError}</span>
-            </div>
-          )}
-        </article>
 
-        <article className="data-lab-policy-card">
-          <div className="data-lab-card-heading">
-            <div>
-              <span>VALIDATION CONTRACT</span>
-              <h3>Fail closed, not “best guess”</h3>
-            </div>
-          </div>
-          <ul>
-            <li>Longitude −180…180° and latitude −90…90°.</li>
-            <li>Depth 0…12,000 m, positive downward.</li>
-            <li>Finite numeric measurement values only.</li>
-            <li>Timezone-aware timestamps only.</li>
-            <li>Units and source provenance are mandatory.</li>
-            <li>Duplicate keys and multi-unit variables are surfaced as warnings.</li>
-          </ul>
-          <p>Uploaded text is treated as untrusted data, never as instructions or executable content.</p>
-        </article>
-      </section>
-
-      {!result && !processingError && (
-        <section className="data-lab-empty">
-          <div className="data-lab-empty-icon">DATA</div>
-          <div>
-            <strong>No user dataset loaded</strong>
-            <span>Use the documented schema above. Validation begins locally after file selection.</span>
-          </div>
-        </section>
-      )}
-
-      {result && (
-        <>
-          <section className={`data-lab-status ${result.status === "validated" ? "valid" : "invalid"}`}>
-            <div>
-              <span>{result.status === "validated" ? "VALIDATED" : "REJECTED"}</span>
-              <strong>{result.filename}</strong>
-              <small>
-                {result.status === "validated"
-                  ? "Schema and required scientific checks passed. Eligible for downstream analysis."
-                  : "One or more required scientific checks failed. Dataset is not eligible for analysis."}
-              </small>
-            </div>
-            <div className="data-lab-status-actions">
-              {result.status === "validated" && result.records.length > 0 && (
-                <button type="button" className="primary" onClick={loadIntoExplorer}>
-                  Load validated profiles into 3D Explorer
-                </button>
-              )}
-              <button type="button" onClick={() => downloadReport(result)}>Download validation report</button>
-              <button type="button" onClick={clear}>Clear dataset</button>
-            </div>
-          </section>
-
-          <section className="data-lab-metrics">
-            <article><span>Total rows</span><strong>{result.totalRows.toLocaleString()}</strong></article>
-            <article><span>Valid rows</span><strong>{result.validRows.toLocaleString()}</strong></article>
-            <article><span>Invalid rows</span><strong>{result.invalidRows.toLocaleString()}</strong></article>
-            <article><span>Variables</span><strong>{result.variables.length}</strong></article>
-            <article><span>Genuine timestamps</span><strong>{result.timestamps.length}</strong></article>
-            <article><span>Warnings</span><strong>{warningIssues.length}</strong></article>
-          </section>
-
+        {result ? (
+          <>
           <section className="data-lab-analysis-grid">
             <article className="data-lab-result-card">
               <div className="data-lab-card-heading">
@@ -1018,43 +1201,15 @@ export function DataLabPage() {
             </article>
           </section>
 
-          <section className="data-lab-result-card data-lab-variable-card">
-            <div className="data-lab-card-heading">
-              <div>
-                <span>4 · VARIABLES</span>
-                <h3>Validated numeric summaries</h3>
-              </div>
-              <small>Computed only from rows that pass required checks</small>
-            </div>
-            {result.variables.length === 0 ? (
-              <div className="data-lab-inline-empty">No valid measurement rows are available for variable summaries.</div>
-            ) : (
-              <div className="data-lab-variable-grid">
-                {result.variables.map((variable) => (
-                  <article key={variable.variable}>
-                    <span>{variable.variable}</span>
-                    <strong>{variable.rows.toLocaleString()} rows</strong>
-                    <dl>
-                      <div><dt>Mean</dt><dd>{variable.mean.toFixed(5)}</dd></div>
-                      <div><dt>Min</dt><dd>{variable.minimum.toFixed(5)}</dd></div>
-                      <div><dt>Max</dt><dd>{variable.maximum.toFixed(5)}</dd></div>
-                      <div><dt>Units</dt><dd>{variable.units.join(", ")}</dd></div>
-                    </dl>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
-
           <section className="data-lab-result-card data-lab-preview-card">
             <div className="data-lab-card-heading">
               <div>
                 <span>5 · PREVIEW</span>
                 <h3>Validated-row preview</h3>
               </div>
-              <small>First {Math.min(8, result.records.length)} valid rows</small>
+              <small>First {Math.min(8, filteredRecords.length)} valid rows</small>
             </div>
-            {result.records.length === 0 ? (
+            {filteredRecords.length === 0 ? (
               <div className="data-lab-inline-empty">No rows passed validation.</div>
             ) : (
               <div className="data-lab-table-wrap">
@@ -1066,7 +1221,7 @@ export function DataLabPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {result.records.slice(0, 8).map((record) => (
+                    {filteredRecords.slice(0, 8).map((record) => (
                       <tr key={`${record.row}-${record.variable}-${record.timestamp}`}>
                         <td>{record.row}</td>
                         <td>{record.longitude.toFixed(4)}</td>
@@ -1085,8 +1240,41 @@ export function DataLabPage() {
               </div>
             )}
           </section>
-        </>
-      )}
+          </>
+        ) : <p className="data-lab-nav-empty">Select a local dataset to inspect validation findings and measured coverage.</p>}
+      </section>
+
+      <section id="data-lab-downloads" data-data-lab-home="downloads" className="data-lab-nav-section">
+        <div className="data-lab-nav-heading">
+          <div><span>DOWNLOADS</span><h3>Schemas and local scientific evidence</h3></div>
+          <p>Export only the source-provided measurements that passed validation. A complete validation report remains available for rejected files.</p>
+        </div>
+        <div className="data-lab-download-actions">
+          <button type="button" onClick={downloadSchema}>Download import schema</button>
+          <button type="button" disabled={!result} onClick={() => result && downloadReport(result)}>Download validation report</button>
+          <button type="button" disabled={!result || result.status !== "validated" || filteredRecords.length === 0} onClick={() => result && downloadFilteredRecords(filteredRecords, "csv", result.filename)}>Export filtered CSV</button>
+          <button type="button" disabled={!result || result.status !== "validated" || filteredRecords.length === 0} onClick={() => result && downloadFilteredRecords(filteredRecords, "json", result.filename)}>Export filtered JSON</button>
+        </div>
+        <small>Local-only files · filtered exports include exact validated measurements, units, coordinates, depth and timestamp · no remote download claim</small>
+      </section>
+
+      <section id="data-lab-provenance" data-data-lab-home="provenance" className="data-lab-nav-section">
+        <div className="data-lab-nav-heading">
+          <div><span>PROVENANCE</span><h3>Where these data came from</h3></div>
+          <p>Registered providers describe discoverable sources; local-file metadata below describes only the currently inspected file.</p>
+        </div>
+        <dl className="data-lab-provenance-grid">
+          <div><dt>Local file</dt><dd>{result?.filename ?? "No user dataset loaded"}</dd></div>
+          <div><dt>Format</dt><dd>{result?.format.toUpperCase() ?? "Not inspected"}</dd></div>
+          <div><dt>Validation outcome</dt><dd>{result?.status ?? "Not validated"}</dd></div>
+          <div><dt>Source field values (accepted rows)</dt><dd>{sourceNames.length ? sourceNames.join(" · ") : "No source metadata yet"}</dd></div>
+          <div><dt>Dataset IDs (accepted rows)</dt><dd>{datasetIds.length ? datasetIds.join(" · ") : "Not supplied"}</dd></div>
+          <div><dt>QC flags (accepted rows)</dt><dd>{qcFlags.length ? qcFlags.join(" · ") : "Not supplied"}</dd></div>
+        </dl>
+        <p className="data-lab-provenance-note">
+          File bytes are parsed locally, never uploaded to the Ocean Canvas server. Imported source labels are user-supplied metadata, not independently authenticated provider evidence. Rejected files cannot be exported as validated rows. The immutable bundled GLORYS/Argo evidence is not overwritten.
+        </p>
+      </section>
     </main>
   );
 }

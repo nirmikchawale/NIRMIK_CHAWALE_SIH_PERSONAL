@@ -1,0 +1,131 @@
+/* RUI-NAV-06: Data Lab directory and contextual workspaces.
+   Presentation only: no changes to scientific validation or source data. */
+.data-lab-directory-shell {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 18px;
+  border: 1px solid var(--ui-border, #285669);
+  border-radius: 15px;
+  background: linear-gradient(125deg, var(--ui-surface-raised, #0b2634), var(--ui-surface, #061722));
+  box-shadow: var(--ui-shadow, 0 12px 25px #0002);
+}
+.data-lab-directory-title { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.data-lab-directory-title > span,
+.data-lab-nav-heading span { color: var(--ui-primary, #78dce7); font-size: 11px; font-weight: 800; letter-spacing: .11em; }
+.data-lab-directory-title strong { font-size: 16px; color: var(--ui-text, #e9f9fc); }
+.data-lab-directory-title small { color: var(--ui-text-soft, #98b8c5); font-size: 11px; }
+.data-lab-directory-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.data-lab-directory-nav button {
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 10px;
+  border: 1px solid var(--ui-border, #285669);
+  border-radius: 9px;
+  color: var(--ui-text, #e9f9fc);
+  background: var(--ui-surface, #0a2938);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.data-lab-directory-nav button:hover { border-color: var(--ui-primary, #78dce7); background: var(--ui-surface-raised, #153644); }
+.data-lab-directory-nav button:focus-visible,
+.data-lab-filter-grid :is(select, input):focus-visible,
+.data-lab-download-actions button:focus-visible {
+  outline: 3px solid var(--ui-primary, #78dce7);
+  outline-offset: 2px;
+}
+.data-lab-nav-section {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  margin-bottom: 18px;
+  border: 1px solid var(--ui-border, #285669);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--ui-surface, #071b27) 88%, transparent);
+}
+.data-lab-nav-section > * { min-width: 0; }
+.data-lab-nav-heading { display: flex; align-items: end; gap: 14px; justify-content: space-between; flex-wrap: wrap; }
+.data-lab-nav-heading h3 { margin: 5px 0 0; color: var(--ui-text, #e9f9fc); font-size: 20px; }
+.data-lab-nav-heading p { margin: 0; max-width: 540px; color: var(--ui-text-soft, #98b8c5); font-size: 12px; line-height: 1.55; }
+.data-lab-nav-empty,
+.data-lab-nav-warning,
+.data-lab-provenance-note {
+  margin: 0;
+  color: var(--ui-text-soft, #98b8c5);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.data-lab-nav-warning { color: var(--ui-warning, #f4cb8c); }
+.data-lab-filter-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.data-lab-filter-grid label { display: grid; align-content: start; gap: 6px; color: var(--ui-text-soft, #98b8c5); font-size: 12px; font-weight: 650; }
+.data-lab-filter-grid :is(select, input) {
+  min-width: 0;
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  border: 1px solid var(--ui-border-strong, #477489);
+  border-radius: 9px;
+  padding: 9px 10px;
+  color: var(--ui-text, #e9f9fc);
+  background: var(--ui-surface-raised, #13313f);
+  font: inherit;
+  font-size: 12px;
+}
+.data-lab-filter-grid :is(select, input):disabled { cursor: not-allowed; opacity: .65; }
+.data-lab-filter-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.data-lab-filter-footer p { margin: 0; color: var(--ui-text-soft, #98b8c5); font-size: 12px; }
+.data-lab-filter-footer button,
+.data-lab-download-actions button {
+  min-height: 42px;
+  border: 1px solid var(--ui-border-strong, #477489);
+  border-radius: 9px;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ui-text, #e9f9fc);
+  background: var(--ui-surface-raised, #13313f);
+  cursor: pointer;
+}
+.data-lab-filter-footer button:disabled,
+.data-lab-download-actions button:disabled { opacity: .5; cursor: not-allowed; }
+.data-lab-download-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.data-lab-nav-section > small { color: var(--ui-text-soft, #98b8c5); font-size: 11px; }
+.data-lab-provenance-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.data-lab-provenance-grid > div {
+  padding: 12px;
+  min-width: 0;
+  border: 1px solid var(--ui-border, #285669);
+  border-radius: 10px;
+  background: var(--ui-surface-raised, #13313f);
+}
+.data-lab-provenance-grid dt { color: var(--ui-text-soft, #98b8c5); font-size: 11px; margin-bottom: 7px; }
+.data-lab-provenance-grid dd { margin: 0; color: var(--ui-text, #e9f9fc); overflow-wrap: anywhere; font-size: 12px; line-height: 1.5; }
+#data-lab-validator { grid-template-columns: minmax(0, 1fr); scroll-margin-top: 16px; }
+.data-lab-page [data-data-lab-home] { scroll-margin-top: 16px; }
+#data-lab-sources { display: grid; gap: 12px; margin-bottom: 16px; }
+#data-lab-sources > * { width: 100%; min-width: 0; }
+#data-lab-inspection .data-lab-analysis-grid { margin: 0; }
+#data-lab-inspection .data-lab-policy-card { width: 100%; }
+#data-lab-inspection .data-lab-result-card { min-width: 0; }
+@media (max-width: 900px) {
+  .data-lab-filter-grid, .data-lab-provenance-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .data-lab-directory-shell, .data-lab-nav-section { padding: 12px; }
+  .data-lab-directory-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .data-lab-filter-grid, .data-lab-provenance-grid { grid-template-columns: minmax(0, 1fr); }
+  .data-lab-nav-heading h3 { font-size: 18px; }
+  .data-lab-download-actions { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .data-lab-filter-footer { align-items: stretch; }
+  .data-lab-directory-title { gap: 5px 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .data-lab-directory-nav button { transition: none; }
+}
+@media (prefers-contrast: more) {
+  .data-lab-directory-shell, .data-lab-nav-section, .data-lab-provenance-grid > div { border-width: 2px; }
+}
