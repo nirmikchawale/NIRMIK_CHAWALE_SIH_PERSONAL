@@ -28,13 +28,15 @@ test("Phase 5.0 keeps block truth visible while analytics use verified evidence"
   await expect(context).toContainText("Geographic selection only");
   await expect(context).toContainText(/remain anchored to verified source evidence/i);
 
-  await page.locator('[data-workspace-id="telemetry"]').click();
+  await page.getByRole("button", { name: "Open Analyze workspaces" }).click();
+  await page.getByRole("navigation", { name: "Ocean Canvas workspaces" }).locator('[data-workspace-id="telemetry"]').click();
   await expect(page.getByRole("heading", { name: "Depth & telemetry workspace" })).toBeVisible();
   await expect(context).toHaveAttribute("data-source-mode", "glorys");
   await page.getByRole("button", { name: "Salinity telemetry" }).click();
   await expect(context).toHaveAttribute("data-variable", "so");
 
-  await page.locator('[data-workspace-id="anomaly"]').click();
+  await page.getByRole("button", { name: "Open Analyze workspaces" }).click();
+  await page.getByRole("navigation", { name: "Ocean Canvas workspaces" }).locator('[data-workspace-id="anomaly"]').click();
   const anomaly = page.locator('main[data-page="anomaly"]');
   await expect(anomaly).toBeVisible();
   await expect(anomaly).toHaveAttribute("data-time-index", "0");
