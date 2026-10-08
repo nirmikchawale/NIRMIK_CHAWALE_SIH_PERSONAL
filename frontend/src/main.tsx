@@ -49,6 +49,8 @@ import "./mpr-workspace-mode.css";
 import "./mpr-feature-directory.css";
 // MPR-06: responsive source selector, no scientific contract changes.
 import "./mpr-ocean-intelligence.css";
+// MPR-07: source-backed Active Main Block disclosure.
+import "./mpr-active-main-block.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
