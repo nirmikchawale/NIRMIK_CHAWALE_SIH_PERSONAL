@@ -93,7 +93,7 @@ test("3DB-03 fails closed outside the target domain", () => {
 });
 
 test("3DB-03 geographic hardening does not promote or fabricate scientific evidence", () => {
-  expect(PHASE35B_PILOT_IDS).toHaveLength(25);
+  expect(PHASE35B_PILOT_IDS).toHaveLength(35);
   expect(PHASE35B_MULTI_DATE_PILOT_IDS).toHaveLength(6);
 
   const materialized = INDIAN_OCEAN_MAIN_BLOCKS
@@ -103,8 +103,8 @@ test("3DB-03 geographic hardening does not promote or fabricate scientific evide
     .map((block) => resolveMainBlock(block.id))
     .filter((block) => block.materialization === "planned");
 
-  expect(materialized).toHaveLength(25);
-  expect(planned).toHaveLength(115);
+  expect(materialized).toHaveLength(35);
+  expect(planned).toHaveLength(105);
   for (const block of planned) {
     expect(block.availableDates).toEqual([]);
     expect(block.nativeTimesUtc).toEqual([]);
