@@ -39,6 +39,8 @@ import "./science-system-consolidation.css";
 import "./explorer-islands.css";
 // MPR-01: opt-in theme-neutral visual tokens, loaded after legacy CSS.
 import "./mpr-design-foundation.css";
+// MPR-02: Explorer-only shell scrolling, without changing other routes.
+import "./mpr-explorer-scroll.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
