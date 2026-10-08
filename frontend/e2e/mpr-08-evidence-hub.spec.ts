@@ -21,9 +21,9 @@ for (const width of [1440, 1024, 390, 320]) {
     await expect(page.locator(".header-workspace-actions").getByRole("button", { name: "Sources & QC" })).toHaveCount(0);
     const currentSource = await page.locator(".ocean-workbench").getAttribute("data-explore-source");
     await hub.getByRole("button", { name: "Open Ocean Intelligence evidence inspector" }).click();
-    await expect(page.getByRole("complementary", { name: "Ocean data telemetry" })).toHaveAttribute("data-open","true");
+    await expect(page.locator(".evidence-rail")).toHaveAttribute("data-open","true");
     await page.getByRole("button", { name: "Close evidence inspector" }).click();
-    await expect(page.getByRole("complementary", { name: "Ocean data telemetry" })).toHaveAttribute("data-open","false");
+    await expect(page.locator(".evidence-rail")).toHaveAttribute("data-open","false");
     await hub.getByRole("button", { name: "Sources & QC" }).click();
     await expect(page.getByRole("complementary", { name: "Scientific provenance and quality control" })).toBeVisible();
     await page.getByRole("button", { name: "Close provenance drawer" }).click();
