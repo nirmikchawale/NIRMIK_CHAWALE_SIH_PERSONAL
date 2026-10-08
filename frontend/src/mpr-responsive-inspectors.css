@@ -55,6 +55,10 @@
   max-width:100%; min-width:0; overflow-wrap:anywhere;
 }
 @media(min-width:1121px) {
+  /* Match the specific MPR-10 open-dock + open-inspector selector too.
+     Otherwise its earlier eight-row grid wins the cascade and places the
+     MPR-12 water volume and MPR-15 inspector into implicit overlapping tracks. */
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"])[data-control-dock="open"] .station-workspace[data-inspector="open"],
   .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace,
   .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"])[data-control-dock="closed"] .station-workspace {
     grid-template-areas:
