@@ -25,6 +25,7 @@ EXACT_FILES = {
     "frontend/src/components/ImmersiveFullscreenButton.tsx",
     "frontend/src/theme.ts",
     "frontend/index.html",
+    "docs/MPR_DESKTOP_JOURNEY_ARCTIC_IMMERSIVE.md",
     "frontend/e2e/main-block-globe-integration.spec.ts",
     # Post-release RUI-02/MPR integration hardening: presentation + acceptance only.
     "frontend/src/components/ScientificContextHeader.tsx",
