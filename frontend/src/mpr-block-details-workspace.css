@@ -1,3 +1,23 @@
+/* RUI-NAV Block System used a two-column heading/launcher row. The new
+   information panel must occupy its own full-width row, not push launchers
+   into an implicit narrow column. */
+.ocean-workbench[data-page="explore"] .explorer-block-system-home {
+  grid-template-columns: minmax(0,1fr) !important;
+  grid-template-rows: auto auto auto;
+  align-items: stretch;
+}
+.ocean-workbench[data-page="explore"] .explorer-block-system-home > :is(
+  .explorer-block-system-heading, .mpr-block-details-workspace,
+  .explorer-block-system-launchers
+) {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+.ocean-workbench[data-page="explore"] .explorer-block-system-home .explorer-block-system-launchers {
+  width: 100%;
+  min-width: 0;
+}
+
 /* Post-MPR: canonical dedicated block details, inside the Block System rail.
    The view reads the shared native-science context. No copied state or geometry. */
 .ocean-workbench[data-page="explore"] .mpr-block-details-workspace {
