@@ -67,6 +67,8 @@ import "./mpr-water-column-controls.css";
 import "./mpr-linked-view-evidence.css";
 // MPR-15: real scientific inspectors, responsive keyboard/touch and footer.
 import "./mpr-responsive-inspectors.css";
+// MPR production hardening: remove duplicated scientific-context header strip.
+import "./mpr-context-consolidation.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
