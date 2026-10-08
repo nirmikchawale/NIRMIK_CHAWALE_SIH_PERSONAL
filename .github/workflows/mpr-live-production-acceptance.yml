@@ -13,7 +13,7 @@ jobs:
       - name: Checkout exact deployed production source
         uses: actions/checkout@v4
         with:
-          ref: b68616a3332319c0ec2a79b5f3fc6bef84494e9c
+          ref: 43265375ef1c28ab6e94a48e6162f928b1aeb367
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
