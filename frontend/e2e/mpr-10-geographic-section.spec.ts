@@ -35,10 +35,24 @@ for (const width of [1440,1280,1024,768,390,320]){
     expect(fraction).toBeLessThan(.79);
     const cs=await control.evaluate(el=>getComputedStyle(el));
     expect(cs.overflowY).toMatch(/auto|scroll/);
-  } else{
+  } else if(width > 760) {
+    // Tablet: native controls are vertically stacked below the real globe.
     const c=await control.boundingBox();
     expect(c).not.toBeNull();
     expect(c!.y).toBeGreaterThanOrEqual(s!.y+s!.height-3);
+  } else {
+    // Mobile intentionally keeps its native control sheet closed until the
+    // quick-control tray opens it. Its DOM is present before the globe in
+    // flow, so checking its hidden bounding box below the globe is invalid.
+    await expect(control).toHaveAttribute("data-mobile-open","false");
+    await expect(control).toBeHidden();
+    await page.locator(".mobile-explore-tray button").first().click();
+    await expect(control).toHaveAttribute("data-mobile-open","true");
+    await expect(control).toBeVisible();
+    await expect(control.getByRole("navigation",{name:"Geographic tools"}).getByRole("button")).toHaveCount(4);
+    await control.getByRole("button",{name:"Close explorer controls"}).click();
+    await expect(control).toHaveAttribute("data-mobile-open","false");
+    await expect(stage).toBeVisible();
   }
   const source=await root.getAttribute("data-explore-source");
   await expect(root).toHaveAttribute("data-explore-source",source||"glorys");
