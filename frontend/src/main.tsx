@@ -51,6 +51,8 @@ import "./mpr-feature-directory.css";
 import "./mpr-ocean-intelligence.css";
 // MPR-07: source-backed Active Main Block disclosure.
 import "./mpr-active-main-block.css";
+// MPR-08: move evidence/QC entry points into Ocean Intelligence.
+import "./mpr-intelligence-evidence-hub.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
