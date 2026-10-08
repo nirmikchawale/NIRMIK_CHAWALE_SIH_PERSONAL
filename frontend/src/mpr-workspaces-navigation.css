@@ -1,0 +1,275 @@
+/*
+ * Ocean Canvas RUI-MPR-03: Adaptive Workspaces Navigator
+ * Presentation only: 4 categories / 6 frozen pages, never touch science.
+ * The rail is 72px; the directory is a fixed overlay, NOT a pushed sidebar.
+ * All color/surface/focus declarations inherit the selected 16-theme tokens.
+ */
+.ocean-workbench {
+  --mpr-rail-width: 72px;
+  --mpr-directory-width: min(316px, calc(100vw - 102px));
+}
+
+@media (min-width: 901px) {
+  .ocean-workbench:not(.focus-mode) .workspace-frame {
+    grid-template-columns: var(--mpr-rail-width) minmax(0, 1fr) !important;
+  }
+  .ocean-workbench:not(.focus-mode) .app-navigation-root,
+  .ocean-workbench:not(.focus-mode) .app-navigation-root[data-collapsed="true"] {
+    width: var(--mpr-rail-width) !important;
+    min-width: var(--mpr-rail-width) !important;
+    max-width: var(--mpr-rail-width) !important;
+  }
+}
+.ocean-workbench .mpr-workspace-rail {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 9px;
+  width: var(--mpr-rail-width);
+  height: 100%;
+  max-height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  padding: 12px 6px 14px;
+  border-right: 1px solid var(--mpr-border);
+  background: var(--mpr-surface);
+  box-shadow: var(--mpr-shadow);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.ocean-workbench .mpr-rail-brand {
+  display: grid;
+  place-items: center;
+  align-self: center;
+  width: 46px;
+  height: 46px;
+  min-height: 46px;
+  border: 1px solid var(--mpr-border-active);
+  border-radius: 16px;
+  color: var(--mpr-accent);
+  background: color-mix(in srgb, var(--mpr-accent) 11%, var(--mpr-surface-raised));
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: .025em;
+  margin-bottom: 5px;
+}
+.ocean-workbench .mpr-rail-category {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 62px;
+  width: 100%;
+  padding: 9px 3px;
+  border: 1px solid transparent;
+  border-radius: var(--mpr-radius-control);
+  background: transparent;
+  color: var(--mpr-text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.ocean-workbench .mpr-rail-category span {
+  font-size: 10px;
+  line-height: 1.15;
+  font-weight: 750;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+}
+.ocean-workbench .mpr-rail-category:is(.is-current, .is-open) {
+  color: var(--mpr-text);
+  border-color: var(--mpr-border-active);
+  background: color-mix(in srgb, var(--mpr-accent) 12%, var(--mpr-surface-raised));
+}
+.ocean-workbench .mpr-rail-category.is-current::before {
+  content: "";
+  position: absolute;
+  margin-left: -56px;
+  height: 20px;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--mpr-accent);
+}
+.ocean-workbench .mpr-rail-category:hover {
+  color: var(--mpr-text);
+  background: color-mix(in srgb, var(--mpr-accent) 8%, var(--mpr-surface));
+}
+.ocean-workbench .mpr-rail-category:focus-visible,
+.ocean-workbench .mpr-drawer-category:focus-visible {
+  outline: 2px solid var(--mpr-focus);
+  outline-offset: 2px;
+}
+.ocean-workbench .mpr-workspaces-backdrop {
+  display: block !important;
+  position: fixed !important;
+  z-index: 90;
+  inset: 0 !important;
+  width: 100vw;
+  height: 100dvh;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: color-mix(in srgb, #000 36%, transparent);
+  cursor: default;
+}
+
+/* The legacy nav markup remains the only canonical route tree, now displayed
+   in a single group at a time. fixed positioning avoids shifting Cesium. */
+.ocean-workbench .app-navigation-root .rui-sidebar.feature-rail {
+  display: flex;
+  position: fixed !important;
+  z-index: 96;
+  left: calc(var(--mpr-rail-width) + 8px) !important;
+  top: max(10px, env(safe-area-inset-top)) !important;
+  bottom: max(10px, env(safe-area-inset-bottom)) !important;
+  width: var(--mpr-directory-width) !important;
+  height: auto !important;
+  max-height: calc(100dvh - 20px) !important;
+  min-width: 0 !important;
+  padding: 16px 14px !important;
+  border: 1px solid var(--mpr-border) !important;
+  border-radius: var(--mpr-radius-island) !important;
+  background: var(--mpr-surface-raised) !important;
+  color: var(--mpr-text);
+  box-shadow: var(--mpr-shadow) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-12px);
+  transition: transform 160ms ease, opacity 160ms ease, visibility 160ms ease;
+}
+.ocean-workbench .app-navigation-root[data-drawer-open="true"] .rui-sidebar.feature-rail {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+.ocean-workbench .app-navigation-root .rui-sidebar .rui-sidebar-brand {
+  min-height: 54px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  justify-items: stretch;
+}
+.ocean-workbench .app-navigation-root .rui-sidebar .rui-sidebar-brand-copy {
+  display: grid !important;
+}
+.ocean-workbench .app-navigation-root .rui-sidebar .rui-nav-breadcrumb {
+  display: block !important;
+}
+.ocean-workbench .app-navigation-root .rui-sidebar .rui-nav-group-label {
+  display: flex !important;
+}
+.ocean-workbench .app-navigation-root .rui-sidebar .rui-nav-copy {
+  display: grid !important;
+}
+.ocean-workbench .app-navigation-root .rui-sidebar .rui-nav-item {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) !important;
+  justify-items: stretch !important;
+  gap: 10px;
+  min-height: 56px;
+  padding: 9px !important;
+  border-radius: var(--mpr-radius-control) !important;
+}
+.ocean-workbench .app-navigation-root .rui-sidebar .rui-nav-item strong {
+  font-size: 12px;
+}
+.ocean-workbench .app-navigation-root .rui-sidebar .rui-nav-group[hidden] {
+  display: none !important;
+}
+.ocean-workbench .mpr-drawer-categories {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  margin: 9px 0 13px;
+}
+.ocean-workbench .mpr-drawer-category {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 55px;
+  padding: 7px 2px;
+  border: 1px solid var(--mpr-border);
+  border-radius: var(--mpr-radius-chip);
+  background: var(--mpr-surface);
+  color: var(--mpr-text-muted);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.ocean-workbench .mpr-drawer-category.is-selected {
+  color: var(--mpr-text);
+  border-color: var(--mpr-border-active);
+  background: color-mix(in srgb, var(--mpr-accent) 13%, var(--mpr-surface-raised));
+}
+.ocean-workbench .mpr-drawer-category span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ocean-workbench .app-navigation-root .rui-nav-group + .rui-nav-group {
+  margin-top: 0;
+}
+.ocean-workbench .app-navigation-root .rui-sidebar .sidebar-collapse,
+.ocean-workbench .app-navigation-root .rui-sidebar .sidebar-mobile-close {
+  min-width: 42px;
+  min-height: 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--mpr-radius-control);
+}
+
+@media (max-width: 900px) {
+  .ocean-workbench .mpr-workspace-rail { display: none; }
+  .ocean-workbench:not(.focus-mode) .workspace-frame {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .ocean-workbench .app-navigation-root .rui-sidebar.feature-rail {
+    left: max(8px, env(safe-area-inset-left)) !important;
+    top: max(64px, calc(env(safe-area-inset-top) + 58px)) !important;
+    bottom: max(12px, env(safe-area-inset-bottom)) !important;
+    width: min(328px, calc(100vw - 24px)) !important;
+    max-height: calc(100dvh - 76px) !important;
+    transform: translateX(-115%);
+  }
+  .ocean-workbench .app-navigation-root[data-drawer-open="true"] .rui-sidebar.feature-rail {
+    transform: translateX(0);
+  }
+  .ocean-workbench .app-navigation-root .rui-sidebar .sidebar-collapse {display: none !important;}
+  .ocean-workbench .app-navigation-root .rui-sidebar .sidebar-mobile-close {display: grid !important;}
+  .ocean-workbench .mobile-sidebar-trigger {
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: var(--mpr-radius-control) !important;
+  }
+}
+@media (max-width: 360px) {
+  .ocean-workbench .mpr-drawer-category { font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ocean-workbench .app-navigation-root .rui-sidebar.feature-rail { transition: none !important; }
+  .ocean-workbench .mpr-rail-category { transition: none !important; }
+}
+@media (forced-colors: active) {
+  .ocean-workbench .mpr-workspace-rail,
+  .ocean-workbench .mpr-rail-category,
+  .ocean-workbench .mpr-drawer-category,
+  .ocean-workbench .app-navigation-root .rui-sidebar.feature-rail {
+    background: Canvas !important;
+    border-color: CanvasText !important;
+    color: CanvasText !important;
+    box-shadow: none !important;
+  }
+  .ocean-workbench .mpr-rail-category.is-current,
+  .ocean-workbench .mpr-drawer-category.is-selected {
+    outline: 2px solid Highlight;
+  }
+}
