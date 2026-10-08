@@ -16,6 +16,7 @@ interface Props {
 }
 
 const SIDEBAR_STORAGE_KEY = "ocean-canvas-rui-sidebar-collapsed";
+const MPR_NAV_MIGRATION_KEY = "ocean-canvas-mpr03-rail-initialized";
 const MOBILE_QUERY = "(max-width: 900px)";
 const GROUP_ICONS: Record<NavigationGroupId, MprIconName> = {
   explore: "explore", analyse: "analyze", data: "data", science: "science"
@@ -26,8 +27,13 @@ const GROUP_DISPLAY: Record<NavigationGroupId, string> = {
 
 function initialCollapsed(): boolean {
   try {
-    // A new workstation defaults to the slim 72px category rail. Previous
-    // collapse preference still works; opening the drawer never resizes 3D.
+    // Legacy "expanded" means a permanent 272px sidebar, not a modal
+    // overlay. Migrate once to the slim rail so an old preference cannot
+    // unexpectedly cover the 3D scene on first launch.
+    if (window.localStorage.getItem(MPR_NAV_MIGRATION_KEY) !== "true") {
+      window.localStorage.setItem(MPR_NAV_MIGRATION_KEY, "true");
+      return true;
+    }
     return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) !== "false";
   } catch {
     return true;
