@@ -21,7 +21,7 @@ test("Explorer directory and Ocean Intelligence own separate scrolling rows with
   await expect(islands.locator(":scope > .mpr-workspace-mode-island")).toHaveCount(1);
   await expect(islands.locator(":scope > .explorer-directory-shell")).toHaveCount(1);
   await expect(islands.locator(":scope > .source-workbench")).toHaveCount(1);
-  await expect(islands.locator(":scope > *")).toHaveCount(2);
+  await expect(islands.locator(":scope > *")).toHaveCount(3);
   const source = page.getByRole("region", { name: "Scientific source workspace" });
   const cards = [
     page.getByRole("button", { name: "GLORYS baseline" }),
