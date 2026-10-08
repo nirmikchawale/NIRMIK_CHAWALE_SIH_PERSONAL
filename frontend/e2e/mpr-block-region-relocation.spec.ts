@@ -8,6 +8,8 @@ for (const width of [1440, 1024, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(live!.replace(/#.*$/, "") + "#/explore", { waitUntil: "domcontentloaded" });
+    const skip = page.getByRole("button", { name: "Skip journey" });
+    if (await skip.isVisible().catch(() => false)) await skip.click();
     const globe = page.locator(".globe-visualization-layer.active .globe-shell");
     const cesium = globe.locator(".cesium-host");
     const dock = page.locator(".station-workspace > .control-panel");
