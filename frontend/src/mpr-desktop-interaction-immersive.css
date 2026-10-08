@@ -3,6 +3,28 @@
    data-control-dock="open", even though station.css painted the buttons.
    Re-enable only real, visible toolbar controls (not hidden duplicate HUDs).
    Keep both Cesium stage and scientific data behavior untouched. */
+/* Desktop hit-target guard: the Cesium canvas and historic absolute HUDs
+   must never occupy the input plane above the real in-flow toolbar. The
+   corresponding input remains owned by OceanGlobe; not a cloned handler. */
+.ocean-workbench[data-page="explore"] .station-workspace
+.visualization-layer.active .globe-shell > .renderer-tools {
+  position: relative !important;
+  z-index: 60 !important;
+  pointer-events: auto !important;
+  touch-action: auto;
+  isolation: isolate;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.visualization-layer.active .globe-shell > .renderer-tools :is(button, input, select, summary) {
+  position: relative;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.visualization-layer.active .globe-shell > .cesium-host {
+  z-index: 0;
+}
+
 @media (min-width: 761px) {
   .ocean-workbench[data-page="explore"][data-control-dock="open"] .station-workspace
   .visualization-layer.active .renderer-tools,

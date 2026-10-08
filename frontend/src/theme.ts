@@ -68,7 +68,8 @@ export function initialGlassTheme(): GlassThemeId {
   try {
     const stored = window.localStorage.getItem(GLASS_THEME_STORAGE_KEY);
     if (isGlassThemeId(stored)) return stored;
-    // New viewers start in Arctic Mist. Existing explicit 16-theme choices win.\n    return DEFAULT_GLASS_THEME;
+    // New visitors start in Arctic Mist; explicit saved theme choices win.
+    return DEFAULT_GLASS_THEME;
   } catch {
     return DEFAULT_GLASS_THEME;
   }
