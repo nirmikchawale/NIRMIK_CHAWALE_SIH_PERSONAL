@@ -587,7 +587,7 @@ test("live Ocean Canvas canvas-first HUD controls work", async ({ page }) => {
   await expect(page.locator(".feature-rail-right")).toHaveCount(0);
   await expect(appShell).toHaveAttribute("data-control-dock", "open");
   await expect(appShell).toHaveAttribute("data-evidence-inspector", "closed");
-  await expect(page.getByRole("button", { name: "Open evidence inspector" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open Ocean Intelligence evidence inspector" })).toBeVisible();
 
   await page.getByRole("button", { name: "Hide explorer controls" }).click();
   await expect(appShell).toHaveAttribute("data-control-dock", "closed");
@@ -599,7 +599,7 @@ test("live Ocean Canvas canvas-first HUD controls work", async ({ page }) => {
   await page.keyboard.press("Control+b");
   await expect(appShell).toHaveAttribute("data-control-dock", "open");
 
-  await page.getByRole("button", { name: "Open evidence inspector" }).click();
+  await page.getByRole("button", { name: "Open Ocean Intelligence evidence inspector" }).click();
   await expect(appShell).toHaveAttribute("data-evidence-inspector", "open");
   await expect(page.locator(".profile-panel")).toHaveAttribute("data-context-open", "false");
   await expect(page.locator(".evidence-rail")).toBeVisible();
