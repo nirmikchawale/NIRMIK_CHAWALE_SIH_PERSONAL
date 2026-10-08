@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { api, resolveServiceUrl } from "../api";
 import { DataLabDirectoryNav } from "../components/DataLabDirectoryNav";
+import "../data-lab-consolidation.css";
 import { parseBrowserNetcdf, type NetcdfBrowserInspection } from "../netcdfImport";
 import { writeImportedObservationRecords } from "../observationSession";
 import type {
@@ -911,7 +912,8 @@ export function DataLabPage() {
         )}
       </section>
       </div>
-            <section className="data-lab-grid" id="data-lab-validator" data-data-lab-home="datasets">
+            <section id="data-lab-datasets" data-data-lab-home="datasets" className="data-lab-nav-section">
+      <section className="data-lab-grid" id="data-lab-validator">
         <article className="data-lab-upload-card">
           <div className="data-lab-card-heading">
             <div>
@@ -997,6 +999,8 @@ export function DataLabPage() {
 
         </>
       )}
+
+      </section>
 
       <section id="data-lab-variables" data-data-lab-home="variables" className="data-lab-nav-section">
         <div className="data-lab-nav-heading">
