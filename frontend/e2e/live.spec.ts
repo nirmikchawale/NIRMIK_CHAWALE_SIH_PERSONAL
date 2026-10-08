@@ -33,8 +33,26 @@ async function revealCanvasTools(page: Page) {
   }
 }
 
-function workspace(page: Page, id: "explore" | "telemetry" | "compare" | "anomaly" | "data-lab" | "about") {
-  return page.locator(`[data-workspace-id="${id}"]`);
+async function openWorkspace(
+  page: Page,
+  id: "explore" | "telemetry" | "compare" | "anomaly" | "data-lab" | "about"
+) {
+  const targets = {
+    explore: { category: "Explore", name: "3D Explorer" },
+    telemetry: { category: "Analyze", name: "Telemetry" },
+    compare: { category: "Analyze", name: "Model vs Observation" },
+    anomaly: { category: "Analyze", name: "Anomaly Screening" },
+    "data-lab": { category: "Data", name: "Data Lab" },
+    about: { category: "Science", name: "Science System" }
+  } as const;
+  const target = targets[id];
+  // RUI/MPR presents four visible category triggers. The original
+  // [data-workspace-id] buttons are hidden until the directory opens.
+  const rail = page.getByTestId("mpr-workspace-rail");
+  await rail.getByRole("button", { name: `Open ${target.category} workspaces` }).click();
+  const directory = page.getByRole("navigation", { name: "Ocean Canvas workspaces" });
+  await expect(directory).toBeVisible();
+  await directory.getByRole("button", { name: target.name, exact: true }).click();
 }
 
 test("live Ocean Canvas judge flow renders and core interactions work", async ({ page }) => {
@@ -96,7 +114,7 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(page.getByRole("heading", { name: /Ocean Canvas/i })).toBeVisible();
   await expect(documentRoot).toHaveAttribute("data-theme", "light");
 
-  await workspace(page, "telemetry").click();
+  await openWorkspace(page, "telemetry");
   await expect(page).toHaveURL(/#\/telemetry$/);
   const telemetryPage = page.locator('.telemetry-page[data-page="telemetry"]');
   await expect(telemetryPage).toBeVisible();
@@ -134,7 +152,7 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(telemetryPage).toHaveAttribute("data-variable", "so");
   await expect(telemetryPage.locator(".telemetry-depth-card")).toContainText("Salinity");
 
-  await workspace(page, "anomaly").click();
+  await openWorkspace(page, "anomaly");
   await expect(page).toHaveURL(/#\/anomaly$/);
   const anomalyPage = page.locator('.anomaly-page[data-page="anomaly"]');
   await expect(anomalyPage).toBeVisible();
@@ -176,7 +194,7 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(anomalyPage).toHaveAttribute("data-variable", "so");
   await expect(anomalyPage).toContainText("Salinity spatial statistical extremes");
 
-  await workspace(page, "data-lab").click();
+  await openWorkspace(page, "data-lab");
   await expect(page).toHaveURL(/#\/data-lab$/);
   const dataLabPage = page.locator('.data-lab-page[data-page="data-lab"]');
   await expect(dataLabPage).toBeVisible();
@@ -229,7 +247,7 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(page.locator(".imported-profile-panel")).toBeVisible();
   await expect(page.locator(".imported-profile-panel")).toContainText("Glider");
   await expect(page.locator(".imported-profile-panel")).toContainText("temperature vs depth");
-  await workspace(page, "data-lab").click();
+  await openWorkspace(page, "data-lab");
   await expect(page).toHaveURL(/#\/data-lab$/);
 
   const netcdfFixtureUrl = new URL("samples/cf-profile-fixture.nc", page.url()).toString();
@@ -255,7 +273,7 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await page.locator(".imported-observation-chips").getByRole("button", { name: /CTD.*test-ctd-profile-001/i }).click();
   await expect(page.locator(".imported-profile-panel")).toContainText("CTD");
   await expect(page.locator(".imported-profile-panel")).toContainText("sea_water_temperature vs depth");
-  await workspace(page, "data-lab").click();
+  await openWorkspace(page, "data-lab");
   await expect(page).toHaveURL(/#\/data-lab$/);
 
   const invalidCsv = [
@@ -271,7 +289,7 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(dataLabPage).toContainText("Latitude must be between -90 and 90 degrees.");
   await expect(dataLabPage).toContainText("Units are required.");
 
-  await workspace(page, "compare").click();
+  await openWorkspace(page, "compare");
   await expect(page).toHaveURL(/#\/compare$/);
   const comparisonPage = page.locator('.comparison-page[data-page="compare"]');
   await expect(comparisonPage).toBeVisible();
@@ -306,7 +324,7 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(comparisonPage.getByRole("button", { name: "Download comparison CSV" })).toBeEnabled();
   await expect(comparisonPage.getByRole("button", { name: "Download evidence JSON" })).toBeEnabled();
 
-  await workspace(page, "about").click();
+  await openWorkspace(page, "about");
   await expect(page).toHaveURL(/#\/about$/);
   const infoPage = page.locator('.info-page[data-page="about"]');
   await expect(infoPage).toBeVisible();
