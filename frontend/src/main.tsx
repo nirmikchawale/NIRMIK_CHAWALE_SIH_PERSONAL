@@ -45,6 +45,8 @@ import "./mpr-explorer-scroll.css";
 import "./mpr-workspaces-navigation.css";
 // MPR-04: independent 16-theme Workspace Mode island.
 import "./mpr-workspace-mode.css";
+// MPR-05: one theme-aware, horizontally scrollable feature directory.
+import "./mpr-feature-directory.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
