@@ -49,3 +49,20 @@ Dedicated push-triggered workflow .github/workflows/3db11-scale-out.yml runs onl
 ## Next planned phase
 
 3DB-12 — Block Performance & LOD. Optimize genuine block loading without altering verified measurements or creating temporal/spatial science that does not exist.
+
+## Source-acquisition results (generated and deep-validated)
+
+| Region | New block | Actual source date | Payload SHA-256 |
+|---|---|---|---|
+| Andaman & Nicobar | IO-082 | 2004-03-15 | db62891f16394e6851ab1bc43e94997262a03566b864d221091a65f1ca309f7f |
+| Bay of Bengal | IO-066 | 2004-03-15 | e2977687903c90f3eff8af3afbde872005805ad98e072f091dcf0cdef3ce764b |
+| Central Arabian Sea | IO-059 | 2004-03-15 | 1cfacdfb94c04239264a6493ad0999b9d199a514f1cc21e580dba0f35b71fbd8 |
+| Eastern Indian Ocean | IO-122 | 2004-03-15 | ec20af46c0e3e0d2c64661cfe4ddb15f7d4a0023d5d2bb6fc834192fc6837088 |
+| Lakshadweep & Southern Arabian Sea | IO-130 | 2004-03-15 | 77651099bf0e3dc78e835eedafa92f762cf4abdd30104f23f91700a693ac8b13 |
+| Western Arabian Sea | IO-030 | 2004-03-15 | 2065f6d08ff9f505877d82ea7cf20d35d7c9b676b5da0732eeb7da4571b285ba |
+| Andaman & Nicobar | IO-124 | 2004-03-15 | 231f45d806dcf3a94bc825d2186af807013c153f16396d702d153af58ec8c972 |
+| Bay of Bengal | IO-067 | 2004-03-15 | 018494e2598d95fc05ca813c371d784e20a8516e857d4a8b44173b89ba97e0d4 |
+| Central Arabian Sea | IO-060 | 2004-03-15 | 9657a6b8c050cc8509ee75c27094d77257bce5da13424cf4545e3ff6e6d59ce9 |
+| Eastern Indian Ocean | IO-123 | 2004-03-15 | 9babe948c9e945cbe0802a2254515f052ede6fd451d667bdab918ea202dc3891 |
+
+Validated branch inventory: 140 logical; 35 pilots; 105 planned; 6 multi-date; 41 genuine checksum-referenced payloads; zero land. This does not certify merge/deployment; live gates remain separate.

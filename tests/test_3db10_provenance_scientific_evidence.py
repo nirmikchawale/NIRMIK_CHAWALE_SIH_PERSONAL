@@ -16,7 +16,7 @@ def test_3db10_manifest_provenance_inventory_is_source_backed() -> None:
 
     assert manifest["schema"] == "oceancanvas-main-block-manifest-v1"
     assert manifest["target_domain"]["logical_block_count"] == 140
-    assert manifest["integrity"]["pilot_block_count"] == 25
+    assert manifest["integrity"]["pilot_block_count"] == 35
     assert manifest["integrity"]["multi_date_pilot_count"] == 6
     assert manifest["integrity"]["land_blocks_materialized"] == 0
     assert manifest["integrity"]["synthetic_measurements"] is False
@@ -26,9 +26,9 @@ def test_3db10_manifest_provenance_inventory_is_source_backed() -> None:
     assert manifest["integrity"]["vertical_component_available"] is False
 
     payloads = manifest["payloads"]
-    assert len(payloads) == 31
+    assert len(payloads) == 41
     assert all(re.fullmatch(r"[a-f0-9]{64}", item["sha256"]) for item in payloads)
-    assert len({(item["block_id"], item["date"], item["sha256"]) for item in payloads}) == 31
+    assert len({(item["block_id"], item["date"], item["sha256"]) for item in payloads}) == 41
 
 
 def test_3db10_planned_io087_has_observation_context_but_no_model_payload_provenance() -> None:
