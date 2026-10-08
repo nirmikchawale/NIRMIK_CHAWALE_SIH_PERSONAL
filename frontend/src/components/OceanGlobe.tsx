@@ -61,6 +61,7 @@ import {
 } from "../main-block-cesium-renderer";
 import {
   activeMainBlockRegion,
+  PHASE35B_PILOT_IDS,
   findTargetBlockAt,
   publishActiveMainBlockId,
   readActiveMainBlockId,
@@ -1384,7 +1385,7 @@ export function OceanGlobe({
         <div className="main-block-globe-stats" aria-label="Main block materialization status">
           <div><span>Ocean blocks</span><strong>{OCEAN_INTERSECTING_BLOCK_COUNT} retained</strong></div>
           <div><span>Land-only removed</span><strong>{LAND_ONLY_BLOCK_COUNT}</strong></div>
-          <div><span>Source-backed pilots</span><strong>25 materialized</strong></div>
+          <div><span>Source-backed pilots</span><strong>{PHASE35B_PILOT_IDS.length} materialized</strong></div>
         </div>
         <div className="main-block-grid-key" aria-label="Block map legend">
           <span><i /> Light yellow · mixed/coastal</span>
