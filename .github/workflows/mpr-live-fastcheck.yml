@@ -1,0 +1,72 @@
+name: mpr-live-fastcheck
+on:
+  push:
+    branches: [ops/mpr-release-runner-cleanup]
+permissions:
+  contents: read
+jobs:
+  real-public-seven-phase-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: b68616a3332319c0ec2a79b5f3fc6bef84494e9c
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Playwright
+        working-directory: frontend
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+      - name: Verify seven published MPR phases in real Chromium
+        working-directory: frontend
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          const browser = await chromium.launch({
+            headless: true,
+            args: ['--enable-webgl','--ignore-gpu-blocklist','--use-angle=swiftshader']
+          });
+          const url='https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/#/explore';
+          for (const width of [1440,390,320]) {
+            const page=await browser.newPage({viewport:{width,height:900}, reducedMotion:'reduce'});
+            await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
+            await page.locator('[data-testid="mpr-09-dual-view-navigator"]').waitFor({state:'attached',timeout:60000});
+            const assertions={
+              MPR03:'[data-testid="app-navigation-root"]',
+              MPR04:'[data-testid="mpr-04-workspace-mode-island"]',
+              MPR05:'[data-testid="rui-nav-02-explorer-directory"]',
+              MPR06:'[data-testid="mpr-06-ocean-intelligence"]',
+              MPR07:'[data-testid="mpr-07-active-main-block"]',
+              MPR08:'[data-testid="mpr-08-evidence-hub"]',
+              MPR09:'[data-testid="mpr-09-dual-view-navigator"]'
+            };
+            for(const [phase,locator] of Object.entries(assertions)){
+              const count=await page.locator(locator).count();
+              if(count!==1) throw Error(phase+' not rendered; count='+count+' viewport='+width);
+            }
+            const sources=page.locator('.source-workbench-choices button');
+            if((await sources.count())!==3) throw Error('Scientific source selector count incorrect');
+            for(const label of ['GLORYS baseline','INCOIS multi-time','INCOIS chlorophyll']){
+              if((await sources.getByRole('button',{name:label,exact:true}).count())!==1){
+                throw Error('Missing genuine source: '+label);
+              }
+            }
+            const nav=page.locator('[data-testid="mpr-09-dual-view-navigator"]');
+            if((await nav.locator('button').count())!==2) throw Error('Dual 3D navigator not rendered');
+            const offset=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+            if(offset>3) throw Error('Horizontal overflow: '+offset+' at '+width);
+            console.log('LIVE PUBLIC SUCCESS',width,JSON.stringify(Object.keys(assertions)), '3 genuine sources and 2 real view controls');
+            if(width===1440) await page.screenshot({path:'public-ocean-canvas-mpr03-09.png',fullPage:true});
+            await page.close();
+          }
+          await browser.close();
+          NODE
+      - name: Upload browser verification screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: ocean-canvas-mpr03-09-public-chromium
+          path: frontend/public-ocean-canvas-mpr03-09.png
