@@ -23,6 +23,9 @@ EXACT_FILES = {
     # relocation. CI tests enforce original globe selection/science behavior.
     "frontend/src/components/OceanGlobe.tsx",
     "frontend/src/components/ImmersiveFullscreenButton.tsx",
+    "frontend/src/components/BlockDetailsWorkspace.tsx",
+    "frontend/src/components/PresentationGuide.tsx",
+    "frontend/src/components/ExplorerConsolidationHost.tsx",
     "frontend/src/theme.ts",
     "frontend/index.html",
     "docs/MPR_DESKTOP_JOURNEY_ARCTIC_IMMERSIVE.md",
