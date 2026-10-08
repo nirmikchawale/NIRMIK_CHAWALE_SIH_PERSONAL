@@ -20,6 +20,11 @@
     max-width: var(--mpr-rail-width) !important;
   }
 }
+/* Overlay state must be above the legacy z=50 application header; a fixed
+   child's z-index cannot escape its parent's stacking context. */
+.ocean-workbench .app-navigation-root[data-drawer-open="true"] {
+  z-index: 180 !important;
+}
 .ocean-workbench .mpr-workspace-rail {
   display: flex;
   position: relative;
