@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 
 import { readScientificWorkspaceContext } from "../scientific-context-runtime";
 import { MprIcon } from "./MprIcon";
+import { ActiveMainBlockDisclosure } from "./ActiveMainBlockDisclosure";
 
 type Source = "glorys" | "incois" | "chlorophyll";
 
@@ -32,6 +33,7 @@ export function SourceWorkbench({ source, operationalAvailable, chlorophyllAvail
       <button aria-label="INCOIS multi-time" aria-pressed={source === "incois"} disabled={!operationalAvailable} onClick={() => { if (source !== "incois") onSource("incois"); }}><span className="source-number">02</span><span><strong><MprIcon name="time" size={17}/> INCOIS multi-time</strong><small>{operationalAvailable ? "Explore genuine time steps" : "Source unavailable"}</small><span className="mpr-source-status">{operationalAvailable ? "Native multi-time field" : "Unavailable · selection disabled"}</span></span></button>
       <button aria-label="INCOIS chlorophyll" aria-pressed={source === "chlorophyll"} disabled={!chlorophyllAvailable} onClick={() => { if (source !== "chlorophyll") onSource("chlorophyll"); }}><span className="source-number">03</span><span><strong><MprIcon name="source" size={17}/> INCOIS chlorophyll</strong><small>{chlorophyllAvailable ? "Satellite surface colour" : "Source unavailable"}</small><span className="mpr-source-status">{chlorophyllAvailable ? "Surface only · no synthetic depths" : "Unavailable · selection disabled"}</span></span></button>
     </div>
+    <ActiveMainBlockDisclosure />
     <nav className="source-workbench-actions" aria-label="Scientific workflow actions">
       <button onClick={onOverview}>Field overview ↗</button><button onClick={onCompare}>Compare observations ↗</button><button onClick={onData}>Open Data Lab ↗</button>
     </nav>
