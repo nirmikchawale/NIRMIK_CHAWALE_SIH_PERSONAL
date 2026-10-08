@@ -1,0 +1,40 @@
+name: mpr-release-runner-cleanup
+on:
+  push:
+    branches:
+      - ops/mpr-release-runner-cleanup
+permissions:
+  contents: read
+  actions: write
+jobs:
+  cancel-obsolete-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Free GitHub Actions capacity without cancelling protected release or main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RELEASE_HEAD: 6f25acb1038ab807b34179b5a499ad60ab2a0f50
+          PROTECTED_MAIN: 2f80c795e6003c46d2d68b1aef50fc03a5aec4da
+        shell: bash
+        run: |
+          set -euo pipefail
+          cancelled=0
+          for id in 37816462045 37816049542 37816025170 37816006751 37815982989 37815943728 37815852817 37815344377 37815119337 37815110158 37815044937 37814960617 37814950848 37814893649 37814406077 37813627241 37813289227 37817595910 37817429783 37817358363 37817314724 37817233349 37817198826 37817129189; do
+            info="$(gh api "repos/$REPO/actions/runs/$id" 2>/dev/null || true)"
+            if [[ -z "$info" ]]; then echo "Skip unavailable $id"; continue; fi
+            status="$(jq -r '.status' <<< "$info")"
+            event="$(jq -r '.event' <<< "$info")"
+            workflow="$(jq -r '.name' <<< "$info")"
+            sha="$(jq -r '.head_sha' <<< "$info")"
+            if [[ "$status" == "completed" || "$event" != "pull_request" || "$workflow" != "final-mvp" || "$sha" == "$PROTECTED_MAIN" || "$sha" == "$RELEASE_HEAD" ]]; then
+              echo "Skip protected/irrelevant $id ($status $workflow)"; continue
+            fi
+            if gh api --method POST "repos/$REPO/actions/runs/$id/cancel" >/dev/null 2>&1; then
+              echo "Cancelled obsolete MPR test run $id"; cancelled=$((cancelled+1))
+            else
+              echo "Unable to cancel $id (permission/state)"
+            fi
+          done
+          echo "Superseded runs cancelled: $cancelled"
