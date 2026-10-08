@@ -31,7 +31,15 @@ for(const width of [1440,1024,390,320]) {
   await expect(dock.getByRole("combobox",{name:"Water Column colour palette"})).toBeVisible();
   const opacity=dock.getByRole("slider",{name:"Water Column point opacity"});
   if(await opacity.isEnabled()){
-    await opacity.fill("65");
+    // Range inputs cannot be filled with Playwright.fill(): emulate a real
+    // native range input/change event on the existing bound React control.
+    await opacity.evaluate(element => {
+      const slider = element as HTMLInputElement;
+      const nativeSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+      nativeSetter?.call(slider, "65");
+      slider.dispatchEvent(new Event("input", { bubbles: true }));
+      slider.dispatchEvent(new Event("change", { bubbles: true }));
+    });
     await expect(water.locator(".water-column-shell")).toHaveAttribute("data-opacity","0.65");
   }
   const group=groups.nth(0);
