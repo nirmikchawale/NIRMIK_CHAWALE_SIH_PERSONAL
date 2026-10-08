@@ -106,6 +106,7 @@
     bottom: auto !important;
     left: auto !important;
     flex: 0 0 var(--rui-mobile-nav-height, 52px);
+    order: 0;
     height: var(--rui-mobile-nav-height, 52px) !important;
     width: 100%;
     pointer-events: auto;
@@ -117,7 +118,10 @@
     right: auto !important;
     bottom: auto !important;
     left: auto !important;
+    /* The scientific-context portal is appended AFTER .workspace in the DOM.
+       Keep its original grid visual order when migrating mobile to flex. */
     flex: 0 0 var(--rui-mobile-context-height, 72px);
+    order: 1;
     width: 100%;
     height: var(--rui-mobile-context-height, 72px);
   }
@@ -129,6 +133,7 @@
     bottom: auto !important;
     left: auto !important;
     flex: 0 0 auto;
+    order: 2;
     width: 100% !important;
     height: auto !important;
   }
