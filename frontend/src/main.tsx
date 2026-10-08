@@ -61,6 +61,8 @@ import "./mpr-geographic-section.css";
 import "./mpr-geographic-controls.css";
 // MPR-12: second genuine stacked Water Column 3D section, independent dock.
 import "./mpr-stacked-water-column.css";
+// MPR-13: genuine depth/time, colour, geometry and camera-linked controls.
+import "./mpr-water-column-controls.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
