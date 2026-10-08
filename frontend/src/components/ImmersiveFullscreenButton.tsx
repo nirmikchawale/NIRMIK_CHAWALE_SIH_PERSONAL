@@ -36,7 +36,8 @@ export function ImmersiveFullscreenButton() {
         aria-pressed={active}
         title={active ? "Exit fullscreen (Esc)" : "Fill the entire screen (browser permission required)"}
         onClick={() => void toggle()}>
-        {active ? "Exit full screen ↙" : "⛶ Full screen"}
+        <span aria-hidden="true">{active ? "↙" : "⛶"}</span>
+        <span className="immersive-screen-button-label">{active ? "Exit full screen" : "Full screen"}</span>
       </button>
       {message && <span role="status" className="immersive-screen-note">{message}</span>}
     </div>
