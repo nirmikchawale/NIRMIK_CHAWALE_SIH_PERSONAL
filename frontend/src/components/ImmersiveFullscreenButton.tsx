@@ -30,7 +30,7 @@ export function ImmersiveFullscreenButton() {
   };
 
   return (
-    <div className="immersive-screen-entry">
+    <span className="immersive-screen-entry">
       <button type="button" className="immersive-screen-button"
         aria-label={active ? "Exit fullscreen Ocean Canvas" : "Enter fullscreen Ocean Canvas"}
         aria-pressed={active}
@@ -40,6 +40,6 @@ export function ImmersiveFullscreenButton() {
         <span className="immersive-screen-button-label">{active ? "Exit full screen" : "Full screen"}</span>
       </button>
       {message && <span role="status" className="immersive-screen-note">{message}</span>}
-    </div>
+    </span>
   );
 }
