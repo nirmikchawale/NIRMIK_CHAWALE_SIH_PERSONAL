@@ -1,0 +1,95 @@
+/* Post-MPR: canonical dedicated block details, inside the Block System rail.
+   The view reads the shared native-science context. No copied state or geometry. */
+.ocean-workbench[data-page="explore"] .mpr-block-details-workspace {
+  display: grid;
+  grid-template-columns: minmax(0,1fr);
+  gap: 12px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: clamp(12px,1.5vw,20px);
+  border: 1px solid var(--mpr-border-active);
+  border-radius: var(--mpr-radius-island,16px);
+  background: var(--mpr-surface-raised);
+  color: var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-heading {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  flex-wrap: wrap; gap: 10px 20px; min-width: 0;
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-heading span:first-child {
+  font-size: 10px; font-weight: 800; letter-spacing: .1em; color: var(--mpr-accent);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-heading h3 {
+  font-size: clamp(17px,1.35vw,22px); line-height: 1.3;
+  margin: 5px 0 0; color: var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-status {
+  display: inline-flex; padding: 7px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 750;
+  border: 1px solid var(--mpr-border-active);
+  background: var(--mpr-surface); color: var(--mpr-text);
+  max-width: 100%; overflow-wrap: anywhere;
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-status[data-materialization="planned"] {
+  border-style: dashed; color: var(--mpr-text-muted);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-facts {
+  display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px;
+  margin: 0; min-width: 0;
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-facts > div {
+  display: grid; align-content: start; gap: 5px;
+  min-width: 0; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--mpr-border);
+  background: var(--mpr-surface);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-facts dt {
+  font-size: 10px; letter-spacing: .06em; font-weight: 750;
+  color: var(--mpr-text-muted);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-facts dd {
+  margin: 0; color: var(--mpr-text);
+  font-size: 12px; line-height: 1.45; font-weight: 700; overflow-wrap: anywhere;
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-actions {
+  display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px;
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-actions button {
+  min-width: 0; min-height: 44px;
+  border: 1px solid var(--mpr-border);
+  border-radius: 10px; background: var(--mpr-surface);
+  color: var(--mpr-text); cursor: pointer; padding: 9px 10px;
+  font-size: 11px; font-weight: 750; line-height: 1.35;
+  text-align: center; white-space: normal; overflow-wrap: anywhere;
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-actions button:first-child {
+  border-color: var(--mpr-border-active); background: var(--mpr-surface-raised);
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-actions button:is(:hover,:focus-visible) {
+  outline: 2px solid var(--mpr-focus); outline-offset: 2px;
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-truth {
+  font-size: 11px; line-height: 1.55; margin: 0;
+  color: var(--mpr-text-muted); overflow-wrap: anywhere;
+}
+.ocean-workbench[data-page="explore"] .mpr-block-details-live-notice:empty { display: none; }
+.ocean-workbench[data-page="explore"] .mpr-block-details-live-notice {
+  color: var(--mpr-accent); font-size: 11px;
+}
+@media(max-width:900px) {
+  .ocean-workbench[data-page="explore"] .mpr-block-details-facts {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .ocean-workbench[data-page="explore"] .mpr-block-details-actions {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:480px) {
+  .ocean-workbench[data-page="explore"] .mpr-block-details-facts {
+    grid-template-columns:minmax(0,1fr);
+  }
+  .ocean-workbench[data-page="explore"] .mpr-block-details-actions {
+    grid-template-columns:minmax(0,1fr);
+  }
+}
