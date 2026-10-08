@@ -28,10 +28,11 @@ for (const width of [1440, 390]) {
     await expect(workspace.locator('.comparison-depth-inspector')).toBeVisible();
     await expect(notice).toHaveCount(0);
     await expect(workspace.getByRole('button', { name: 'Download comparison CSV' })).toBeEnabled();
-    // Baseline selection persists on refresh; a later pilot deep link must never expose its metrics.
+    // Baseline selection persists on refresh; switching back to a pilot must hide its metrics.
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(workspace.getByLabel('Verified Argo profile')).toBeEnabled();
-    await page.goto(base + '#/compare?block=IO-016', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: 'Scientific context details', exact: true }).click();
+    await page.getByLabel('Active materialized scientific block', { exact: true }).selectOption('IO-016');
     await expect(notice).toContainText('No Argo comparisons are attached to IO-016');
     await expect(workspace.locator('.comparison-depth-inspector')).toHaveCount(0);
   });
