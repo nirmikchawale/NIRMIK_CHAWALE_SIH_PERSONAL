@@ -1176,6 +1176,7 @@ export default function App() {
               />
 
               <div
+                id="mpr-3d-stage"
                 className="visualization-stage"
                 data-visualization-mode={visualizationMode}
                 aria-label="Connected geographic and water-column visualization stage"
@@ -1227,6 +1228,14 @@ export default function App() {
                     theme={theme}
                   />
                 </div>
+                <button type="button"
+                  className="mpr-stage-view-switch"
+                  aria-label={visualizationMode === "globe" ? "Switch to Water Column 3D" : "Switch to Geographic 3D"}
+                  title={visualizationMode === "globe" ? "Switch to eligible Water Column 3D" : "Return to Geographic 3D"}
+                  disabled={visualizationMode === "globe" && (sourceMode === "chlorophyll" || (sourceMode !== "glorys" && variable === "currents"))}
+                  onClick={() => setVisualizationMode(current => current === "globe" ? "water-column" : "globe")}>
+                  {visualizationMode === "globe" ? "Water Column 3D ↗" : "Geographic 3D ↗"}
+                </button>
               </div>
 
               {selectedVariable && (
