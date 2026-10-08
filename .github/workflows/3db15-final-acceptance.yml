@@ -27,6 +27,8 @@ jobs:
           python -m pytest -q tests/test_3db14_full_block_capability_audit.py tests/test_3db12_performance_lod.py
       - run: python -m pip install -r backend/requirements.txt
       - run: python scripts/export_static_science.py --output frontend/public/science-static
+      - name: Generate labeled browser-only NetCDF ingestion fixture for complete judge flow
+        run: python scripts/create_netcdf_browser_fixture.py --output frontend/public/samples/cf-profile-fixture.nc
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
