@@ -1,31 +1,11 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { ExplorerDirectoryNav } from "./ExplorerDirectoryNav";
 import { Phase35MainBlockEngine } from "./Phase35MainBlockEngine";
 import { Phase3ArabianAtlas } from "./Phase3ArabianAtlas";
 
-type WorkspaceMode = "explorer" | "analysis" | "presentation";
-
-const WORKSPACE_LABEL: Record<WorkspaceMode, string> = {
-  explorer: "Explorer workspace",
-  analysis: "Analysis Split workspace",
-  presentation: "Presentation workspace"
-};
-
-function readWorkspaceMode(workbench?: HTMLElement | null): WorkspaceMode {
-  const mode = workbench?.dataset.workspaceMode;
-  return mode === "analysis" || mode === "presentation" ? mode : "explorer";
-}
-
-function readFocusMode(workbench?: HTMLElement | null): boolean {
-  return workbench?.classList.contains("focus-mode") ?? false;
-}
-
 export function ExplorerConsolidationHost() {
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
-  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>("explorer");
-  const [focusMode, setFocusMode] = useState(false);
 
   useEffect(() => {
     let disposed = false;
@@ -34,14 +14,6 @@ export function ExplorerConsolidationHost() {
     let ownedSlot: HTMLElement | null = null;
     let observedWorkbench: HTMLElement | null = null;
     let workbenchObserver: MutationObserver | null = null;
-
-    const syncPresentation = () => {
-      const workbench = observedWorkbench ?? document.querySelector<HTMLElement>(".ocean-workbench");
-      const nextWorkspaceMode = readWorkspaceMode(workbench);
-      const nextFocusMode = readFocusMode(workbench);
-      setWorkspaceMode((current) => current === nextWorkspaceMode ? current : nextWorkspaceMode);
-      setFocusMode((current) => current === nextFocusMode ? current : nextFocusMode);
-    };
 
     const bindWorkbench = () => {
       const nextWorkbench = document.querySelector<HTMLElement>(".ocean-workbench");
@@ -53,7 +25,6 @@ export function ExplorerConsolidationHost() {
 
       if (observedWorkbench) {
         workbenchObserver = new MutationObserver(() => {
-          syncPresentation();
           if (observedWorkbench?.dataset.page === "explore") scheduleAttachment(30);
           else setPortalTarget((current) => current === null ? current : null);
         });
@@ -62,7 +33,6 @@ export function ExplorerConsolidationHost() {
           attributeFilter: ["class", "data-workspace-mode", "data-page"]
         });
       }
-      syncPresentation();
     };
 
     const attachPortal = () => {
@@ -111,29 +81,10 @@ export function ExplorerConsolidationHost() {
     };
   }, []);
 
-  const activateWorkspace = (mode: WorkspaceMode) => {
-    const control = document.querySelector<HTMLButtonElement>(
-      `.app-header .workspace-mode-switcher button[aria-label="${WORKSPACE_LABEL[mode]}"]`
-    );
-    control?.click();
-  };
-
-  const focus3D = () => {
-    document.querySelector<HTMLButtonElement>('.app-header button[aria-label="Focus 3D"]')?.click();
-  };
-
   if (!portalTarget) return null;
 
   return createPortal(
-    <>
-      <ExplorerDirectoryNav
-        workspaceMode={workspaceMode}
-        focusMode={focusMode}
-        onWorkspaceModeChange={activateWorkspace}
-        onFocus3D={focus3D}
-      />
-
-      <section
+    <section
         className="explorer-block-system-home"
         aria-label="3D Explorer Block System"
         data-testid="rui-nav-02-block-system"
@@ -147,8 +98,7 @@ export function ExplorerConsolidationHost() {
           <Phase35MainBlockEngine />
           <Phase3ArabianAtlas />
         </div>
-      </section>
-    </>,
+      </section>,
     portalTarget
   );
 }

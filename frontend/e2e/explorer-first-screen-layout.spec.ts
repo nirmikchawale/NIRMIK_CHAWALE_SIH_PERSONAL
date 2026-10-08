@@ -16,7 +16,11 @@ test("Explorer directory and Ocean Intelligence own separate scrolling rows with
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(liveUrl.replace(/#.*$/, "") + "#/explore", { waitUntil: "domcontentloaded" });
+  const islands = page.getByTestId("explorer-landing-islands");
   const directory = page.getByTestId("rui-nav-02-explorer-directory");
+  await expect(islands.locator(":scope > .explorer-directory-shell")).toHaveCount(1);
+  await expect(islands.locator(":scope > .source-workbench")).toHaveCount(1);
+  await expect(islands.locator(":scope > *")).toHaveCount(2);
   const source = page.getByRole("region", { name: "Scientific source workspace" });
   const cards = [
     page.getByRole("button", { name: "GLORYS baseline" }),
@@ -30,15 +34,24 @@ test("Explorer directory and Ocean Intelligence own separate scrolling rows with
     await page.setViewportSize({ width, height: 900 });
     await expect(directory).toBeVisible();
     await expect(source).toBeVisible();
+    const islandsBox = await islands.boundingBox();
     const directoryBox = await directory.boundingBox();
     const sourceBox = await source.boundingBox();
     const titleBox = await source.locator(".source-workbench-title").boundingBox();
     const actionsBox = await source.locator(".source-workbench-actions").boundingBox();
+    expect(islandsBox).not.toBeNull();
     expect(directoryBox).not.toBeNull();
     expect(sourceBox).not.toBeNull();
+    // The islands themselves form a real flex-column: neither can escape its
+    // parent's intrinsic height or occupy the other's vertical interval.
+    await expect(islands).toHaveCSS("flex-direction", "column");
+    expect(directoryBox!.y).toBeGreaterThanOrEqual(islandsBox!.y - 1);
+    expect(sourceBox!.y + sourceBox!.height).toBeLessThanOrEqual(
+      islandsBox!.y + islandsBox!.height + 1
+    );
     expect(titleBox).not.toBeNull();
     expect(actionsBox).not.toBeNull();
-    expect(directoryBox!.y + directoryBox!.height).toBeLessThanOrEqual(sourceBox!.y - 5);
+    expect(directoryBox!.y + directoryBox!.height).toBeLessThanOrEqual(sourceBox!.y - 15);
     expect(titleBox!.y).toBeGreaterThanOrEqual(sourceBox!.y - 1);
 
     const boxes: BoundingBox[] = [];
@@ -73,4 +86,24 @@ test("Explorer directory and Ocean Intelligence own separate scrolling rows with
     expect(after!.y).toBeLessThan(before!.y - 80);
     await scroller.evaluate((element) => { element.scrollTop = 0; });
   }
+});
+
+test("independent Explorer island controls preserve workspace navigation and source interaction", async ({ page }) => {
+  if (!liveUrl) throw new Error("OCEANTWIN_LIVE_URL is required");
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(liveUrl.replace(/#.*$/, "") + "#/explore", { waitUntil: "domcontentloaded" });
+  const islands = page.getByTestId("explorer-landing-islands");
+  const directory = islands.getByTestId("rui-nav-02-explorer-directory");
+  const sources = islands.getByRole("region", { name: "Scientific source workspace" });
+  await expect(directory).toBeVisible();
+  await expect(sources).toBeVisible();
+
+  const workspace = directory.getByRole("group", { name: "Explorer workspace mode" });
+  await workspace.getByRole("button", { name: "Analysis Split workspace" }).click();
+  await expect(page.locator(".ocean-workbench")).toHaveAttribute("data-workspace-mode", "analysis");
+  await expect(sources).toBeVisible();
+  await workspace.getByRole("button", { name: "Explorer workspace" }).click();
+  await expect(page.locator(".ocean-workbench")).toHaveAttribute("data-workspace-mode", "explorer");
+  await expect(sources.getByRole("button", { name: "GLORYS baseline" })).toHaveAttribute("aria-pressed", "true");
+  await expect(directory.getByRole("navigation", { name: "3D Explorer feature directory" })).toBeVisible();
 });
