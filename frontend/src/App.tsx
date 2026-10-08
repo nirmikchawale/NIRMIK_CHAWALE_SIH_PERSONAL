@@ -966,15 +966,6 @@ export default function App() {
               >
                 {controlDockOpen ? "Hide controls" : "Controls"}
               </button>
-
-              <button
-                type="button"
-                className="header-action-button"
-                aria-label="Sources & QC"
-                onClick={() => setProvenanceOpen(true)}
-              >
-                Sources & QC
-              </button>
             </div>
           )}
           {focusMode && (
@@ -1089,7 +1080,10 @@ export default function App() {
                 <SourceWorkbench source={sourceMode} operationalAvailable={Boolean(operationalCatalog) && !operationalError}
                   chlorophyllAvailable={Boolean(chlorophyllCatalog) && !chlorophyllError} onSource={handleSourceModeChange}
                   onOverview={() => { setProfilePanelOpen(false); setWorkspaceMode("explorer"); setEvidenceOpen(true); }}
-                  onCompare={() => navigate("compare")} onData={() => navigate("data-lab")} />
+                  onCompare={() => navigate("compare")} onData={() => navigate("data-lab")}
+                   onSources={() => setProvenanceOpen(true)}
+                   evidenceLoading={scienceLoading} evidenceError={Boolean(error)}
+                   evidenceDegraded={degradedWarnings.length > 0} />
               </div>
               {workspaceMode === "presentation" && (
                 <button
@@ -1116,30 +1110,6 @@ export default function App() {
                 onCompare={() => navigate("compare")}
                 onSources={() => setProvenanceOpen(true)}
               />
-              {!evidenceOpen && !focusMode && (
-                <button
-                  type="button"
-                  className="evidence-status-pill"
-                  aria-label="Open evidence inspector"
-                  onClick={() => {
-                    setProfilePanelOpen(false);
-                    setMobileSheet("none");
-                    setWorkspaceMode("explorer");
-                    setEvidenceOpen(true);
-                  }}
-                >
-                  <span>Ocean intelligence</span>
-                  <strong>
-                    {activeSelectedProfile
-                      ? `Argo ${activeSelectedProfile.platform_id} · Active`
-                      : error
-                        ? "Field unavailable"
-                        : scienceLoading
-                          ? "Updating field…"
-                          : "Verified field · Active"}
-                  </strong>
-                </button>
-              )}
               {mobileSheet !== "none" && (
                 <button
                   type="button"
