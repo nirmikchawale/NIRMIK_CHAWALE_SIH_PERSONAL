@@ -111,6 +111,10 @@
   .ocean-workbench[data-page="explore"] .explorer-landing-islands .source-workbench-choices {
     grid-template-columns: minmax(0,1fr);
   }
+  /* Keep each stacked ocean-source island target touch-sized. */
+  .ocean-workbench[data-page="explore"] .explorer-landing-islands .source-workbench-choices button {
+    min-height: 86px;
+  }
 }
 
 @media (forced-colors: active) {
