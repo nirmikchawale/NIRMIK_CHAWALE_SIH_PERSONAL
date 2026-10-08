@@ -82,10 +82,10 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
     if (restoreFocus) {
       window.requestAnimationFrame(() => {
         if (window.matchMedia(MOBILE_QUERY).matches) mobileTriggerRef.current?.focus();
-        else railButtonRefs.current[navigationGroupForPage(page).id]?.focus();
+        else railButtonRefs.current[selectedGroup]?.focus();
       });
     }
-  }, [page]);
+  }, [selectedGroup]);
 
   const openGroup = useCallback((group: NavigationGroupId) => {
     setSelectedGroup(group);
