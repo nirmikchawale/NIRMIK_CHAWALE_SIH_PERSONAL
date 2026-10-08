@@ -1,6 +1,6 @@
 # RUI-VIS-04 — Model vs Observation Visual Integration
 
-Status: MERGED via PR #153; exact-main deployment/live gates pending.
+Status: LIVE & VERIFIED via PR #153.
 Starting main: `743df7b97a59681ab58468910f61345fa748e876`.
 Branch: `rui-vis-04-model-observation-visual-integration`.
 Consumes merged NAV-04 and verified VIS-03/3DB-08 production.
@@ -38,4 +38,35 @@ See RUI_CHAT1_EXECUTION_LEDGER.md for current gates and recovery.
 
 Validated runtime head `323f327b6f13507d894f4d4d1bea0b9c819aa656` passed tests 37692361426 and final-mvp 37692361335, including all 108 browser tests. Fresh main was unchanged; expected-head merge produced `b252547cac5732405b4bfbca47da64e9029ea3db`. No race reconciliation was needed.
 
-Production gates: final-mvp 37694522375; deploy-oceantwin-pages 37694522481; tests 37694522437. Pending at this checkpoint.
+Production gates: final-mvp 37694522375; deploy-oceantwin-pages 37694522481; tests 37694522437. All SUCCESS; final evidence below.
+
+## Final production verification — 2026-10-08
+
+STATUS: LIVE & VERIFIED
+Validated runtime head: 323f327b6f13507d894f4d4d1bea0b9c819aa656.
+PR #153 merged as b252547cac5732405b4bfbca47da64e9029ea3db.
+Exact merge tests 37694522437, final-mvp 37694522375 and Pages 37694522481: SUCCESS.
+Pages build/deploy/public HTTPS/live Chromium: SUCCESS.
+Public job 113043280780 passed 108 tests, including VIS-04 at 1440/768/390/360px.
+
+Later fully verified containing main: 2c4050511f0e56ad59ff148773b327b6931ff9fb.
+Tests 37749778542, final-mvp 37749778520, Pages 37749778489: SUCCESS.
+Public job 113220424809 passed 118 tests including all four VIS-04 viewport tests.
+
+Manual live inspection confirmed the compact heading, all eight directory buttons,
+readable profile/source surfaces and profile-directory jump. Keyboard End selected
+447.02 m with Argo 11.9125 °C, model 11.6843 °C and bias -0.2281 °C.
+No scientific algorithms, source/generated data, or scientific semantics changed.
+
+Latest observed main: 5965c48bd29da21bb2601fc910d372cc8dc3fcc2,
+Merge RUI-NAV-07 Science System Consolidation, preserving 3DB-11.
+Its tests 37754663785 and Pages 37754663763 build/deploy passed;
+public acceptance and final-mvp 37754663722 were still running at closure.
+This newer parallel release is separate from the completed VIS-04 exact-merge gates.
+No new open NAV/3DB PR appeared in the latest PR list; old #140 remains unrelated.
+
+This evidence-only checkpoint is pushed on rui-vis-04-model-observation-visual-integration.
+The branch tip containing this document is the closure commit; runtime head is unchanged.
+Main may contain an older ledger: follow its instruction to inspect the phase branch.
+Next Chat-1 phase: VIS-05 Anomaly Screening, after refreshing main/CI/Pages and reading NAV-05.
+Do not begin a third phase in this session.

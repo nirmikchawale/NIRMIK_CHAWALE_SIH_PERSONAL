@@ -5,10 +5,8 @@ For an interrupted phase, also inspect its named branch for a newer evidence-onl
 
 ## Last verified production
 
-Main: `743df7b97a59681ab58468910f61345fa748e876` — merged 3DB-08, containing VIS-03.
-Tests 37648971119, final-mvp 37648970974, Pages 37648970893: SUCCESS.
-Pages build/deploy/HTTPS/live Chromium: SUCCESS; 104 public browser tests passed.
-VIS-02 remains LIVE & VERIFIED; do not rebuild completed phases.
+VIS-04 exact merge b252547cac5732405b4bfbca47da64e9029ea3db and later containing main 2c4050511f0e56ad59ff148773b327b6931ff9fb passed all gates. See final production verification below for current parallel release state.
+VIS-02, VIS-03 and VIS-04 are LIVE & VERIFIED; do not rebuild them.
 
 ## RUI-VIS-03
 
@@ -34,22 +32,55 @@ TIMESTAMP/SESSION NOTE: closure verified 2026-10-08 IST
 ## RUI-VIS-04
 
 PHASE: Model vs Observation Visual Integration
-STATUS: MERGED
+STATUS: LIVE & VERIFIED
 STARTING MAIN: 743df7b97a59681ab58468910f61345fa748e876
 BRANCH: rui-vis-04-model-observation-visual-integration
 CURRENT BRANCH HEAD: validated runtime 323f327b6f13507d894f4d4d1bea0b9c819aa656; later commits are documentation checkpoints
 PR: #153 MERGED
 FILES CHANGED: comparison CSS; VIS-04 browser tests; VIS-04 document; VIS-03 closure document; ledger
 LAST GREEN CI: tests 37692361426 and 37692356518; final-mvp 37692361335; 108 browser tests passed
-FAILED/OPEN GATES: exact-main CI/deployment/live acceptance
+FAILED/OPEN GATES: none for VIS-04
 MERGE SHA: b252547cac5732405b4bfbca47da64e9029ea3db
 NEW MAIN SHA: b252547cac5732405b4bfbca47da64e9029ea3db
-PAGES RUN: 37694522481 (pending)
+PAGES RUN: 37694522481 SUCCESS
 LIVE URL: https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/#/compare
-LIVE VERIFICATION: previous production only
+LIVE VERIFICATION: exact-merge public HTTPS and 108 Chromium tests SUCCESS; manual live inspection completed; details below
 SCIENCE CHANGES: none; CSS/test/docs only
 CONCURRENT PRS OBSERVED: no open new NAV/3DB PR; old #140 readiness unrelated
-NEXT EXACT STEP: verify exact-main runs final-mvp 37694522375; deploy-oceantwin-pages 37694522481; tests 37694522437; inspect live comparison; then record LIVE & VERIFIED and leave VIS-05 for next session
+NEXT EXACT STEP: VIS-04 complete. Next authorized session resumes VIS-05 after fresh-main verification.
 TIMESTAMP/SESSION NOTE: 2026-10-08 IST
 
 Next after VIS-04 closure: RUI-VIS-05 Anomaly Screening. Do not begin a third phase in this session.
+
+## Final production verification — 2026-10-08
+
+STATUS: LIVE & VERIFIED
+Validated runtime head: 323f327b6f13507d894f4d4d1bea0b9c819aa656.
+PR #153 merged as b252547cac5732405b4bfbca47da64e9029ea3db.
+Exact merge tests 37694522437, final-mvp 37694522375 and Pages 37694522481: SUCCESS.
+Pages build/deploy/public HTTPS/live Chromium: SUCCESS.
+Public job 113043280780 passed 108 tests, including VIS-04 at 1440/768/390/360px.
+
+Later fully verified containing main: 2c4050511f0e56ad59ff148773b327b6931ff9fb.
+Tests 37749778542, final-mvp 37749778520, Pages 37749778489: SUCCESS.
+Public job 113220424809 passed 118 tests including all four VIS-04 viewport tests.
+
+Manual live inspection confirmed the compact heading, all eight directory buttons,
+readable profile/source surfaces and profile-directory jump. Keyboard End selected
+447.02 m with Argo 11.9125 °C, model 11.6843 °C and bias -0.2281 °C.
+No scientific algorithms, source/generated data, or scientific semantics changed.
+
+Latest observed main: 5965c48bd29da21bb2601fc910d372cc8dc3fcc2,
+Merge RUI-NAV-07 Science System Consolidation, preserving 3DB-11.
+Its tests 37754663785 and Pages 37754663763 build/deploy passed;
+public acceptance and final-mvp 37754663722 were still running at closure.
+This newer parallel release is separate from the completed VIS-04 exact-merge gates.
+No new open NAV/3DB PR appeared in the latest PR list; old #140 remains unrelated.
+
+This evidence-only checkpoint is pushed on rui-vis-04-model-observation-visual-integration.
+The branch tip containing this document is the closure commit; runtime head is unchanged.
+Main may contain an older ledger: follow its instruction to inspect the phase branch.
+Next Chat-1 phase: VIS-05 Anomaly Screening, after refreshing main/CI/Pages and reading NAV-05.
+Do not begin a third phase in this session.
+
+Manual observation for future shared-shell review: inherited sidebar icon/label spacing appears cramped. This is outside the comparison-scoped CSS; preserve Chat-3 hierarchy when addressing it.
