@@ -15,8 +15,7 @@ interface Props {
   onNavigate: (page: PageId) => void;
 }
 
-const SIDEBAR_STORAGE_KEY = "ocean-canvas-rui-sidebar-collapsed";
-const MPR_NAV_MIGRATION_KEY = "ocean-canvas-mpr03-rail-initialized";
+const MPR_NAV_STORAGE_KEY = "ocean-canvas-mpr03-rail-collapsed";
 const MOBILE_QUERY = "(max-width: 900px)";
 const GROUP_ICONS: Record<NavigationGroupId, MprIconName> = {
   explore: "explore", analyse: "analyze", data: "data", science: "science"
@@ -27,14 +26,9 @@ const GROUP_DISPLAY: Record<NavigationGroupId, string> = {
 
 function initialCollapsed(): boolean {
   try {
-    // Legacy "expanded" means a permanent 272px sidebar, not a modal
-    // overlay. Migrate once to the slim rail so an old preference cannot
-    // unexpectedly cover the 3D scene on first launch.
-    if (window.localStorage.getItem(MPR_NAV_MIGRATION_KEY) !== "true") {
-      window.localStorage.setItem(MPR_NAV_MIGRATION_KEY, "true");
-      return true;
-    }
-    return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) !== "false";
+    // Deliberately separate from the old 272px sidebar preference. Reading
+    // storage is side-effect free under React StrictMode double initialization.
+    return window.localStorage.getItem(MPR_NAV_STORAGE_KEY) !== "false";
   } catch {
     return true;
   }
@@ -61,7 +55,7 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(SIDEBAR_STORAGE_KEY, collapsed ? "true" : "false");
+      window.localStorage.setItem(MPR_NAV_STORAGE_KEY, collapsed ? "true" : "false");
     } catch {
       // Sidebar persistence is optional; the workstation remains fully usable without storage.
     }
