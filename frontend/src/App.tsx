@@ -956,6 +956,20 @@ export default function App() {
   const activeExploreCatalog = exploreCatalog ?? catalog;
   const activeComparisonProfiles = sourceMode === "glorys" ? profiles : [];
   const activeSelectedProfile = sourceMode === "glorys" ? selectedProfile : null;
+  const plannedBlock = sourceMode === "glorys" && activeMainBlock.materialization === "planned";
+  const acceptedGeographic = !plannedBlock && !scienceLoading &&
+    geographicAcceptedKey === linkedKey &&
+    matchesGeographicPayload(variable === "currents" ? currents : field, linkedExpectation);
+  const waterEligible = sourceMode !== "chlorophyll" && (sourceMode === "glorys" || variable !== "currents");
+  const acceptedWater = !plannedBlock && waterEligible && !scienceLoading &&
+    waterAcceptedKey === linkedKey &&
+    matchesWaterColumnPayload(variable === "currents" ? currentsVolume : volume, linkedExpectation);
+  const linkedStatus = (ready: boolean, eligible = true) =>
+    plannedBlock ? "planned" : !eligible ? "unavailable" :
+    ready ? "verified" : scienceLoading ? "loading" :
+    error ? "unavailable" : "mismatch";
+  const geographicStatus = linkedStatus(acceptedGeographic);
+  const waterStatus = linkedStatus(acceptedWater, waterEligible);
 
 
   return (
@@ -1270,6 +1284,11 @@ export default function App() {
                 id="mpr-3d-stage"
                 className="visualization-stage"
                 data-visualization-mode={visualizationMode}
+                data-linked-evidence={geographicStatus}
+                data-linked-source={sourceMode}
+                data-linked-block={activeMainBlockId}
+                data-linked-time={linkedExpectation.time}
+                data-linked-variable={variable}
                 aria-label="Connected geographic and water-column visualization stage"
               >
                 <div
@@ -1277,9 +1296,9 @@ export default function App() {
                   aria-hidden={false}
                 >
                   <OceanGlobe
-                    field={field}
-                    volume={viewMode === "volume" ? volume : null}
-                    currents={currents}
+                    field={acceptedGeographic ? field : null}
+                    volume={acceptedGeographic && viewMode === "volume" ? volume : null}
+                    currents={acceptedGeographic ? currents : null}
                     profiles={activeComparisonProfiles}
                     selectedProfileId={sourceMode === "glorys" ? selectedProfileId : ""}
                     importedProfiles={importedProfiles}
@@ -1300,6 +1319,14 @@ export default function App() {
                     canEnterWaterColumn={sourceMode !== "chlorophyll" && (sourceMode === "glorys" || variable !== "currents")}
                   />
                 </div>
+                {geographicStatus !== "verified" && (
+                  <div className="mpr-linked-evidence-status" role="status" data-testid="mpr-14-geographic-status">
+                    <strong>{geographicStatus === "planned" ? "Planned block · field withheld" :
+                      geographicStatus === "loading" ? "Loading source-backed geographic field…" :
+                      "Geographic evidence unavailable or mismatched"}</strong>
+                    <small>{error || "No stale or copied scientific values are rendered for this selection."}</small>
+                  </div>
+                )}
                 <button type="button"
                   className="mpr-stage-view-switch"
                   aria-label={visualizationMode === "globe" ? "Switch to Water Column 3D" : "Switch to Geographic 3D"}
@@ -1316,7 +1343,10 @@ export default function App() {
                 data-scientific-source={sourceMode}
                 data-native-time={activeExploreCatalog.coordinates.time[timeIndex] ?? "Unavailable"}
                 data-native-depth={activeExploreCatalog.coordinates.depth[depthIndex] ?? 0}
-                data-eligible={sourceMode !== "chlorophyll" && (sourceMode === "glorys" || variable !== "currents") ? "true" : "false"}
+                data-eligible={waterEligible ? "true" : "false"}
+                data-linked-evidence={waterStatus}
+                data-linked-block={activeMainBlockId}
+                data-linked-variable={variable}
                 aria-label="Independent source-backed Water Column 3D section">
                 <header className="mpr-water-column-heading">
                   <span>WATER COLUMN 3D · NATIVE MODEL GEOMETRY</span>
@@ -1327,10 +1357,10 @@ export default function App() {
                   data-renderer-mounted="true">
                   <div className="visualization-layer water-column-visualization-layer active"
                     aria-hidden={false}>
-                    {sourceMode !== "chlorophyll" && (sourceMode === "glorys" || variable !== "currents") ? (
+                    {waterStatus === "verified" ? (
                       <WaterColumn3D
-                        volume={variable === "currents" ? null : volume}
-                        currentsVolume={variable === "currents" ? currentsVolume : null}
+                        volume={variable === "currents" ? null : acceptedWater ? volume : null}
+                        currentsVolume={variable === "currents" && acceptedWater ? currentsVolume : null}
                         selectedDepthM={activeExploreCatalog.coordinates.depth[depthIndex] ?? 0}
                         verticalExaggeration={verticalExaggeration}
                         opacity={waterColumnOpacity / 100}
@@ -1344,7 +1374,10 @@ export default function App() {
                       />
                     ) : (
                       <div className="mpr-water-column-unavailable" role="status">
-                        <strong>Water-column data unavailable for this scientific source</strong>
+                        <strong>{waterStatus === "planned" ? "Planned block · water-column evidence withheld" :
+                          waterStatus === "loading" ? "Loading native water-column evidence…" :
+                          waterStatus === "mismatch" ? "Native source/time/volume mismatch · evidence withheld" :
+                            "Water-column data unavailable for this scientific source"}</strong>
                         <p>{sourceMode === "chlorophyll"
                           ? "INCOIS satellite chlorophyll is surface-only; it has no measured or modelled subsurface depth axis."
                           : "The current INCOIS physical snapshot does not provide a verified full-depth currents volume."}</p>
@@ -1368,8 +1401,8 @@ export default function App() {
                   scale={colorScale}
                   minimum={colorMinimum}
                   maximum={colorMaximum}
-                  loading={scienceLoading}
-                  error={error}
+                  loading={scienceLoading || waterStatus === "mismatch"}
+                  error={waterStatus === "mismatch" ? "Native volume metadata does not match this selection." : error}
                   onVariableChange={handleVariableChange}
                   onDepthChange={setDepthIndex}
                   onTimeChange={setTimeIndex}
