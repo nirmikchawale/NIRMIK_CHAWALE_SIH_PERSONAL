@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed scope audit for Ocean Canvas RUI MPR-10–17 release candidates.
+"""Fail-closed scope audit for MPR-10–17 release and safe maintenance candidates.
 
 All numerical science/3DB/data/provenance/API sources are protected. Run against
 latest main as the comparison base, not only a stacked PR's immediate parent.
@@ -19,6 +19,10 @@ EXACT_FILES = {
     "frontend/src/components/SmartDualViewNavigator.tsx",
     "frontend/src/components/WaterColumnControlDock.tsx",
     "frontend/src/components/ExplorerInspectorAccess.tsx",
+    # Post-release RUI-02/MPR integration hardening: presentation + acceptance only.
+    "frontend/src/components/ScientificContextHeader.tsx",
+    "frontend/e2e/rui-context-header.spec.ts",
+    "docs/MPR_SCIENTIFIC_CONTEXT_CONSOLIDATION.md",
     "frontend/src/linked-view-integrity.ts",
     # Existing app regression tests repaired using the 3DB-15 owner branch.
     "frontend/e2e/live.spec.ts",
@@ -65,9 +69,12 @@ def main() -> int:
                  path.startswith(DANGEROUS_PREFIXES) or
                  path.lower().endswith(DANGEROUS_SUFFIXES) or
                  not allowed(path)]
-    # Ensure all eight intended phase docs are present in release tree.
+    # Validate the actual candidate tree, NOT only the PR diff. Once MPR-10–17
+    # is merged, valid maintenance PRs inherit its eight immutable ledgers.
+    # The old diff-only check falsely rejected safe post-release UI fixes.
     documents = [f"docs/RUI_MPR_{index:02d}_" for index in range(10, 18)]
-    present_docs = [p for p in changed if p.startswith(DOC_PREFIX) and p.endswith(".md")]
+    head_tree = git("ls-tree", "-r", "--name-only", args.head).splitlines()
+    present_docs = [p for p in head_tree if p.startswith(DOC_PREFIX) and p.endswith(".md")]
     missing = [prefix for prefix in documents if not any(p.startswith(prefix) for p in present_docs)]
     manifest = {
         "schema": "oceancanvas-mpr-release-scope-v1",

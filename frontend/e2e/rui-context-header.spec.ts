@@ -24,10 +24,13 @@ test("RUI-02 desktop moves shared science context out of navigation into compact
   await expect(context).toBeVisible();
   await expect(sidebar.getByTestId("scientific-context-bar")).toHaveCount(0);
   await expect(context).toHaveAttribute("data-block-id", "BASE-GLORYS-001");
-  await expect(header.locator('[data-context-field="source"]')).toBeVisible();
-  await expect(header.locator('[data-context-field="variable"]')).toBeVisible();
-  await expect(header.locator('[data-context-field="time"]')).toBeVisible();
-  await expect(header.locator('[data-context-field="depth"]')).toBeVisible();
+  // Production MPR consolidation: the old full-width field strip is gone.
+  // Source/time/depth/profile stay in the real shared-context disclosure.
+  await expect(header).toHaveCSS("height", "44px");
+  await expect(header.getByLabel("Selected scientific source and variable")).toBeVisible();
+  for (const key of ["source", "variable", "time", "depth", "profile"]) {
+    await expect(header.locator(`[data-context-field="${key}"]`)).toBeHidden();
+  }
 
   await page.getByRole("button", { name: "Open Explore workspaces" }).click();
   await expect(sidebar).toBeVisible();
@@ -36,8 +39,19 @@ test("RUI-02 desktop moves shared science context out of navigation into compact
   await expect(context).toHaveAttribute("data-block-id", "BASE-GLORYS-001");
 
   const details = header.locator('details.scientific-context-details');
+  await expect(details.locator("summary")).toContainText("Context & Info");
   await details.locator("summary").click();
   await expect(details).toHaveAttribute("open", "");
+  for (const key of ["source", "variable", "time", "depth", "profile"]) {
+    await expect(header.locator(`[data-context-field="${key}"]`)).toBeVisible();
+  }
+  await expect(header.locator('[data-context-field="profile"] dd')).not.toBeEmpty();
+  // Escape returns focus to the actual disclosure without disturbing the scene.
+  await details.locator("summary").focus();
+  await page.keyboard.press("Escape");
+  await expect(details).not.toHaveAttribute("open", "");
+  await expect(details.locator("summary")).toBeFocused();
+  await details.locator("summary").click();
   await expect(header.getByLabel("Active materialized scientific block")).toBeVisible();
   await expect(header.getByRole("button", { name: "Copy shareable scientific context link" })).toBeVisible();
   await expect(header.locator(".scientific-context-integrity")).toContainText("No runtime scientific-data download");
@@ -76,6 +90,7 @@ test("RUI-02 mobile keeps navigation and scientific context independently access
   await expect(navRoot).toHaveAttribute("data-mobile-open", "false");
   await expect(header).toBeVisible();
   await expect(context).toBeVisible();
+  await expect(header).toHaveCSS("height", "54px");
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
@@ -89,6 +104,9 @@ test("RUI-02 mobile keeps navigation and scientific context independently access
   await details.locator("summary").click();
   const panel = header.locator(".scientific-context-panel");
   await expect(panel).toBeVisible();
+  for (const key of ["source", "variable", "time", "depth", "profile"]) {
+    await expect(panel.locator(`[data-context-field="${key}"]`)).toBeVisible();
+  }
   const panelBox = await panel.boundingBox();
   expect(panelBox).not.toBeNull();
   expect(panelBox!.x).toBeGreaterThanOrEqual(0);

@@ -144,32 +144,22 @@ export function ScientificContextHeader({ page, onNavigate, scientificDisclaimer
           </span>
         </div>
 
-        <dl className="scientific-context-summary" aria-label="Current scientific selection">
-          <div data-context-field="source">
-            <dt>Source</dt>
-            <dd>{sourceLabel(context.sourceMode, context.blockMaterialization)}</dd>
-          </div>
-          <div data-context-field="variable">
-            <dt>Variable</dt>
-            <dd>{variableLabel(context.variable)}</dd>
-          </div>
-          <div data-context-field="time">
-            <dt>Time</dt>
-            <dd>{timeLabel(context)}</dd>
-          </div>
-          <div data-context-field="depth">
-            <dt>Depth</dt>
-            <dd>{depthLabel(context)}</dd>
-          </div>
-          <div data-context-field="profile">
-            <dt>Profile</dt>
-            <dd>{context.selectedProfileId ?? "Not selected"}</dd>
-          </div>
-        </dl>
+        <p className="scientific-context-inline" aria-label="Selected scientific source and variable">
+          <span title={sourceLabel(context.sourceMode, context.blockMaterialization)}>{sourceLabel(context.sourceMode, context.blockMaterialization)}</span>
+          <span aria-hidden="true">·</span>
+          <span title={variableLabel(context.variable)}>{variableLabel(context.variable)}</span>
+        </p>
 
-        <details ref={detailsRef} className="scientific-context-details">
+        <details ref={detailsRef} className="scientific-context-details"
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && detailsRef.current?.open) {
+              event.preventDefault();
+              detailsRef.current.open = false;
+              detailsRef.current.querySelector<HTMLElement>("summary")?.focus();
+            }
+          }}>
           <summary aria-label="Scientific context details">
-            <span>Details</span>
+            <span>Context &amp; Info</span>
             <span aria-hidden="true">⌄</span>
           </summary>
           <div className="scientific-context-panel">
@@ -182,6 +172,34 @@ export function ScientificContextHeader({ page, onNavigate, scientificDisclaimer
                 {statusLabel}
               </span>
             </div>
+
+            <div className="scientific-context-panel-intro">
+              <strong>Context &amp; Info</strong>
+              <p>Live scientific selection shared across Ocean Canvas workspaces. The Explorer Active Main Block and Sources &amp; QC remain the dedicated block and evidence controls.</p>
+            </div>
+
+            <dl className="scientific-context-summary" aria-label="Current scientific selection">
+              <div data-context-field="source">
+                <dt>Source</dt>
+                <dd>{sourceLabel(context.sourceMode, context.blockMaterialization)}</dd>
+              </div>
+              <div data-context-field="variable">
+                <dt>Variable</dt>
+                <dd>{variableLabel(context.variable)}</dd>
+              </div>
+              <div data-context-field="time">
+                <dt>Time</dt>
+                <dd>{timeLabel(context)}</dd>
+              </div>
+              <div data-context-field="depth">
+                <dt>Depth</dt>
+                <dd>{depthLabel(context)}</dd>
+              </div>
+              <div data-context-field="profile">
+                <dt>Profile</dt>
+                <dd>{context.selectedProfileId ?? "Not selected"}</dd>
+              </div>
+            </dl>
 
             <dl className="scientific-context-metadata">
               <div><dt>Region</dt><dd>{context.blockRegion}</dd></div>

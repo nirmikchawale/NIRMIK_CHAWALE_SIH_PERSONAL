@@ -1,0 +1,168 @@
+/* MPR production consolidation: scientific state remains global, while verbose
+   metadata lives in Context & Info and Explorer's existing Active Main Block.
+   Presentation tokens follow all sixteen glass themes; no science values change. */
+:root {
+  --rui-context-height: 44px;
+  --rui-mobile-context-height: 54px;
+}
+
+.scientific-context-header > .scientific-context-bar {
+  grid-template-columns: minmax(172px, max-content) minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr);
+  gap: clamp(8px, 1.2vw, 16px);
+  padding: 4px 12px;
+}
+
+.scientific-context-identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.scientific-context-header .scientific-context-kicker {
+  display: none;
+}
+
+.scientific-context-identity > strong {
+  max-width: 156px;
+  font-size: 12px;
+}
+
+.scientific-context-inline {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  min-width: 0;
+  margin: 0;
+  color: var(--wb-muted);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.scientific-context-inline > span:not([aria-hidden]) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scientific-context-header .scientific-context-details {
+  grid-column: auto;
+  grid-row: auto;
+  justify-self: end;
+}
+
+.scientific-context-header .scientific-context-details > summary {
+  min-height: 34px;
+  min-width: 112px;
+  padding: 6px 11px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.scientific-context-panel-intro {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0 0;
+}
+
+.scientific-context-panel-intro > strong {
+  color: var(--wb-text);
+  font-size: 12px;
+}
+
+.scientific-context-panel-intro > p {
+  margin: 0;
+  color: var(--wb-muted);
+  line-height: 1.5;
+  font-size: 10px;
+}
+
+.scientific-context-header .scientific-context-panel .scientific-context-summary {
+  display: grid;
+  grid-auto-flow: row;
+  grid-auto-columns: auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+  margin: 12px 0;
+  overflow: visible;
+}
+
+.scientific-context-header .scientific-context-panel .scientific-context-summary > div,
+.scientific-context-header .scientific-context-panel .scientific-context-summary > div[data-context-field="profile"] {
+  display: grid;
+  min-width: 0;
+  min-height: 60px;
+  align-content: start;
+  padding: 10px;
+  border: 1px solid var(--wb-line);
+  border-radius: 9px;
+  background: var(--wb-raised);
+}
+
+.scientific-context-header .scientific-context-panel .scientific-context-summary dd {
+  margin-top: 6px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .scientific-context-header > .scientific-context-bar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr);
+    gap: 8px;
+    padding: 4px max(9px, env(safe-area-inset-right)) 4px max(9px, env(safe-area-inset-left));
+  }
+
+  .scientific-context-identity {
+    grid-column: 1;
+    grid-row: 1;
+    justify-content: flex-start;
+    min-width: 0;
+  }
+
+  .scientific-context-inline {
+    display: none;
+  }
+
+  .scientific-context-header .scientific-context-details {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .scientific-context-header .scientific-context-details > summary {
+    min-width: 104px;
+    min-height: 36px;
+    padding: 6px 9px;
+    font-size: 10px;
+  }
+
+  .scientific-context-header .scientific-context-panel .scientific-context-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .scientific-context-identity .scientific-context-state {
+    display: none;
+  }
+
+  .scientific-context-header .scientific-context-panel .scientific-context-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (forced-colors: active) {
+  .scientific-context-header .scientific-context-panel .scientific-context-summary > div {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+  }
+}
