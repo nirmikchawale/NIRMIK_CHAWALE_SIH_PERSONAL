@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { blockBoundsLabel } from "../main-block-engine";
 import { fetchPilotMainBlockManifest, type PilotBlockManifest } from "../pilot-main-block-loader";
@@ -21,6 +21,9 @@ export function PilotMainBlockRendererBridge() {
   const [activeId, setActiveId] = useState(readActiveMainBlockId);
   const [manifest, setManifest] = useState<PilotBlockManifest | null>(null);
   const [context, setContext] = useState<ScientificWorkspaceContext>(readScientificWorkspaceContext);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   const onExplore = hash === "" || hash === "#" || hash.startsWith("#/explore");
   const activeBlock = useMemo(() => resolveMainBlock(activeId), [activeId]);
@@ -39,6 +42,28 @@ export function PilotMainBlockRendererBridge() {
 
   useEffect(() => subscribeActiveMainBlock(setActiveId), []);
   useEffect(() => subscribeScientificWorkspaceContext(setContext), []);
+
+  // Full pilot provenance belongs to an on-demand inspector, not a permanent
+  // fixed panel covering the first-screen workspace.
+  useEffect(() => { setDetailsOpen(false); }, [activeId, onExplore]);
+
+  useEffect(() => {
+    if (!detailsOpen) return;
+    closeRef.current?.focus();
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setDetailsOpen(false);
+      triggerRef.current?.focus();
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [detailsOpen]);
+
+  const closeDetails = () => {
+    setDetailsOpen(false);
+    triggerRef.current?.focus();
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -127,7 +152,34 @@ export function PilotMainBlockRendererBridge() {
       : "Loading native source time…";
 
   return (
-    <aside
+    <div className="pilot-block-details-control" data-testid="pilot-block-details-control">
+      <button
+        ref={triggerRef}
+        className="pilot-block-details-trigger"
+        data-testid="pilot-block-details-trigger"
+        type="button"
+        aria-label={detailsOpen ? "Close source-backed main block details" : "Open source-backed main block details"}
+        aria-expanded={detailsOpen}
+        aria-controls="pilot-block-details-panel"
+        title="Source-backed main block details"
+        onClick={() => setDetailsOpen((current) => !current)}
+      >
+        <span className="pilot-block-details-icon" aria-hidden="true">▦</span>
+        <span className="pilot-block-details-label">Block details</span>
+      </button>
+      {detailsOpen && (
+        <>
+          <button
+            className="pilot-block-details-backdrop"
+            type="button"
+            tabIndex={-1}
+            aria-label="Close block details"
+            onClick={closeDetails}
+          />
+          <aside
+      id="pilot-block-details-panel"
+      role="dialog"
+      aria-modal="false"
       className="pilot-renderer-bridge"
       data-testid="pilot-renderer-bridge"
       data-block-id={activeId}
@@ -136,6 +188,13 @@ export function PilotMainBlockRendererBridge() {
       data-water-column-sync-version={waterColumnSync.version}
       aria-label="Active source-backed pilot main block"
     >
+      <button
+        ref={closeRef}
+        className="pilot-block-details-close"
+        type="button"
+        aria-label="Close source-backed main block details"
+        onClick={closeDetails}
+      >×</button>
       <div className="pilot-renderer-bridge-heading">
         <div>
           <span>SOURCE-BACKED MAIN BLOCK LIVE</span>
@@ -166,6 +225,9 @@ export function PilotMainBlockRendererBridge() {
       >
         Return to verified reference science
       </button>
-    </aside>
+          </aside>
+        </>
+      )}
+    </div>
   );
 }
