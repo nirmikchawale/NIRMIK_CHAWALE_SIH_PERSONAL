@@ -1,0 +1,138 @@
+/*
+ * Ocean Canvas RUI-MPR-01: 16-theme presentation foundation.
+ * CSS-only tokens and restrained visual refinement. No science, data,
+ * renderer palette, scroll ownership or React behavior is changed here.
+ * Tokens inherit from the canonical GLASS_THEME_IDS / [data-glass-theme]
+ * definitions in theme.ts + glass-system.css. Do not hardcode Arctic.
+ */
+.ocean-workbench {
+  --mpr-radius-shell: clamp(20px, 1.8vw, 28px);
+  --mpr-radius-island: clamp(20px, 1.6vw, 26px);
+  --mpr-radius-card: 18px;
+  --mpr-radius-control: 14px;
+  --mpr-radius-chip: 12px;
+  --mpr-radius-pill: 999px;
+  --mpr-space-1: 4px;
+  --mpr-space-2: 8px;
+  --mpr-space-3: 12px;
+  --mpr-space-4: 16px;
+  --mpr-space-5: 20px;
+  --mpr-space-6: 24px;
+  --mpr-space-7: 28px;
+  --mpr-surface: var(--glass-panel);
+  --mpr-surface-raised: var(--glass-panel-strong);
+  --mpr-surface-subtle: color-mix(in srgb, var(--glass-panel) 78%, transparent);
+  --mpr-border: var(--glass-border);
+  --mpr-border-active: var(--glass-border-strong);
+  --mpr-text: var(--glass-text);
+  --mpr-text-muted: var(--glass-muted);
+  --mpr-accent: var(--glass-accent);
+  --mpr-focus: var(--glass-accent);
+  --mpr-shadow: var(--glass-shadow-soft);
+  --mpr-muted-overlay: color-mix(in srgb, var(--glass-panel) 55%, transparent);
+  --mpr-control-transition: 160ms ease;
+}
+
+/* Pre-migration polish only: no sizing/positioning/scroll-mode changes. */
+.ocean-workbench .app-header {
+  border-radius: 0 0 var(--mpr-radius-shell) var(--mpr-radius-shell) !important;
+}
+.ocean-workbench[data-page="explore"] .explorer-landing-islands > :is(.explorer-directory-shell, .source-workbench),
+.ocean-workbench[data-page="explore"] .explorer-block-system-home {
+  border-radius: var(--mpr-radius-island) !important;
+}
+.ocean-workbench[data-page="explore"] .explorer-landing-islands :is(
+  .explorer-directory-nav button,
+  .explorer-focus-button,
+  .explorer-workspace-mode-switcher button,
+  .source-workbench-choices button
+) {
+  border-radius: var(--mpr-radius-control) !important;
+}
+.ocean-workbench .rui-sidebar .rui-nav-item,
+.ocean-workbench .rui-nav-breadcrumb,
+.ocean-workbench .rui-sidebar .rui-nav-short,
+.ocean-workbench .rui-sidebar :is(.sidebar-collapse, .sidebar-mobile-close) {
+  border-radius: var(--mpr-radius-control) !important;
+}
+.ocean-workbench :is(
+  .header-action-button,
+  .present-button,
+  .refresh-control,
+  .theme-picker-trigger,
+  .visualization-dock-modes button
+) {
+  border-radius: var(--mpr-radius-control) !important;
+}
+.ocean-workbench .source-workbench-choices button[aria-pressed="true"] {
+  border-color: var(--mpr-accent) !important;
+}
+
+/* Shared future component recipes, opted into via class, not blanket selectors. */
+.ocean-workbench .mpr-glass-island {
+  border: 1px solid var(--mpr-border);
+  border-radius: var(--mpr-radius-island);
+  background: var(--mpr-surface);
+  color: var(--mpr-text);
+  box-shadow: var(--mpr-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+}
+.ocean-workbench .mpr-glass-card {
+  border: 1px solid var(--mpr-border);
+  border-radius: var(--mpr-radius-card);
+  background: var(--mpr-surface-subtle);
+  color: var(--mpr-text);
+}
+.ocean-workbench .mpr-control {
+  border: 1px solid var(--mpr-border);
+  border-radius: var(--mpr-radius-control);
+  background: var(--mpr-surface-raised);
+  color: var(--mpr-text);
+  transition: border-color var(--mpr-control-transition), background-color var(--mpr-control-transition);
+}
+.ocean-workbench .mpr-control:hover:not(:disabled) {
+  border-color: var(--mpr-border-active);
+  background: color-mix(in srgb, var(--mpr-accent) 10%, var(--mpr-surface-raised));
+}
+.ocean-workbench .mpr-control[aria-pressed="true"],
+.ocean-workbench .mpr-control[aria-current="page"] {
+  border-color: var(--mpr-accent);
+  background: color-mix(in srgb, var(--mpr-accent) 12%, var(--mpr-surface-raised));
+}
+.ocean-workbench :is(.mpr-control, .mpr-glass-island button, .mpr-glass-card button):focus-visible {
+  outline: 2px solid var(--mpr-focus);
+  outline-offset: 3px;
+}
+.ocean-workbench .mpr-control:disabled {
+  opacity: .58;
+  cursor: not-allowed;
+}
+
+/* At narrow widths reduce radii without sacrificing 44px touch targets. */
+@media (max-width: 760px) {
+  .ocean-workbench {
+    --mpr-radius-shell: 18px;
+    --mpr-radius-island: 18px;
+    --mpr-radius-card: 16px;
+    --mpr-radius-control: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ocean-workbench .mpr-control { transition: none !important; }
+}
+
+@media (forced-colors: active) {
+  .ocean-workbench :is(.mpr-glass-island, .mpr-glass-card, .mpr-control) {
+    border-color: CanvasText;
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .ocean-workbench .mpr-control:focus-visible {
+    outline-color: Highlight;
+  }
+}

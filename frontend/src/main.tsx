@@ -37,6 +37,8 @@ import "./rui-nav-comparison.css";
 import "./rui-nav-anomaly.css";
 import "./science-system-consolidation.css";
 import "./explorer-islands.css";
+// MPR-01: opt-in theme-neutral visual tokens, loaded after legacy CSS.
+import "./mpr-design-foundation.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
