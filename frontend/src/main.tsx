@@ -41,6 +41,8 @@ import "./explorer-islands.css";
 import "./mpr-design-foundation.css";
 // MPR-02: Explorer-only shell scrolling, without changing other routes.
 import "./mpr-explorer-scroll.css";
+// MPR-03: theme-neutral category rail + overlay workspace directory.
+import "./mpr-workspaces-navigation.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
