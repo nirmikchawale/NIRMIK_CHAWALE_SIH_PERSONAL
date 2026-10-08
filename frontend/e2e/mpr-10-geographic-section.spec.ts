@@ -54,8 +54,8 @@ test("MPR-10 keeps the existing authentic globe and water-column modes",async({p
  const water=page.getByTestId("mpr-09-dual-view-navigator").getByRole("button",{name:"Water Column 3D"});
  if(await water.isEnabled()){
   await water.click();
-  await expect(stage).toHaveAttribute("data-visualization-mode","water-column");
-  await expect(stage.locator(".water-column-visualization-layer")).toHaveClass(/active/);
+  await expect(page.getByTestId("mpr-12-water-column-section")).toBeVisible();
+  await expect(page.getByTestId("mpr-12-water-column-section").locator(".water-column-visualization-layer")).toHaveClass(/active/);
   await page.getByTestId("mpr-09-dual-view-navigator").getByRole("button",{name:"Geographic View"}).click();
   await expect(stage).toHaveAttribute("data-visualization-mode","globe");
  }
