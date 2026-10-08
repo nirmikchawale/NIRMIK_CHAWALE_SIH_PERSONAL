@@ -77,3 +77,21 @@ test("MPR-17 appearance cannot overwrite the actual model-science colour ramp",a
  expect(await gradient.evaluate(x=>getComputedStyle(x).backgroundImage)).toBe(initial);
  await expect(page.locator(".ocean-workbench")).toHaveAttribute("data-explore-source",source??"glorys");
 });
+
+
+test("MPR-17 default verified GLORYS baseline must actually materialize in BOTH 3D views",async({page})=>{
+ await page.setViewportSize({width:1440,height:900});
+ await page.emulateMedia({reducedMotion:"reduce"});
+ await page.goto(live!.replace(/#.*$/,"")+"#/explore",{waitUntil:"domcontentloaded"});
+ const geo=page.locator("#mpr-3d-stage");
+ const water=page.getByTestId("mpr-12-water-column-section");
+ await expect(page.locator(".ocean-workbench")).toHaveAttribute("data-explore-source","glorys");
+ await expect(geo).toHaveAttribute("data-linked-evidence","verified",{timeout:45000});
+ await expect(water).toHaveAttribute("data-linked-evidence","verified",{timeout:45000});
+ await expect(geo.locator(".globe-shell")).toBeVisible();
+ await expect(water.locator(".water-column-canvas")).toBeVisible();
+ await expect(water.locator(".mpr-water-column-unavailable")).toHaveCount(0);
+ const depth=await water.getAttribute("data-native-depth");
+ expect(Number(depth)).toBeGreaterThanOrEqual(0);
+ await expect(geo).toHaveAttribute("data-linked-time",await water.getAttribute("data-native-time")||"Unavailable");
+});
