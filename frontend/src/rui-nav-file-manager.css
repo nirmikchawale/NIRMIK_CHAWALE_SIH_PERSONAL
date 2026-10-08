@@ -227,6 +227,8 @@
 
 .ocean-workbench .rui-sidebar .rui-nav-item {
   grid-template-columns: 40px minmax(0, 1fr);
+  /* Legacy feature-rail buttons center grid children, pushing long text over the badge. */
+  justify-items: stretch;
   gap: 10px;
   min-height: 50px;
   padding: 7px 8px;
@@ -263,6 +265,10 @@
 }
 
 .ocean-workbench .rui-sidebar .rui-nav-copy {
+  /* Constrain the text column so existing ellipsis rules can actually take effect. */
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   gap: 3px;
 }
 
