@@ -96,9 +96,10 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
   useEffect(() => {
     if (!drawerOpen) return;
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const focusId = window.requestAnimationFrame(() => {
-      directoryRef.current?.querySelector<HTMLButtonElement>(".mpr-drawer-category.is-selected")?.focus();
-    });
+    const focusSelectedCategory = () => directoryRef.current?.querySelector<HTMLButtonElement>(".mpr-drawer-category.is-selected")?.focus();
+    const focusId = window.requestAnimationFrame(focusSelectedCategory);
+    // Wait for the overlay to become focusable after its opening visibility transition.
+    const focusFallbackId = window.setTimeout(focusSelectedCategory, 190);
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -119,6 +120,7 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
     window.addEventListener("keydown", onKeyDown);
     return () => {
       window.cancelAnimationFrame(focusId);
+      window.clearTimeout(focusFallbackId);
       window.removeEventListener("keydown", onKeyDown);
       // Explicit click/route navigation restores to its correct launcher.
       void previousFocus;
