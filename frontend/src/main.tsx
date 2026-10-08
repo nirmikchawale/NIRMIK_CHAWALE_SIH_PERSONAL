@@ -55,6 +55,8 @@ import "./mpr-active-main-block.css";
 import "./mpr-intelligence-evidence-hub.css";
 // MPR-09: scientific-view navigation on existing source-backed stage.
 import "./mpr-dual-view-navigator.css";
+// MPR-10: full-width Geographic 3D view and responsive right-side dock.
+import "./mpr-geographic-section.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
