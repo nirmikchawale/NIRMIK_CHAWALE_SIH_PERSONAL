@@ -18,14 +18,14 @@ def test_3db04_does_not_change_acquisition_or_materialization_truth() -> None:
     manifest = _manifest()
     blocks = manifest["blocks"]
 
-    assert manifest["phase"] == "3DB-02"
+    assert manifest["phase"] == "3DB-11"
     assert manifest["integrity"]["logical_block_count"] == 140
-    assert manifest["integrity"]["pilot_block_count"] == 25
+    assert manifest["integrity"]["pilot_block_count"] == 35
     assert manifest["integrity"]["multi_date_pilot_count"] == 6
     assert manifest["integrity"]["land_blocks_materialized"] == 0
-    assert len(manifest["payloads"]) == 31
-    assert sum(block["materialization"] == "pilot" for block in blocks) == 25
-    assert sum(block["materialization"] == "planned" for block in blocks) == 115
+    assert len(manifest["payloads"]) == 41
+    assert sum(block["materialization"] == "pilot" for block in blocks) == 35
+    assert sum(block["materialization"] == "planned" for block in blocks) == 105
 
     integrity = manifest["integrity"]
     assert integrity["synthetic_measurements"] is False
