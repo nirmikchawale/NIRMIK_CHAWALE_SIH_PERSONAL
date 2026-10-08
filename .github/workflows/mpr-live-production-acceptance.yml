@@ -1,8 +1,6 @@
 name: mpr-live-production-acceptance
 on:
-  push:
-    branches:
-      - ops/mpr-release-runner-cleanup
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
