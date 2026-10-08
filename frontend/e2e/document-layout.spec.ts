@@ -34,18 +34,28 @@ for (const width of [1440, 390]) {
     await expect(contextHeader).toBeInViewport();
     await expect(page.locator(".science-footer")).not.toBeVisible();
 
-    for (const route of ["telemetry", "compare", "anomaly", "data-lab", "about"]) {
+    const routes = [
+      { route: "telemetry", category: "Analyze" },
+      { route: "compare", category: "Analyze" },
+      { route: "anomaly", category: "Analyze" },
+      { route: "data-lab", category: "Data" },
+      { route: "about", category: "Science" }
+    ] as const;
+    for (const { route, category } of routes) {
+      const directory = page.getByRole("navigation", { name: "Ocean Canvas workspaces" });
       if (width <= 900) {
         const mobileTrigger = page.getByRole("button", { name: "Open workspace navigation" });
         await expect(mobileTrigger).toBeVisible();
         await mobileTrigger.click();
-        await expect(page.getByRole("navigation", { name: "Ocean Canvas workspaces" })).toBeVisible();
+        await directory.getByRole("button", { name: category, exact: true }).click();
+      } else {
+        await page.getByRole("button", { name: `Open ${category} workspaces` }).click();
       }
+      await expect(directory).toBeVisible();
 
-      // NAV-01 exposes a stable workspace identifier while intentionally changing
-      // workspace controls from generic button semantics to semantic treeitems.
-      // Keep this scroll-contract regression independent of that presentation role.
-      await page.locator(`[data-workspace-id="${route}"]`).click();
+      // The MPR-03 overlay defaults closed: open the correct group first and
+      // retain original NAV-01 stable route IDs and scrolling assertions.
+      await directory.locator(`[data-workspace-id="${route}"]`).click();
       await expect(page.locator(".ocean-workbench")).toHaveCSS("overflow-y", "hidden");
       const content = page.locator(`main[data-page="${route}"]`);
       await expect(content).toBeVisible();
