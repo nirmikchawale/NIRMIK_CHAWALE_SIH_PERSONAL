@@ -1,4 +1,6 @@
-import { expect, test, type BoundingBox, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+
+type BoundingBox = { x: number; y: number; width: number; height: number };
 
 const liveUrl = process.env.OCEANTWIN_LIVE_URL;
 
@@ -9,7 +11,7 @@ function intersects(first: BoundingBox, second: BoundingBox) {
     first.y + first.height > second.y + 1;
 }
 
-test("Explorer directory and Ocean Intelligence own separate scrolling rows with three independent source cards", async ({ page }: { page: Page }) => {
+test("Explorer directory and Ocean Intelligence own separate scrolling rows with three independent source cards", async ({ page }) => {
   if (!liveUrl) throw new Error("OCEANTWIN_LIVE_URL is required");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1440, height: 900 });
