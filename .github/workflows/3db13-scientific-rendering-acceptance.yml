@@ -1,0 +1,59 @@
+name: 3db13-scientific-rendering-acceptance
+
+on:
+  push:
+    branches: [3db-13-scientific-rendering-hardening]
+  pull_request:
+    paths:
+      - "frontend/src/main-block-frame-integrity.ts"
+      - "frontend/src/pilot-main-block-loader.ts"
+      - "frontend/src/main-block-cesium-renderer.ts"
+      - "frontend/src/components/OceanGlobe.tsx"
+      - "frontend/src/components/WaterColumn3D.tsx"
+      - "frontend/e2e/3db13-scientific-rendering.spec.ts"
+      - ".github/workflows/3db13-scientific-rendering-acceptance.yml"
+
+jobs:
+  source-integrity-and-renderer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install pytest
+      - name: Verify all 41 committed source digests and genuine block inventory
+        run: python -m pytest -q tests/test_3db12_performance_lod.py
+      - run: python -m pip install -r backend/requirements.txt
+      - run: python scripts/export_static_science.py --output frontend/public/science-static
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - working-directory: frontend
+        run: npm ci
+      - working-directory: frontend
+        run: npm run typecheck
+      - working-directory: frontend
+        env:
+          VITE_STATIC_SCIENCE: "true"
+        run: npm run build
+      - working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Start local production preview
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/ocean-preview.log 2>&1 &
+          ready=0
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then cat /tmp/ocean-preview.log; exit 1; fi
+      - name: Test true source SHA, negative HTTP corruption and renderer context
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: "http://127.0.0.1:4173/#/explore"
+        run: npx playwright test -c playwright.live.config.ts e2e/3db13-scientific-rendering.spec.ts

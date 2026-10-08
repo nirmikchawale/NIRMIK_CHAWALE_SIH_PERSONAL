@@ -5,6 +5,7 @@ import {
   deriveMainBlockVariableIntegration
 } from "./main-block-variables";
 import { resolveMainBlock } from "./main-block-runtime";
+import { assertPilotFrameSha256 } from "./main-block-frame-integrity";
 
 export type PilotOceanRelevance = "ocean" | "coastal" | "land";
 
@@ -153,7 +154,17 @@ export async function fetchPilotMainBlock(
   }
   const record = block.payloads.find((item) => item.date === date);
   if (!record) throw new Error(`${blockId} has no genuine source frame for ${date}.`);
-  const payload = await fetchJson<PilotBlockPayload>(`${PILOT_BASE}/${record.path}`);
+  // Verify the original source bytes against the immutable committed manifest.
+  const response = await fetch(`${PILOT_BASE}/${record.path}`, { headers: { Accept: "application/json" } });
+  if (!response.ok) throw new Error(`Pilot main-block asset unavailable: ${response.status} ${response.statusText}`);
+  const bytes = await response.arrayBuffer();
+  await assertPilotFrameSha256(bytes, record.sha256, blockId, date);
+  let payload: PilotBlockPayload;
+  try {
+    payload = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as PilotBlockPayload;
+  } catch {
+    throw new Error(`3DB-13 invalid UTF-8/JSON scientific frame for ${blockId} ${date}.`);
+  }
   if (payload.block_id !== blockId || payload.time.slice(0, 10) !== date) {
     throw new Error(`Pilot payload identity mismatch for ${blockId} ${date}.`);
   }
@@ -166,6 +177,18 @@ export async function fetchPilotMainBlock(
   ) {
     throw new Error(`Pilot payload failed scientific-integrity policy for ${blockId} ${date}.`);
   }
+  // SHA acceptance is necessary, but canonical source identity is also required.
+  const bounds = payload.bounds;
+  if (
+    payload.source.dataset_id !== inventory.source.dataset_id ||
+    payload.source.product_id !== inventory.source.product_id ||
+    payload.time_semantics !== "daily_mean" || !bounds ||
+    bounds.west !== block.west || bounds.east !== block.east ||
+    bounds.south !== block.south || bounds.north !== block.north ||
+    payload.shape.longitude !== payload.coordinates.longitude.length ||
+    payload.shape.latitude !== payload.coordinates.latitude.length ||
+    payload.shape.depth !== payload.coordinates.depth_m.length
+  ) throw new Error(`3DB-13 scientific source identity/shape mismatch for ${blockId} ${date}.`);
   nativeDepthAxis(payload);
   nativeVariableIntegration(payload);
   return payload;
