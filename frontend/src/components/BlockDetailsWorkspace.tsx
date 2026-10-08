@@ -10,38 +10,43 @@ const targets: Record<Destination, string> = {
   water: "#mpr-water-column-section"
 };
 
-export function BlockDetailsWorkspace() {
+export function BlockDetailsWorkspace({ onOpenControls }: { onOpenControls: () => void }) {
   const [context, setContext] = useState(readScientificWorkspaceContext);
   const [notice, setNotice] = useState("");
   useEffect(() => subscribeScientificWorkspaceContext(setContext), []);
 
   const navigate = (destination: Destination) => {
-    const target = document.querySelector<HTMLElement>(targets[destination]);
-    if (!target) {
-      setNotice("That workspace is not currently available.");
-      return;
-    }
-    if (destination === "catalog") {
-      target.click();
-      setNotice("Indian Ocean Block Engine opened.");
-      return;
-    }
-    const disclosure = target.closest<HTMLDetailsElement>("details");
-    if (disclosure && !disclosure.open) disclosure.open = true;
-    if (target.matches("details") && !target.hasAttribute("open")) target.setAttribute("open", "");
-    target.scrollIntoView({ behavior: "auto", block: "start" });
-    if (destination === "region") {
-      (target.querySelector("select,button") as HTMLElement | null)?.focus({ preventScroll: true });
-    } else if (destination === "scientific") {
-      target.querySelector<HTMLElement>("summary")?.focus({ preventScroll: true });
-    } else {
-      target.focus({ preventScroll: true });
-    }
-    setNotice(destination === "water" ? "Water Column 3D section in view." : "Selected workspace in view.");
+    // The control dock can be collapsed on desktop or be a mobile sheet.
+    // Open its actual React owner first so the destination is truly usable.
+    if (destination === "region") onOpenControls();
+    window.requestAnimationFrame(() => {
+      const target = document.querySelector<HTMLElement>(targets[destination]);
+      if (!target) {
+        setNotice("That workspace is not currently available.");
+        return;
+      }
+      if (destination === "catalog") {
+        target.click();
+        setNotice("Indian Ocean Block Engine opened.");
+        return;
+      }
+      const disclosure = target.closest<HTMLDetailsElement>("details");
+      if (disclosure && !disclosure.open) disclosure.open = true;
+      if (target.matches("details") && !target.hasAttribute("open")) target.setAttribute("open", "");
+      target.scrollIntoView({ behavior: "auto", block: "start" });
+      if (destination === "region") {
+        (target.querySelector("select,button") as HTMLElement | null)?.focus({ preventScroll: true });
+      } else if (destination === "scientific") {
+        target.querySelector<HTMLElement>("summary")?.focus({ preventScroll: true });
+      } else {
+        target.focus({ preventScroll: true });
+      }
+      setNotice(destination === "water" ? "Water Column 3D section in view." : "Selected workspace in view.");
+    });
   };
 
   return (
-    <section className="mpr-block-details-workspace" aria-label="Dedicated Indian Ocean block details" data-testid="mpr-block-details-workspace">
+    <section id="mpr-block-details" className="mpr-block-details-workspace" aria-label="Dedicated Indian Ocean block details" data-testid="mpr-block-details-workspace">
       <header className="mpr-block-details-heading">
         <div><span>BLOCK DETAILS · SHARED SCIENTIFIC CONTEXT</span><h3>Current Indian Ocean selection</h3></div>
         <span className="mpr-block-details-status" data-materialization={context.blockMaterialization}>
