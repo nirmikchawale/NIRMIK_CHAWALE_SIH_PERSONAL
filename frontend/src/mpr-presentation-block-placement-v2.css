@@ -187,6 +187,24 @@
   max-width: 100%;
   min-height: 44px;
 }
+/* CRITICAL: the old RUI app-navigation-root is itself a 100%-height flex
+   child, even if its inner feature rail is hidden. It consumes the ENTIRE
+   presentation viewport and squeezes .workspace to nothing. The separate
+   RUI scientific-context-header also reserves a strip despite compact
+   active-block context already being shown by Presentation. */
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .workspace-frame > .app-navigation-root,
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .workspace-frame > .scientific-context-header {
+  display: none !important;
+  flex: 0 0 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .workspace-frame > .workspace {
+  order: 0 !important;
+  flex: 1 1 auto !important;
+  max-height: 100% !important;
+}
+
 /* Full-width scene with a predictable canvas and a bounded controls rail
    INSIDE the same stage; do not squeeze the globe into a half-width row. */
 .ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .station-workspace > .mpr-geographic-heading,
