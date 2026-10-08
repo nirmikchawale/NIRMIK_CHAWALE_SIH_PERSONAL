@@ -1,0 +1,20 @@
+import { expect, test } from "@playwright/test";
+const live = process.env.OCEANTWIN_LIVE_URL;
+test("desktop relocated toolbar allows actual basemap clicks", async ({page}) => {
+  test.setTimeout(180_000);
+  if (!live) throw new Error("OCEANTWIN_LIVE_URL required");
+  await page.setViewportSize({width:1440,height:900});
+  await page.goto(live.replace(/#.*$/,"")+"#/explore",{waitUntil:"domcontentloaded"});
+  const skip=page.getByRole("button",{name:"Skip journey"});
+  if(await skip.isVisible().catch(()=>false)) await skip.click();
+  const shell=page.locator(".globe-visualization-layer.active .globe-shell");
+  const shelf=shell.locator(".renderer-tools");
+  const offline=shelf.getByRole("button",{name:"Offline",exact:true});
+  await expect(offline).toBeVisible({timeout:30000});
+  const pointer=await offline.evaluate(el=>getComputedStyle(el.closest(".imagery-control")!).pointerEvents);
+  expect(pointer).toBe("auto");
+  await offline.click();
+  await expect(offline).toHaveAttribute("aria-pressed","true");
+  await shelf.getByRole("button",{name:"High-res auto"}).click();
+  await expect(shell.locator(".main-block-globe-hud")).toHaveCount(0);
+});
