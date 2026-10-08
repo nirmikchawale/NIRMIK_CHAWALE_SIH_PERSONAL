@@ -104,12 +104,12 @@
 
 @media (max-width: 760px) {
   .ocean-workbench[data-page="explore"] .explorer-landing-islands {
-    /* Keep both islands within the first 900px mobile screen without overlap. */
-    gap: 10px;
+    /* Preserve >=15px semantic separation between the independent islands. */
+    gap: 16px;
   }
   .ocean-workbench[data-page="explore"] .explorer-landing-islands > :is(.explorer-directory-shell,.source-workbench) {
-    /* Trim container whitespace, not the 86px source-card touch targets. */
-    padding: 10px 12px;
+    /* Reclaim first-viewport height from whitespace, never touch targets or island separation. */
+    padding: 8px 12px;
     border-radius: 17px;
   }
   .ocean-workbench[data-page="explore"] .explorer-landing-islands > .source-workbench {
