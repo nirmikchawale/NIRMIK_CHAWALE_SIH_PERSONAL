@@ -1297,7 +1297,7 @@ export default function App() {
                 >
                   <OceanGlobe
                     field={acceptedGeographic ? field : null}
-                    volume={acceptedGeographic && viewMode === "volume" ? volume : null}
+                    volume={acceptedGeographic && acceptedWater && viewMode === "volume" ? volume : null}
                     currents={acceptedGeographic ? currents : null}
                     profiles={activeComparisonProfiles}
                     selectedProfileId={sourceMode === "glorys" ? selectedProfileId : ""}
