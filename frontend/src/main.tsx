@@ -78,6 +78,8 @@ import "./mpr-geographic-toolbar-scroll-layout.css";
 // Canonical Block Details island and full-size accessible judge presentation.
 import "./mpr-block-details-workspace.css";
 import "./mpr-presentation-reconstruction.css";
+// P0 independent block section and viewport-safe presentation reconstruction.
+import "./mpr-presentation-block-placement-v2.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
