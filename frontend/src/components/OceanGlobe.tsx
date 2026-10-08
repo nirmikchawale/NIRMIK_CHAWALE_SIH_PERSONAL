@@ -51,6 +51,7 @@ import {
   oceanCoverageYellow
 } from "../main-block-ocean-mask";
 import { fetchPilotMainBlockManifest } from "../pilot-main-block-loader";
+import { globePilotLodBudget, nativeDepthBalancedLodIndices } from "../main-block-lod";
 import { deriveMainBlockObservationIntegration } from "../main-block-observations";
 import {
   buildCesiumCurrentsRenderPlan,
@@ -175,6 +176,9 @@ export function OceanGlobe({
   const [introPhase, setIntroPhase] = useState<"idle" | "earth" | "india" | "flying" | "region">("idle");
   const [activeMainBlockId, setActiveMainBlockId] = useState(readActiveMainBlockId);
   const activeMainBlock = resolveMainBlock(activeMainBlockId);
+  // Three discrete globe LOD tiers; camera motion within a tier does not
+  // rebuild GPU geometry, and the verified baseline retains its historic cap.
+  const pilotGlobeLodBudget = globePilotLodBudget(cameraHeight);
   const observationIntegration = useMemo(
     () => deriveMainBlockObservationIntegration(activeMainBlock, {
       comparisonProfiles: profiles,
@@ -907,11 +911,15 @@ export function OceanGlobe({
       const latitudes = Array.from(new Set(volume.points.map(([, lat]) => lat))).sort((a, b) => a - b);
       const lonStep = longitudes.length > 1 ? Math.abs(longitudes[1] - longitudes[0]) : 0.15;
       const latStep = latitudes.length > 1 ? Math.abs(latitudes[1] - latitudes[0]) : 0.15;
-      const maxCells = 5000;
-      const cellStride = Math.max(1, Math.ceil(volume.points.length / maxCells));
+      const pilotLod = block.materialization === "pilot"
+        ? nativeDepthBalancedLodIndices(volume.points, pilotGlobeLodBudget)
+        : null;
+      const legacyStride = Math.max(1, Math.ceil(volume.points.length / 5000));
+      const renderIndices = pilotLod ??
+        Array.from({ length: Math.ceil(volume.points.length / legacyStride) }, (_value, index) => index * legacyStride);
       const instances: GeometryInstance[] = [];
 
-      for (let index = 0; index < volume.points.length; index += cellStride) {
+      for (const index of renderIndices) {
         const [lon, lat, depth, value] = volume.points[index];
         const color = scalarColor(value, colorMinimum, colorMaximum, colorPalette, colorScale).withAlpha(0.36);
         instances.push(
@@ -1037,7 +1045,7 @@ export function OceanGlobe({
     }
 
     viewer.scene.requestRender();
-  }, [field, volume, currents, verticalExaggeration, colorPalette, colorScale, colorMinimum, colorMaximum, activeMainBlockId]);
+  }, [field, volume, currents, verticalExaggeration, colorPalette, colorScale, colorMinimum, colorMaximum, activeMainBlockId, pilotGlobeLodBudget]);
 
   const selectedProfile = profiles.find((profile) => profile.profile_id === selectedProfileId) ?? null;
 
@@ -1318,6 +1326,7 @@ export function OceanGlobe({
       data-antialiasing={antialiasing}
       data-render-quality="high"
       data-camera-height={cameraHeight.toFixed(0)}
+      data-pilot-lod-budget={activeMainBlock.materialization === "pilot" ? pilotGlobeLodBudget : "baseline"}
       data-camera-preset={cameraPreset}
       data-presentation-active={presentationActive ? "true" : "false"}
       data-imagery-preference={imageryPreference}

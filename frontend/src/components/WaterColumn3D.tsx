@@ -11,6 +11,7 @@ import {
 
 import type { ColorPalette, ColorScaleMode, CurrentsVolumeResponse, VolumeResponse } from "../types";
 import { displayUnits } from "../units";
+import { nativeDepthBalancedLodIndices, waterColumnPilotLodBudget } from "../main-block-lod";
 import { paletteCssGradient, paletteHsl } from "../palettes";
 import { CURRENT_VERIFIED_BASELINE, blockBoundsLabel, type OceanMainBlock } from "../main-block-engine";
 import {
@@ -357,6 +358,15 @@ export function WaterColumn3D({
     );
   }, [depthLevels, selectedDepthM]);
 
+  // LOD alters only canvas points; complete source volumes, depth axis,
+  // isosurface inputs and scientific analyses remain untouched.
+  const visibleScalarIndices = useMemo(() =>
+    volume && activeMainBlock.materialization === "pilot"
+      ? nativeDepthBalancedLodIndices(volume.points, waterColumnPilotLodBudget(orbit.zoom), selectedDepth)
+      : null,
+    [volume, activeMainBlockId, orbit.zoom, selectedDepth]
+  );
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || spatialPoints.length === 0) return;
@@ -507,7 +517,10 @@ export function WaterColumn3D({
 
       const projected: ProjectedPoint[] = [];
       if (volume) {
-        for (const [longitude, latitude, depth, value] of volume.points) {
+        const canvasPoints = visibleScalarIndices
+          ? visibleScalarIndices.map((index) => volume.points[index])
+          : volume.points;
+        for (const [longitude, latitude, depth, value] of canvasPoints) {
           const screen = projectScientific(longitude, latitude, depth);
           projected.push({
             ...screen,
@@ -604,7 +617,7 @@ export function WaterColumn3D({
       disposed = true;
       observer.disconnect();
     };
-  }, [volume, currentsVolume, spatialPoints, selectedDepth, verticalExaggeration, opacity, orbit, theme, colorPalette, colorScale, colorMinimum, colorMaximum, isoSurfaceEnabled, isoValue, isoTriangles]);
+  }, [volume, currentsVolume, spatialPoints, selectedDepth, verticalExaggeration, opacity, orbit, theme, colorPalette, colorScale, colorMinimum, colorMaximum, isoSurfaceEnabled, isoValue, isoTriangles, visibleScalarIndices]);
 
   useEffect(() => () => {
     if (zoomAnimationRef.current != null) window.cancelAnimationFrame(zoomAnimationRef.current);
@@ -920,6 +933,9 @@ useEffect(() => {
     <main
       className="globe-shell water-column-shell"
       data-depth-count={depthLevels.length}
+      data-lod-mode={visibleScalarIndices ? "native-depth-balanced" : "full-source"}
+      data-lod-rendered-samples={visibleScalarIndices?.length ?? volume?.points.length ?? 0}
+      data-lod-source-samples={volume?.points.length ?? 0}
       data-opacity={opacity.toFixed(2)}
       data-yaw={orbit.yaw.toFixed(3)}
       data-zoom={orbit.zoom.toFixed(3)}
