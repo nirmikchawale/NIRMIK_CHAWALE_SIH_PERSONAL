@@ -85,6 +85,10 @@ test("RUI-VIS-01 preserves readable tablet density and truncates shell chrome wi
   const breadcrumbOverflow = await breadcrumb.evaluate((element) => element.scrollWidth - element.clientWidth);
   expect(breadcrumbOverflow).toBeLessThanOrEqual(1);
   expect(await numericStyle(tree.getByRole("button", { name: "Model vs Observation" }), "minHeight")).toBeGreaterThanOrEqual(48);
+  const tabletDescription = tree.getByRole("button", { name: "Model vs Observation" }).locator(".rui-nav-copy small");
+  await expect(tabletDescription).toBeVisible();
+  await expect(tabletDescription).toHaveCSS("white-space", "normal");
+  expect(await tabletDescription.evaluate((element) => element.scrollHeight <= element.clientHeight + 1)).toBeTruthy();
 
   const transition = await tree.getByRole("button", { name: "Model vs Observation" }).evaluate((element) => getComputedStyle(element).transitionDuration);
   expect(transition.split(",").every((value) => value.trim() === "0s")).toBeTruthy();
@@ -189,9 +193,28 @@ test("RUI-VIS-01 sidebar icon badges and text stay in separate columns on narrow
         expect(textBox).not.toBeNull();
         expect(textBox!.x).toBeGreaterThanOrEqual(copy!.x - 1);
         expect(textBox!.x + textBox!.width).toBeLessThanOrEqual(copy!.x + copy!.width + 1);
-        await expect(text).toHaveCSS("text-overflow", "ellipsis");
-        await expect(text).toHaveCSS("white-space", "nowrap");
+        expect(textBox!.y + textBox!.height).toBeLessThanOrEqual(button!.y + button!.height - 3);
       }
+      const title = item.locator(".rui-nav-copy strong");
+      await expect(title).toHaveCSS("white-space", "nowrap");
+      const description = item.locator(".rui-nav-copy small");
+      await expect(description).toHaveCSS("white-space", "normal");
+      await expect(description).toHaveCSS("text-overflow", "clip");
+      const metrics = await description.evaluate((element) => ({
+        height: element.getBoundingClientRect().height,
+        lineHeight: Number.parseFloat(getComputedStyle(element).lineHeight),
+        scrollWidth: element.scrollWidth,
+        clientWidth: element.clientWidth,
+        scrollHeight: element.scrollHeight,
+        clientHeight: element.clientHeight
+      }));
+      // Short descriptions may fit on one line, but longer ones must be allowed to wrap.
+      if (await item.getAttribute("data-workspace-id") === "data-lab") {
+        expect(metrics.height).toBeGreaterThan(metrics.lineHeight * 1.5);
+      }
+      expect(metrics.height).toBeLessThanOrEqual(metrics.lineHeight * 3 + 1);
+      expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
+      expect(metrics.scrollHeight).toBeLessThanOrEqual(metrics.clientHeight + 1);
     }
   }
 });
