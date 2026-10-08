@@ -6,9 +6,10 @@ import { ActiveMainBlockDisclosure } from "./ActiveMainBlockDisclosure";
 
 type Source = "glorys" | "incois" | "chlorophyll";
 
-export function SourceWorkbench({ source, operationalAvailable, chlorophyllAvailable, onSource, onOverview, onCompare, onData }: {
+export function SourceWorkbench({ source, operationalAvailable, chlorophyllAvailable, onSource, onOverview, onCompare, onData, onSources, evidenceLoading, evidenceError, evidenceDegraded }: {
   source: Source; operationalAvailable: boolean; chlorophyllAvailable: boolean;
   onSource: (source: Source) => void; onOverview: () => void; onCompare: () => void; onData: () => void;
+  onSources: () => void; evidenceLoading: boolean; evidenceError: boolean; evidenceDegraded: boolean;
 }) {
   const attemptedHydration = useRef(false);
 
@@ -34,6 +35,24 @@ export function SourceWorkbench({ source, operationalAvailable, chlorophyllAvail
       <button aria-label="INCOIS chlorophyll" aria-pressed={source === "chlorophyll"} disabled={!chlorophyllAvailable} onClick={() => { if (source !== "chlorophyll") onSource("chlorophyll"); }}><span className="source-number">03</span><span><strong><MprIcon name="source" size={17}/> INCOIS chlorophyll</strong><small>{chlorophyllAvailable ? "Satellite surface colour" : "Source unavailable"}</small><span className="mpr-source-status">{chlorophyllAvailable ? "Surface only · no synthetic depths" : "Unavailable · selection disabled"}</span></span></button>
     </div>
     <ActiveMainBlockDisclosure />
+    <div className="mpr-intelligence-evidence-hub" data-testid="mpr-08-evidence-hub" role="group" aria-label="Ocean Intelligence evidence and provenance">
+      <div className="mpr-evidence-hub-intro">
+        <span>OCEAN INTELLIGENCE</span>
+        <strong>Inspect the current scientific evidence</strong>
+        <small>{evidenceError ? "Field unavailable · inspect reported limitations" :
+          evidenceLoading ? "Updating selected field…" :
+          evidenceDegraded ? "Degraded evidence · inspect available sources" :
+          "Inspect field evidence and source-level quality controls"}</small>
+      </div>
+      <div className="mpr-evidence-hub-actions">
+        <button type="button" aria-label="Open Ocean Intelligence evidence inspector" onClick={onOverview}>
+          <MprIcon name="quality" size={17}/> Ocean Intelligence
+        </button>
+        <button type="button" aria-label="Sources & QC" onClick={onSources}>
+          <MprIcon name="source" size={17}/> Sources &amp; QC
+        </button>
+      </div>
+    </div>
     <nav className="source-workbench-actions" aria-label="Scientific workflow actions">
       <button onClick={onOverview}>Field overview ↗</button><button onClick={onCompare}>Compare observations ↗</button><button onClick={onData}>Open Data Lab ↗</button>
     </nav>
