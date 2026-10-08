@@ -32,8 +32,11 @@ test("RUI-NAV-01 canonical hierarchy survives adaptive rail and overlay", async 
   await expect(page.getByTestId("app-navigation-root")).toHaveAttribute("data-nav-directory", "analyse");
   await expect(sidebar).toBeHidden();
   await expect(rail.getByRole("button", { name: "Open Analyze workspaces" })).toHaveAttribute("aria-current", "true");
-  // Closed drawer remains present but inert; inspect its canonical DOM tree directly.
-  await expect(sidebar.locator('[data-testid="workspace-directory-tree"]')).not.toContainText("GLORYS12V1");
+  // The adaptive drawer may unmount when closed; in either case stale source names
+  // must not leak into any workspace directory tree.
+  await expect(
+    page.locator('[data-testid="workspace-directory-tree"]').filter({ hasText: "GLORYS12V1" })
+  ).toHaveCount(0);
 });
 
 test("RUI-NAV-01 preserves all six canonical route ids and deep links", async ({ page }) => {
