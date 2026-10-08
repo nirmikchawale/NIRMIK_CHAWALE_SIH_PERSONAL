@@ -57,6 +57,7 @@
 }
 .ocean-workbench .mpr-rail-category {
   display: flex;
+  position: relative;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -86,7 +87,7 @@
 .ocean-workbench .mpr-rail-category.is-current::before {
   content: "";
   position: absolute;
-  margin-left: -56px;
+  left: 0;
   height: 20px;
   width: 3px;
   border-radius: 999px;
