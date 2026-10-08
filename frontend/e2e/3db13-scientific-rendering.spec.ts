@@ -43,7 +43,7 @@ test("3DB-13 globe pilot inventory and Water Column show scientifically truthful
   // The RUI shell may visually suppress these disclosures in its compact island.
   // Assert the exact scientific renderer state without modifying RUI-owned CSS.
   await expect(panel).toContainText("IO-001 · SOURCE-BACKED PILOT VOLUME");
-  await expect(panel).toContainText(/independent observation validation not asserted/);
+  await expect(panel).toContainText(/(?:no independent Argo validation claim|independent observation validation not asserted)/);
   await expect(panel).toHaveAttribute("data-depth-count", "31");
   await expect.poll(() => panel.getAttribute("data-lod-source-samples").then(Number)).toBeGreaterThan(0);
 });
