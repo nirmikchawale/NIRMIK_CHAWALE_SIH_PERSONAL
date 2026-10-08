@@ -51,7 +51,7 @@ jobs:
             const sources=page.locator('.source-workbench-choices button');
             if((await sources.count())!==3) throw Error('Scientific source selector count incorrect');
             for(const label of ['GLORYS baseline','INCOIS multi-time','INCOIS chlorophyll']){
-              if((await sources.getByRole('button',{name:label,exact:true}).count())!==1){
+              if((await page.locator('.source-workbench-choices').getByRole('button',{name:label,exact:true}).count())!==1){
                 throw Error('Missing genuine source: '+label);
               }
             }
