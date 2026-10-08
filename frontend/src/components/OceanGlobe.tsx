@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   ArcGisMapServerImageryProvider,
   Cartesian2,
@@ -189,6 +190,23 @@ export function OceanGlobe({
   );
 
   useEffect(() => subscribeActiveMainBlock(setActiveMainBlockId), []);
+
+  // Keep the original camera, selection, validation and Water Column callbacks
+  // owned by OceanGlobe. Only the React DOM destination changes: real controls
+  // live in the MPR Geographic dock, not in the Cesium image canvas.
+  const [blockDockSlot, setBlockDockSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    const workspace = document.querySelector<HTMLElement>(".station-workspace");
+    if (!workspace) return;
+    const syncSlot = () => {
+      const slot = workspace.querySelector<HTMLElement>('[data-mpr-block-region-slot="true"]');
+      setBlockDockSlot((current) => current === slot ? current : slot);
+    };
+    syncSlot();
+    const observer = new MutationObserver(syncSlot);
+    observer.observe(workspace, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
 
   const selectMainBlock = (id: string) => {
     const selectedId = publishActiveMainBlockId(id);
@@ -1348,6 +1366,7 @@ export function OceanGlobe({
       data-cesium-scientific-render-ready={canCesiumRenderMainBlock(activeMainBlock) ? "true" : "false"}
     >
       <div ref={containerRef} className="cesium-host" />
+      {blockDockSlot && createPortal(
       <section
         className="main-block-globe-hud"
         data-testid="integrated-main-block-hud"
@@ -1422,7 +1441,9 @@ export function OceanGlobe({
               ? `${observationIntegration.observationCount} source-backed observation profile${observationIntegration.observationCount === 1 ? "" : "s"} fall inside this block footprint as spatial context only; no block validation is implied.`
               : "No source-backed observation profile currently falls inside this footprint; no observation validation is claimed."}
         </p>
-      </section>
+      </section>,
+      blockDockSlot
+      )}
       <div className="renderer-tools" aria-label="Ocean view tools">
       {selectedProfile && profileCalloutOpen && (
         <div
