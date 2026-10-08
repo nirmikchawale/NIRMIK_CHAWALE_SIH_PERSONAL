@@ -123,7 +123,7 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
       // Explicit click/route navigation restores to its correct launcher.
       void previousFocus;
     };
-  }, [closeNavigation, drawerOpen]);
+  }, [closeNavigation, drawerOpen, selectedGroup]);
 
   useEffect(() => {
     if (focusMode) {
@@ -299,6 +299,7 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
                       <button
                         type="button"
                         className={`rui-nav-item ${active ? "active" : ""}`}
+                        aria-current={active ? "page" : undefined}
                         onClick={(event) => {
                           event.stopPropagation();
                           navigateFromSidebar(item.id);
