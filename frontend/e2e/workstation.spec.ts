@@ -33,7 +33,15 @@ for (const width of [1440, 1024, 390]) test(`workstation reserves separate areas
   const sourceBox = await sources.boundingBox();
   const viewport = page.viewportSize();
   expect(viewport).not.toBeNull();
-  expect(sourceBox!.y + sourceBox!.height).toBeLessThanOrEqual(viewport!.height + 1);
+  if (width >= 1024) {
+    // Desktop keeps the genuine source selector within the first fold.
+    expect(sourceBox!.y + sourceBox!.height).toBeLessThanOrEqual(viewport!.height + 1);
+  } else {
+    // MPR-04 adds a real Workspace Mode island: mobile must scroll to the
+    // source cards rather than overlap/hide them to satisfy an obsolete fold.
+    await sources.scrollIntoViewIfNeeded();
+    await expect(sources.getByRole('button', { name: 'GLORYS baseline', exact: true })).toBeInViewport();
+  }
   await assertSeparateAreas(page);
   const stage = page.locator('.visualization-stage');
   const range = page.getByRole('region', { name: 'Interactive scientific colorbar' });
