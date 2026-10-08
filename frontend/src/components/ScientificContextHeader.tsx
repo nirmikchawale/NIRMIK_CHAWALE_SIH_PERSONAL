@@ -178,7 +178,7 @@ export function ScientificContextHeader({ page, onNavigate, scientificDisclaimer
               <p>Live scientific selection shared across Ocean Canvas workspaces. The Explorer Active Main Block and Sources &amp; QC remain the dedicated block and evidence controls.</p>
             </div>
 
-    <dl className="scientific-context-summary" aria-label="Current scientific selection">
+            <dl className="scientific-context-summary" aria-label="Current scientific selection">
               <div data-context-field="source">
                 <dt>Source</dt>
                 <dd>{sourceLabel(context.sourceMode, context.blockMaterialization)}</dd>
