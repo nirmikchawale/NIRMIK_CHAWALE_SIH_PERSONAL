@@ -34,7 +34,7 @@ test("MPR-03 compact navigator inherits all 16 themes without changing selected 
 
 test("MPR-03 directory keyboard trap and dismissal preserves underlying 3D width", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto(live!);
+  await page.goto(live!.replace(/#.*$/, "") + "#/explore");
   const scene = page.locator(".workspace-frame > .workspace");
   const width = (await scene.boundingBox())!.width;
   const trigger = page.getByRole("button", { name: "Open Analyze workspaces" });
