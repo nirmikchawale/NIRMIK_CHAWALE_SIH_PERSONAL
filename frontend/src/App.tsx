@@ -1,5 +1,6 @@
 import { SourceWorkbench } from "./components/SourceWorkbench";
 import { WaterColumnControlDock } from "./components/WaterColumnControlDock";
+import { ExplorerInspectorAccess } from "./components/ExplorerInspectorAccess";
 import { linkedSelectionKey, matchesGeographicPayload, matchesWaterColumnPayload } from "./linked-view-integrity";
 import { ExplorerDirectoryNav } from "./components/ExplorerDirectoryNav";
 import { ExplorerWorkspaceModeIsland } from "./components/ExplorerWorkspaceModeIsland";
@@ -178,6 +179,47 @@ export default function App() {
     setProfileCalloutOpen(false);
     setMainBlockRevision((current) => current + 1);
   }), []);
+
+  const inspectorOriginRef = useRef<HTMLElement | null>(null);
+  const inspectorWasOpenRef = useRef(false);
+  const rememberInspectorOrigin = () => {
+    if (document.activeElement instanceof HTMLElement) {
+      inspectorOriginRef.current = document.activeElement;
+    }
+  };
+  const closeScientificInspectors = useCallback(() => {
+    setEvidenceOpen(false);
+    setProvenanceOpen(false);
+    setProfilePanelOpen(false);
+    setMobileSheet("none");
+  }, []);
+  // Keep legacy inspector drawers usable with keyboard, including mobile.
+  useEffect(() => {
+    if (page !== "explore") return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (provenanceOpen || evidenceOpen || profilePanelOpen || mobileSheet !== "none") {
+        event.preventDefault();
+        closeScientificInspectors();
+      } else if (focusMode) {
+        event.preventDefault();
+        setFocusMode(false);
+      } else if (workspaceMode === "presentation") {
+        event.preventDefault();
+        setWorkspaceMode("explorer");
+        setControlDockOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [page, provenanceOpen, evidenceOpen, profilePanelOpen, mobileSheet, focusMode, workspaceMode, closeScientificInspectors]);
+  useEffect(() => {
+    const anyOpen = provenanceOpen || evidenceOpen || profilePanelOpen || mobileSheet !== "none";
+    if (inspectorWasOpenRef.current && !anyOpen && inspectorOriginRef.current?.isConnected) {
+      window.requestAnimationFrame(() => inspectorOriginRef.current?.focus({ preventScroll:true }));
+    }
+    inspectorWasOpenRef.current = anyOpen;
+  }, [provenanceOpen, evidenceOpen, profilePanelOpen, mobileSheet]);
 
   const operationalCatalog = useMemo(
     () => operationalSnapshot ? buildIncoisExploreCatalog(operationalSnapshot) : null,
@@ -1420,6 +1462,34 @@ export default function App() {
                 />
               </section>
 
+              <ExplorerInspectorAccess
+                evidenceOpen={evidenceOpen}
+                provenanceOpen={provenanceOpen}
+                observationOpen={profilePanelOpen || mobileSheet === "observation"}
+                profileAvailable={Boolean(selectedImportedProfile || activeSelectedProfile)}
+                scientificError={error}
+                onEvidence={() => {
+                  rememberInspectorOrigin();
+                  setProfilePanelOpen(false);
+                  setMobileSheet("none");
+                  setEvidenceOpen(true);
+                  window.requestAnimationFrame(() => document.querySelector<HTMLElement>('.evidence-rail[data-open="true"]')?.scrollIntoView({ block:"start", behavior:"auto" }));
+                }}
+                onProvenance={() => {
+                  rememberInspectorOrigin();
+                  setProvenanceOpen(true);
+                  window.requestAnimationFrame(() => document.querySelector<HTMLElement>(".provenance-drawer")?.scrollIntoView({ block:"start", behavior:"auto" }));
+                }}
+                onObservation={() => {
+                  if (!selectedImportedProfile && !activeSelectedProfile) return;
+                  rememberInspectorOrigin();
+                  setEvidenceOpen(false);
+                  setProfilePanelOpen(true);
+                  if (window.matchMedia("(max-width:760px)").matches) setMobileSheet("observation");
+                  window.requestAnimationFrame(() => document.querySelector<HTMLElement>('.profile-panel[data-context-open="true"]')?.scrollIntoView({ block:"nearest", behavior:"auto" }));
+                }}
+                onClose={closeScientificInspectors}
+              />
               {selectedVariable && (
                 <ScientificColorbarHud
                   label={selectedVariable.label}
