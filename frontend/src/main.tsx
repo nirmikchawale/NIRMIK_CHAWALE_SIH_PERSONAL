@@ -71,6 +71,8 @@ import "./mpr-responsive-inspectors.css";
 import "./mpr-context-consolidation.css";
 // MPR post-release: genuine main-block controller now in the Geographic dock.
 import "./mpr-block-region-relocation.css";
+// Desktop click regression and standards-compliant immersive viewport action.
+import "./mpr-desktop-interaction-immersive.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

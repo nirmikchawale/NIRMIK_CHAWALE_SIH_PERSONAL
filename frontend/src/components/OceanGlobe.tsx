@@ -298,8 +298,15 @@ export function OceanGlobe({
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     void reducedMotion;
     let journeyGeneration = 0;
+    let pendingInitialJourneyTimer: number | null = null;
     const stopJourney = () => {
       journeyGeneration += 1;
+      // The first flight is deliberately delayed until the verified launch
+      // screen releases the page, so desktop viewers actually SEE Earth/India.
+      if (pendingInitialJourneyTimer != null) {
+        window.clearTimeout(pendingInitialJourneyTimer);
+        pendingInitialJourneyTimer = null;
+      }
       if (introTimer != null) window.clearTimeout(introTimer);
       introTimer = null;
       viewer.camera.cancelFlight();
@@ -316,7 +323,12 @@ export function OceanGlobe({
         setIntroPhase("region");
         setCameraHeight(viewer.camera.positionCartographic.height);
       };
-      const destination = Rectangle.fromDegrees(TARGET_DOMAIN.west - 1.5, TARGET_DOMAIN.south - 2, TARGET_DOMAIN.east + 1.5, TARGET_DOMAIN.north + 2);
+      // Respect the viewer's actual selected block when one is materialized or
+      // planned; the immutable baseline remains an honest regional reference.
+      const selected = resolveMainBlock(readActiveMainBlockId());
+      const destination = selected.materialization === "verified-baseline"
+        ? Rectangle.fromDegrees(TARGET_DOMAIN.west - 1.5, TARGET_DOMAIN.south - 2, TARGET_DOMAIN.east + 1.5, TARGET_DOMAIN.north + 2)
+        : Rectangle.fromDegrees(selected.west - 1.5, selected.south - 1.5, selected.east + 1.5, selected.north + 1.5);
       if (skip) {
         viewer.camera.setView({ destination });
         finish();
@@ -363,7 +375,18 @@ export function OceanGlobe({
     // Always orient the viewer from Earth → India → the integrated Indian Ocean block field on mount.
     // The 140 logical targets remain geographic truth; only the immutable baseline and genuine pilots
     // may cross the 3DB-04 fail-closed scientific Cesium render gate.
-    journeyRef.current(false);
+    // React may mount the globe before useStartupScreen releases #root.inert.
+    // Do not spend the orientation flight hidden behind the loading screen.
+    const beginVisibleJourney = (attempt = 0) => {
+      if (viewer.isDestroyed()) return;
+      const root = document.getElementById("root");
+      if (root?.inert && attempt < 120) {
+        pendingInitialJourneyTimer = window.setTimeout(() => beginVisibleJourney(attempt + 1), 75);
+      } else {
+        pendingInitialJourneyTimer = window.setTimeout(() => journeyRef.current(false), 180);
+      }
+    };
+    beginVisibleJourney();
     // Keep judge-facing camera telemetry valid immediately, even while the
     // opening journey is still animating. This prevents transient 0-height
     // state from making zoom controls appear unresponsive in live checks.
@@ -1543,7 +1566,7 @@ export function OceanGlobe({
         <div className="journey-stops" aria-live="polite">
           <span className={introPhase === "earth" ? "active" : ""}>01 Earth</span><i aria-hidden="true">→</i>
           <span className={introPhase === "india" ? "active" : ""}>02 India</span><i aria-hidden="true">→</i>
-          <span className={introPhase === "flying" || introPhase === "region" ? "active" : ""}>03 112-block ocean field</span>
+          <span className={introPhase === "flying" || introPhase === "region" ? "active" : ""}>03 {activeMaterialization === "verified-baseline" ? "112-block ocean field" : `${activeMainBlock.id} ocean block`}</span>
         </div>
         <button
           type="button"
