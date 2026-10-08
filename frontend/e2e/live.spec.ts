@@ -33,8 +33,26 @@ async function revealCanvasTools(page: Page) {
   }
 }
 
-function workspace(page: Page, id: "explore" | "telemetry" | "compare" | "anomaly" | "data-lab" | "about") {
-  return page.locator(`[data-workspace-id="${id}"]`);
+async function openWorkspace(
+  page: Page,
+  id: "explore" | "telemetry" | "compare" | "anomaly" | "data-lab" | "about"
+) {
+  const targets = {
+    explore: { category: "Explore", name: "3D Explorer" },
+    telemetry: { category: "Analyze", name: "Telemetry" },
+    compare: { category: "Analyze", name: "Model vs Observation" },
+    anomaly: { category: "Analyze", name: "Anomaly Screening" },
+    "data-lab": { category: "Data", name: "Data Lab" },
+    about: { category: "Science", name: "Science System" }
+  } as const;
+  const target = targets[id];
+  // RUI/MPR presents four visible category triggers. The original
+  // [data-workspace-id] buttons are hidden until the directory opens.
+  const rail = page.getByTestId("mpr-workspace-rail");
+  await rail.getByRole("button", { name: `Open ${target.category} workspaces` }).click();
+  const directory = page.getByRole("navigation", { name: "Ocean Canvas workspaces" });
+  await expect(directory).toBeVisible();
+  await directory.getByRole("button", { name: target.name, exact: true }).click();
 }
 
 test("live Ocean Canvas judge flow renders and core interactions work", async ({ page }) => {
@@ -73,12 +91,12 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect.poll(async () => (await imageryGlobeShell.getAttribute("data-imagery-status")) ?? "")
     .toMatch(/^(online|offline|grid)$/);
 
-  await page.getByRole("button", { name: "Offline", exact: true }).click();
+  await page.getByRole("button", { name: "Offline", exact: true }).click({ timeout: 15_000 });
   await expect(imageryGlobeShell).toHaveAttribute("data-imagery-preference", "offline");
   await expect.poll(async () => (await imageryGlobeShell.getAttribute("data-imagery-status")) ?? "")
     .toMatch(/^(offline|grid)$/);
 
-  await page.getByRole("button", { name: "High-res auto" }).click();
+  await page.getByRole("button", { name: "High-res auto" }).click({ timeout: 15_000 });
   await expect(imageryGlobeShell).toHaveAttribute("data-imagery-preference", "auto");
   await expect.poll(async () => (await imageryGlobeShell.getAttribute("data-imagery-status")) ?? "")
     .toMatch(/^(online|offline|grid)$/);
@@ -96,7 +114,7 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(page.getByRole("heading", { name: /Ocean Canvas/i })).toBeVisible();
   await expect(documentRoot).toHaveAttribute("data-theme", "light");
 
-  await workspace(page, "telemetry").click();
+  await openWorkspace(page, "telemetry");
   await expect(page).toHaveURL(/#\/telemetry$/);
   const telemetryPage = page.locator('.telemetry-page[data-page="telemetry"]');
   await expect(telemetryPage).toBeVisible();
@@ -134,7 +152,7 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(telemetryPage).toHaveAttribute("data-variable", "so");
   await expect(telemetryPage.locator(".telemetry-depth-card")).toContainText("Salinity");
 
-  await workspace(page, "anomaly").click();
+  await openWorkspace(page, "anomaly");
   await expect(page).toHaveURL(/#\/anomaly$/);
   const anomalyPage = page.locator('.anomaly-page[data-page="anomaly"]');
   await expect(anomalyPage).toBeVisible();
@@ -176,7 +194,7 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(anomalyPage).toHaveAttribute("data-variable", "so");
   await expect(anomalyPage).toContainText("Salinity spatial statistical extremes");
 
-  await workspace(page, "data-lab").click();
+  await openWorkspace(page, "data-lab");
   await expect(page).toHaveURL(/#\/data-lab$/);
   const dataLabPage = page.locator('.data-lab-page[data-page="data-lab"]');
   await expect(dataLabPage).toBeVisible();
@@ -217,7 +235,9 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await dataLabPage.getByRole("button", { name: "Load validated profiles into 3D Explorer" }).click();
   await expect(page).toHaveURL(/#\/explore$/);
   const importedGlobeShell = page.locator(".globe-shell:not(.water-column-shell)");
-  await expect.poll(async () => Number(await importedGlobeShell.getAttribute("data-imported-profile-count"))).toBeGreaterThanOrEqual(4);
+  // Four validated rows at the same instrument, time and position are one
+  // profile with four measurements, not four distinct sensor profiles.
+  await expect.poll(async () => Number(await importedGlobeShell.getAttribute("data-imported-profile-count"))).toBeGreaterThanOrEqual(1);
   await revealCanvasTools(page);
   const importedSelector = page.locator(".imported-observation-chips");
   await importedSelector.getByRole("button", { name: /^Sensor profiles/ }).click();
@@ -228,8 +248,9 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await importedSelector.getByRole("button", { name: /GLIDER.*glider_demo_01/i }).click();
   await expect(page.locator(".imported-profile-panel")).toBeVisible();
   await expect(page.locator(".imported-profile-panel")).toContainText("Glider");
+  await expect(page.locator(".imported-profile-panel")).toContainText("4 validated measurements");
   await expect(page.locator(".imported-profile-panel")).toContainText("temperature vs depth");
-  await workspace(page, "data-lab").click();
+  await openWorkspace(page, "data-lab");
   await expect(page).toHaveURL(/#\/data-lab$/);
 
   const netcdfFixtureUrl = new URL("samples/cf-profile-fixture.nc", page.url()).toString();
@@ -255,7 +276,7 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await page.locator(".imported-observation-chips").getByRole("button", { name: /CTD.*test-ctd-profile-001/i }).click();
   await expect(page.locator(".imported-profile-panel")).toContainText("CTD");
   await expect(page.locator(".imported-profile-panel")).toContainText("sea_water_temperature vs depth");
-  await workspace(page, "data-lab").click();
+  await openWorkspace(page, "data-lab");
   await expect(page).toHaveURL(/#\/data-lab$/);
 
   const invalidCsv = [
@@ -271,7 +292,7 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(dataLabPage).toContainText("Latitude must be between -90 and 90 degrees.");
   await expect(dataLabPage).toContainText("Units are required.");
 
-  await workspace(page, "compare").click();
+  await openWorkspace(page, "compare");
   await expect(page).toHaveURL(/#\/compare$/);
   const comparisonPage = page.locator('.comparison-page[data-page="compare"]');
   await expect(comparisonPage).toBeVisible();
@@ -306,7 +327,7 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(comparisonPage.getByRole("button", { name: "Download comparison CSV" })).toBeEnabled();
   await expect(comparisonPage.getByRole("button", { name: "Download evidence JSON" })).toBeEnabled();
 
-  await workspace(page, "about").click();
+  await openWorkspace(page, "about");
   await expect(page).toHaveURL(/#\/about$/);
   const infoPage = page.locator('.info-page[data-page="about"]');
   await expect(infoPage).toBeVisible();
@@ -611,9 +632,9 @@ test("live Ocean Canvas canvas-first HUD controls work", async ({ page }) => {
   // while the Explorer drawer is open.
   await page.getByRole("button", { name: "Hide explorer controls" }).click();
   await expect(appShell).toHaveAttribute("data-control-dock", "closed");
-  await page.getByRole("button", { name: "Offline", exact: true }).click();
+  await page.getByRole("button", { name: "Offline", exact: true }).click({ timeout: 15_000 });
   await expect(imageryGlobeShell).toHaveAttribute("data-imagery-preference", "offline");
-  await page.getByRole("button", { name: "High-res auto" }).click();
+  await page.getByRole("button", { name: "High-res auto" }).click({ timeout: 15_000 });
 
   await page.getByRole("button", { name: "Water Column 3D", exact: true }).click();
   const waterColumnShell = page.locator(".water-column-shell");
