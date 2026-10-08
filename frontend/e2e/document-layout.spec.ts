@@ -25,7 +25,9 @@ for (const width of [1440, 390]) {
     expect(rootContract.htmlOverflowY).toBe("hidden");
     expect(rootContract.bodyOverflowY).toBe("hidden");
     expect(rootContract.rootOverflowY).toBe("hidden");
-    expect(rootContract.shellOverflowY).toBe("hidden");
+    // MPR-02: the landing Explorer intentionally owns shell scrolling.
+    // Content routes below retain the original locked viewport contract.
+    expect(rootContract.shellOverflowY).toBe("auto");
     expect(Math.abs(rootContract.shellHeight - rootContract.viewportHeight)).toBeLessThanOrEqual(2);
 
     const contextHeader = page.getByTestId("scientific-context-header");
@@ -44,6 +46,7 @@ for (const width of [1440, 390]) {
       // workspace controls from generic button semantics to semantic treeitems.
       // Keep this scroll-contract regression independent of that presentation role.
       await page.locator(`[data-workspace-id="${route}"]`).click();
+      await expect(page.locator(".ocean-workbench")).toHaveCSS("overflow-y", "hidden");
       const content = page.locator(`main[data-page="${route}"]`);
       await expect(content).toBeVisible();
 
