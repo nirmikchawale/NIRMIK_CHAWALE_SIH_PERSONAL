@@ -6,10 +6,9 @@ import { expect, test } from "@playwright/test";
  * The main header should scroll away with the Explorer islands, not remain pinned.
  */
 const liveUrl = process.env.OCEANTWIN_LIVE_URL;
-if (!liveUrl) throw new Error("OCEANTWIN_LIVE_URL is required");
-
 for (const width of [1440, 1024, 390, 320]) {
   test(`Explorer scroll-away header, one shell scroll owner at ${width}px`, async ({ page }) => {
+    if (!liveUrl) throw new Error("OCEANTWIN_LIVE_URL is required");
     await page.setViewportSize({ width, height: 900 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(liveUrl!.replace(/#.*$/, "") + "#/explore", { waitUntil: "domcontentloaded" });
@@ -64,6 +63,7 @@ for (const width of [1440, 1024, 390, 320]) {
 }
 
 test("non-Explorer navigation retains viewport-locked route scrolling", async ({ page }) => {
+  if (!liveUrl) throw new Error("OCEANTWIN_LIVE_URL is required");
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(liveUrl!.replace(/#.*$/, "") + "#/telemetry", { waitUntil: "domcontentloaded" });
   const shell = page.locator(".ocean-workbench[data-page='telemetry']");
@@ -75,6 +75,7 @@ test("non-Explorer navigation retains viewport-locked route scrolling", async ({
 });
 
 test("Explorer leaves source controls and scientific context usable after shell scroll", async ({ page }) => {
+  if (!liveUrl) throw new Error("OCEANTWIN_LIVE_URL is required");
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(liveUrl!.replace(/#.*$/, "") + "#/explore", { waitUntil: "domcontentloaded" });
   const shell = page.locator(".ocean-workbench[data-page='explore']");
