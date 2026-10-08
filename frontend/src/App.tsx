@@ -1371,7 +1371,7 @@ export default function App() {
           ) : page === "data-lab" ? (
             <DataLabPage />
           ) : (
-            <InfoPage catalog={catalog} provenance={provenance} />
+            <InfoPage catalog={catalog} provenance={provenance} blockEvidence={activeBlockProvenanceEvidence} degradedWarnings={degradedWarnings} />
           )}
 
           <ProvenanceDrawer

@@ -1,0 +1,71 @@
+/* RUI-NAV-07 · Science System directory and evidence detail.
+   Scoped to Science System. No renderer, scientific calculation or shared shell changes. */
+.info-page .science-directory-shell {
+  display: grid;
+  grid-template-columns: minmax(190px, .8fr) minmax(0, 2.2fr);
+  gap: 18px;
+  align-items: center;
+  padding: 18px 22px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(99, 184, 213, .28);
+  border-radius: 18px;
+  background: rgba(38, 113, 145, .08);
+}
+.info-page .science-directory-heading { display: grid; gap: 5px; min-width: 0; }
+.info-page .science-directory-heading span { font-size: 11px; letter-spacing: .13em; font-weight: 750; color: #68d6e9; }
+.info-page .science-directory-heading strong { font-size: 19px; color: var(--text-primary, inherit); }
+.info-page .science-directory-heading small { line-height: 1.45; opacity: .83; }
+.info-page .science-directory-nav { display: flex; flex-wrap: wrap; gap: 8px; }
+.info-page .science-directory-nav button {
+  appearance: none; border: 1px solid rgba(120, 173, 196, .4);
+  color: inherit; background: rgba(65, 111, 141, .16);
+  border-radius: 9px; padding: 10px 12px; line-height: 1.2;
+  cursor: pointer; min-height: 40px; text-align: left;
+}
+.info-page .science-directory-nav button:hover,
+.info-page .science-directory-nav button:focus-visible {
+  border-color: #58cddf; background: rgba(58, 156, 177, .19);
+}
+.info-page .science-directory-nav button:focus-visible { outline: 2px solid #58cddf; outline-offset: 2px; }
+.info-page [data-science-home] { scroll-margin-top: 32px; }
+.info-page .science-home-heading { grid-column: 1 / -1; width: 100%; padding-bottom: 12px; }
+.info-page .science-home-heading > span { display: block; font-size: 11px; font-weight: 750; letter-spacing: .14em; opacity: .75; }
+.info-page .science-home-heading h3 { font-size: clamp(18px, 2vw, 24px); margin: 7px 0; line-height: 1.25; }
+.info-page .science-home-heading p { max-width: 75ch; line-height: 1.6; margin: 4px 0 0; }
+.info-page .science-evidence-detail {
+  margin: 28px 0; border: 1px solid rgba(117, 174, 196, .24);
+  border-radius: 16px; padding: 22px;
+  background: rgba(22, 65, 91, .12);
+}
+.info-page .science-evidence-detail > .science-home-heading { margin-bottom: 12px; }
+.info-page .science-detail-grid { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.info-page .science-detail-card { min-width: 0; border-radius: 12px; border: 1px solid rgba(117, 174, 196, .24); padding: 16px; background: rgba(18, 62, 92, .12); }
+.info-page .science-detail-card h4 { margin: 0 0 9px; font-size: 16px; }
+.info-page .science-detail-card p { line-height: 1.55; overflow-wrap: anywhere; }
+.info-page .science-detail-card dl { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(0, 1.5fr); gap: 8px 12px; margin: 12px 0 0; }
+.info-page .science-detail-card dt { font-weight: 650; opacity: .78; }
+.info-page .science-detail-card dd { margin: 0; overflow-wrap: anywhere; }
+.info-page .science-detail-card code { overflow-wrap: anywhere; }
+.info-page .science-detail-card ul { padding-left: 20px; line-height: 1.6; }
+.info-page .science-detail-card li + li { margin-top: 6px; }
+.info-page .science-truth-note { border-left: 3px solid #5bc5da; padding: 9px 12px; background: rgba(75, 154, 172, .1); line-height: 1.55; }
+.info-page .science-health-degraded { border-left-color: #e5a36c; }
+:root[data-theme="light"] .info-page .science-directory-heading span { color: #006a85; }
+:root[data-theme="light"] .info-page .science-directory-shell,
+:root[data-theme="light"] .info-page .science-evidence-detail,
+:root[data-theme="light"] .info-page .science-detail-card { background: rgba(219, 237, 243, .5); border-color: rgba(39, 102, 133, .25); }
+:root[data-theme="light"] .info-page .science-directory-nav button { background: rgba(222, 240, 247, .85); border-color: rgba(39, 102, 133, .35); }
+@media (max-width: 850px) {
+  .info-page .science-directory-shell { grid-template-columns: 1fr; padding: 14px; }
+  .info-page .science-detail-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 480px) {
+  .info-page .science-directory-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .info-page .science-directory-nav button { padding: 10px; overflow-wrap: anywhere; }
+  .info-page .science-evidence-detail { padding: 14px; }
+  .info-page .science-detail-card dl { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+  .info-page .science-detail-card dd { margin-bottom: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .info-page .science-directory-nav button { transition: none; }
+}
