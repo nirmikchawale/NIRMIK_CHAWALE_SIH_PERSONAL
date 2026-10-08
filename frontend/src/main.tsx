@@ -75,6 +75,9 @@ import "./mpr-block-region-relocation.css";
 import "./mpr-desktop-interaction-immersive.css";
 // P0: Align real Geographic toolbar controls and forward wheel input to Explorer.
 import "./mpr-geographic-toolbar-scroll-layout.css";
+// Canonical Block Details island and full-size accessible judge presentation.
+import "./mpr-block-details-workspace.css";
+import "./mpr-presentation-reconstruction.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
