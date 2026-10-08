@@ -242,9 +242,11 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   const importedSelector = page.locator(".imported-observation-chips");
   await importedSelector.getByRole("button", { name: /^Sensor profiles/ }).click();
   await expect(importedSelector).toBeVisible();
+  // This import contains one genuine GLIDER profile. CTD/BGC only appear when
+  // separately verified observation inventory is available in this runtime;
+  // never imply they were included in the user-supplied CSV.
   await expect(importedSelector).toContainText("GLIDER");
-  await expect(importedSelector).toContainText("CTD");
-  await expect(importedSelector).toContainText("BGC");
+  await expect(importedSelector.getByRole("button", { name: /GLIDER.*glider_demo_01/i })).toHaveCount(1);
   await importedSelector.getByRole("button", { name: /GLIDER.*glider_demo_01/i }).click();
   await expect(page.locator(".imported-profile-panel")).toBeVisible();
   await expect(page.locator(".imported-profile-panel")).toContainText("Glider");
