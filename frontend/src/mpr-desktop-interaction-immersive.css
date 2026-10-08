@@ -74,6 +74,11 @@ html:root, html:root > body, html:root > body > #root {
   font-weight: 750;
   font-size: 11px;
 }
+.ocean-workbench .immersive-screen-button > span {
+  color: inherit;
+  font-size: inherit;
+  letter-spacing: normal;
+}
 .ocean-workbench .immersive-screen-button:hover,
 .ocean-workbench .immersive-screen-button:focus-visible {
   border-color: var(--mpr-border-active, var(--glass-accent));
