@@ -1,0 +1,65 @@
+/* Production P0: renderer controls physically live inside the relocated
+   toolbar. Legacy workbench desktop rules hid their pointer targets when
+   data-control-dock="open", even though station.css painted the buttons.
+   Re-enable only real, visible toolbar controls (not hidden duplicate HUDs).
+   Keep both Cesium stage and scientific data behavior untouched. */
+@media (min-width: 761px) {
+  .ocean-workbench[data-page="explore"][data-control-dock="open"] .station-workspace
+  .visualization-layer.active .renderer-tools,
+  .ocean-workbench[data-page="explore"][data-control-dock="open"] .station-workspace
+  .visualization-layer.active .renderer-tools :is(
+    .camera-orientation-hud,
+    .cesium-smooth-zoom.camera-control-stack,
+    .camera-control-stack,
+    .imagery-control,
+    .imported-observation-chips
+  ) {
+    pointer-events: auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .ocean-workbench[data-page="explore"] .station-workspace
+  .visualization-layer.active .renderer-tools :is(button, select, input) {
+    pointer-events: auto !important;
+  }
+}
+/* Unselected 3D visualizer stays fully inert to clicks. */
+.ocean-workbench .visualization-layer:not(.active) {
+  pointer-events: none !important;
+}
+/* A presentation-only overlay must never block real interaction. */
+.ocean-workbench .globe-intro-status,
+.ocean-workbench .globe-overlay:not(:has(button)):not(:has(input)):not(:has(select)) {
+  pointer-events: none;
+}
+/* Fill the space the browser allows without assuming privileged F11 control. */
+html:root, html:root > body, html:root > body > #root {
+  min-height: 100dvh !important;
+}
+.ocean-workbench .immersive-screen-button {
+  min-height: 40px;
+  padding: 7px 12px;
+  border-radius: var(--mpr-radius-control, 10px);
+  border: 1px solid var(--mpr-border, var(--glass-border));
+  background: var(--mpr-surface-raised, var(--glass-panel));
+  color: var(--mpr-text, var(--glass-text));
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 750;
+  font-size: 11px;
+}
+.ocean-workbench .immersive-screen-button:hover,
+.ocean-workbench .immersive-screen-button:focus-visible {
+  border-color: var(--mpr-border-active, var(--glass-accent));
+  outline-color: var(--mpr-focus, var(--glass-accent));
+}
+html:fullscreen body, html:fullscreen #root {
+  min-height: 100dvh;
+  width: 100%;
+}
+@media (max-width: 760px) {
+  .ocean-workbench .immersive-screen-button {
+    min-height: 42px;
+  }
+}
