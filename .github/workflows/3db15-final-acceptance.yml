@@ -57,6 +57,11 @@ jobs:
         env:
           OCEANTWIN_LIVE_URL: "http://127.0.0.1:4173/#/explore"
         run: npx playwright test -c playwright.live.config.ts e2e/3db15-final-production-acceptance.spec.ts
+      - name: Guard complete judge-flow navigation against legacy hidden sidebar regressions
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: "http://127.0.0.1:4173/#/explore"
+        run: npx playwright test -c playwright.live.config.ts e2e/live.spec.ts --grep "live Ocean Canvas judge flow renders and core interactions work"
       - name: Verify public GitHub Pages serves the same unchanged 41 source frames and real 3D scene
         working-directory: frontend
         env:
