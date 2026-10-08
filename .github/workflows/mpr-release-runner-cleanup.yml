@@ -15,20 +15,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          RELEASE_HEAD: 6f25acb1038ab807b34179b5a499ad60ab2a0f50
-          PROTECTED_MAIN: 2f80c795e6003c46d2d68b1aef50fc03a5aec4da
+          RELEASE_HEAD: fb2f75b20bd0ae10b957041db6da0c641ad0ae7e
+          CURRENT_3DB_HEAD: 2aba7cc4b73f6c31ef599ad3eddef1ac04f382af
+          PROTECTED_MAIN: 43265375ef1c28ab6e94a48e6162f928b1aeb367
         shell: bash
         run: |
           set -euo pipefail
           cancelled=0
-          for id in 37816462045 37816049542 37816025170 37816006751 37815982989 37815943728 37815852817 37815344377 37815119337 37815110158 37815044937 37814960617 37814950848 37814893649 37814406077 37813627241 37813289227 37817595910 37817429783 37817358363 37817314724 37817233349 37817198826 37817129189; do
+          for id in 37829097328 37829091297 37829088386 37829077795 37829017991 37828543075 37828509017 37828496212 37827668412 37827391552 37826579991 37826400276 37825925147 37824652676 37824317243 37822515389 37829900874 37829901201 37829097332 37829088474 37829017935 37828965891 37828907126 37828680742 37828553586 37829408916 37829807780 37829759800 37829889890 37829900701; do
             info="$(gh api "repos/$REPO/actions/runs/$id" 2>/dev/null || true)"
             if [[ -z "$info" ]]; then echo "Skip unavailable $id"; continue; fi
             status="$(jq -r '.status' <<< "$info")"
             event="$(jq -r '.event' <<< "$info")"
             workflow="$(jq -r '.name' <<< "$info")"
             sha="$(jq -r '.head_sha' <<< "$info")"
-            if [[ "$status" == "completed" || "$event" != "pull_request" || "$workflow" != "final-mvp" || "$sha" == "$PROTECTED_MAIN" || "$sha" == "$RELEASE_HEAD" ]]; then
+            if [[ "$status" == "completed" || "$event" != "pull_request" || ( "$workflow" != "final-mvp" && "$workflow" != "3db15-final-production-acceptance" && "$workflow" != "mpr-10-17-release-certification" ) || "$sha" == "$PROTECTED_MAIN" || "$sha" == "$RELEASE_HEAD" || "$sha" == "$CURRENT_3DB_HEAD" ]]; then
               echo "Skip protected/irrelevant $id ($status $workflow)"; continue
             fi
             if gh api --method POST "repos/$REPO/actions/runs/$id/cancel" >/dev/null 2>&1; then
