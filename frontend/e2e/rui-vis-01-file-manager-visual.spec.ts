@@ -154,3 +154,44 @@ test("RUI-VIS-01 shell remains legible in both theme surfaces without mutating n
     await expect(tree.locator("[role=treeitem]")).toHaveCount(6);
   }
 });
+
+
+test("RUI-VIS-01 sidebar icon badges and text stay in separate columns on narrow phones", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 760 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await openLive(page, "#/explore");
+
+  await page.getByRole("button", { name: "Open workspace navigation" }).click();
+  const sidebar = page.getByRole("navigation", { name: "Ocean Canvas workspaces" });
+  const items = sidebar.locator(".rui-nav-item");
+  await expect(items).toHaveCount(6);
+
+  // The legacy feature-rail button style centers grid children; long subtitles
+  // must remain constrained to their own column rather than cover the icon.
+  for (const width of [320, 368, 390]) {
+    await page.setViewportSize({ width, height: 760 });
+    await expect(sidebar).toBeVisible();
+
+    for (const item of await items.all()) {
+      const badge = await item.locator(".rui-nav-short").boundingBox();
+      const copy = await item.locator(".rui-nav-copy").boundingBox();
+      const button = await item.boundingBox();
+      expect(badge).not.toBeNull();
+      expect(copy).not.toBeNull();
+      expect(button).not.toBeNull();
+
+      // Allow a 1px tolerance for fractional layout and device pixel rounding.
+      expect(copy!.x).toBeGreaterThanOrEqual(badge!.x + badge!.width + 5);
+      expect(copy!.x + copy!.width).toBeLessThanOrEqual(button!.x + button!.width - 4);
+      for (const selector of [".rui-nav-copy strong", ".rui-nav-copy small"]) {
+        const text = item.locator(selector);
+        const textBox = await text.boundingBox();
+        expect(textBox).not.toBeNull();
+        expect(textBox!.x).toBeGreaterThanOrEqual(copy!.x - 1);
+        expect(textBox!.x + textBox!.width).toBeLessThanOrEqual(copy!.x + copy!.width + 1);
+        await expect(text).toHaveCSS("text-overflow", "ellipsis");
+        await expect(text).toHaveCSS("white-space", "nowrap");
+      }
+    }
+  }
+});
