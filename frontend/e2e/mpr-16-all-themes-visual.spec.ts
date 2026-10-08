@@ -87,13 +87,16 @@ for(const size of sizes) {
     expect(waterBox!.y,"Water Column must follow actual Geographic section").toBeGreaterThanOrEqual(geoBox!.y+geoBox!.height-2);
     records.push({theme:theme.id,scheme:theme.scheme,textContrast,wide:metrics.wide,scrollOverflow:metrics.overflow});
     // Real renderer visual artifacts—not a generated image or fabricated ocean.
+    // Cesium and WaterColumn3D repaint continuously. Element screenshots wait
+    // for an impossible 'stable' renderer box on SwiftShader CI. Capture the
+    // actual browser viewport after scrolling to each real renderer instead.
     await geo.scrollIntoViewIfNeeded();
     await info.attach(size.name+"--"+theme.id+"--geographic",{
-      body:await geo.screenshot({animations:"disabled",timeout:25000}),contentType:"image/png"
+      body:await page.screenshot({animations:"disabled",timeout:45000}),contentType:"image/png"
     });
     await water.scrollIntoViewIfNeeded();
     await info.attach(size.name+"--"+theme.id+"--water-column",{
-      body:await water.screenshot({animations:"disabled",timeout:25000}),contentType:"image/png"
+      body:await page.screenshot({animations:"disabled",timeout:45000}),contentType:"image/png"
     });
   }
   expect(records).toHaveLength(16);
