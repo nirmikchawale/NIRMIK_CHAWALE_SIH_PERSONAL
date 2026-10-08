@@ -1,4 +1,5 @@
 import { SourceWorkbench } from "./components/SourceWorkbench";
+import { WaterColumnControlDock } from "./components/WaterColumnControlDock";
 import { ExplorerDirectoryNav } from "./components/ExplorerDirectoryNav";
 import { ExplorerWorkspaceModeIsland } from "./components/ExplorerWorkspaceModeIsland";
 import { RefreshControl } from "./components/RefreshControl";
@@ -1329,25 +1330,38 @@ export default function App() {
                     )}
                   </div>
                 </div>
-                <aside className="mpr-water-column-dock" data-testid="mpr-12-water-column-dock"
-                  aria-label="Water Column 3D scientific tools">
-                  <div className="mpr-water-column-dock-heading">
-                    <span>LINKED WATER COLUMN</span>
-                    <strong>Native source, depth &amp; time</strong>
-                    <small>Scientific values are shared with the Geographic 3D selection.</small>
-                  </div>
-                  <dl className="mpr-water-column-native-context">
-                    <div><dt>Source</dt><dd>{activeExploreCatalog.dataset.product}</dd></div>
-                    <div><dt>Variable</dt><dd>{selectedVariable?.label ?? variable}</dd></div>
-                    <div><dt>Native time</dt><dd>{activeExploreCatalog.coordinates.time[timeIndex] ?? "Unavailable"}</dd></div>
-                    <div><dt>Depth</dt><dd>{activeExploreCatalog.capabilities.surface_only
-                      ? "Surface-only; no depth coordinate"
-                      : (activeExploreCatalog.coordinates.depth[depthIndex] ?? 0).toFixed(2) + " m, positive down"}</dd></div>
-                  </dl>
-                  <button type="button" className="mpr-water-column-return"
-                    aria-label="Return to Geographic 3D"
-                    onClick={() => handleViewNavigation("globe")}>Geographic 3D ↗</button>
-                </aside>
+                <WaterColumnControlDock
+                  catalog={activeExploreCatalog}
+                  variable={variable}
+                  depthIndex={depthIndex}
+                  timeIndex={timeIndex}
+                  profiles={activeComparisonProfiles}
+                  selectedProfileId={selectedProfileId}
+                  opacity={waterColumnOpacity}
+                  verticalExaggeration={verticalExaggeration}
+                  isoSurfaceEnabled={isoSurfaceEnabled}
+                  isoValue={isoValue}
+                  palette={colorPalette}
+                  scale={colorScale}
+                  minimum={colorMinimum}
+                  maximum={colorMaximum}
+                  loading={scienceLoading}
+                  error={error}
+                  onVariableChange={handleVariableChange}
+                  onDepthChange={setDepthIndex}
+                  onTimeChange={setTimeIndex}
+                  onProfileChange={handleProfileSelection}
+                  onOpacityChange={setWaterColumnOpacity}
+                  onVerticalExaggerationChange={setVerticalExaggeration}
+                  onIsoSurfaceEnabledChange={setIsoSurfaceEnabled}
+                  onIsoValueChange={setIsoValue}
+                  onPaletteChange={setColorPalette}
+                  onScaleChange={setColorScale}
+                  onMinimumChange={setColorMinimum}
+                  onMaximumChange={setColorMaximum}
+                  onSourceEvidence={() => setProvenanceOpen(true)}
+                  onGeographicView={() => handleViewNavigation("globe")}
+                />
               </section>
 
               {selectedVariable && (
