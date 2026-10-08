@@ -1,0 +1,150 @@
+/*
+ * RUI-MPR-02: Explorer's ONE viewport scroll owner is .ocean-workbench.
+ *
+ * Do not unlock html/body/#root globally: viewport-lock.css protects all
+ * non-Explorer routes, and their separate content scrollers stay unchanged.
+ * The Explorer shell itself can scroll its normal-flow header, source islands,
+ * scientific-context band and stage. There is NO JavaScript wheel redirect.
+ *
+ * Import AFTER the legacy scroll, RUI and glass CSS. All selectors are scoped
+ * to data-page="explore" to preserve Telemetry/Comparison/Data/Science routes.
+ * The current single switching 3D stage is deliberately unchanged (MPR-09..14).
+ */
+.ocean-workbench[data-page="explore"] {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--glass-border-strong) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* The header remains an ordinary element in the scrollable Explorer shell. */
+.ocean-workbench[data-page="explore"] > .app-header {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+/* Grid context and workspace rows must grow with their contents, not
+   consume the viewport's one remaining fixed-height track. */
+.ocean-workbench[data-page="explore"] .workspace-frame {
+  display: grid !important;
+  flex: 0 0 auto;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  grid-template-rows: var(--rui-context-height, 58px) max-content !important;
+  overflow: visible !important;
+  align-items: start;
+}
+
+.ocean-workbench[data-page="explore"] .workspace-frame > .workspace {
+  position: relative !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+
+/* Eliminate the competing .station-workspace vertical scroll owner.
+   Source islands, model selector and visualization now share shell scrolling. */
+.ocean-workbench[data-page="explore"] .station-workspace {
+  position: relative;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  overscroll-behavior-y: auto;
+  scrollbar-gutter: auto;
+}
+
+/* Preserve the existing sidebar's desktop accessibility while the Explorer
+   page itself scrolls. The adaptive mini rail comes in MPR-03. */
+@media (min-width: 901px) {
+  .ocean-workbench[data-page="explore"] .app-navigation-root {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100dvh;
+    max-height: 100dvh;
+  }
+
+  .ocean-workbench[data-page="explore"] .rui-sidebar.feature-rail {
+    height: 100%;
+    max-height: 100dvh;
+  }
+}
+
+/* Desktop tool scroll remains independent; when the dock reaches its end,
+   regular page scroll is permitted instead of trapping the wheel forever.
+   The 3D canvas still owns its own camera gestures. */
+@media (min-width: 761px) {
+  .ocean-workbench[data-page="explore"] .station-workspace > :is(
+    .control-panel, .evidence-rail, .profile-panel, .analysis-split-panel
+  ) {
+    overscroll-behavior-y: auto !important;
+  }
+}
+
+/* RUI-02 mobile currently absolutely positions both the navigation/context
+   band and workspace, which would erase the page's intrinsic height.
+   Retain their original order but place them back into normal flow. */
+@media (max-width: 900px) {
+  .ocean-workbench[data-page="explore"] .workspace-frame {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    grid-template-rows: none !important;
+  }
+
+  .ocean-workbench[data-page="explore"] .app-navigation-root,
+  .ocean-workbench[data-page="explore"] .app-navigation-root[data-collapsed="true"] {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    flex: 0 0 var(--rui-mobile-nav-height, 52px);
+    height: var(--rui-mobile-nav-height, 52px) !important;
+    width: 100%;
+    pointer-events: auto;
+  }
+
+  .ocean-workbench[data-page="explore"] .workspace-frame > .scientific-context-header {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    flex: 0 0 var(--rui-mobile-context-height, 72px);
+    width: 100%;
+    height: var(--rui-mobile-context-height, 72px);
+  }
+
+  .ocean-workbench[data-page="explore"] .workspace-frame > .workspace {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    flex: 0 0 auto;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Existing bottom sheets / profile panels remain viewport-bound and keep
+     local scrolling. They must not chain into the background page. */
+  .ocean-workbench[data-page="explore"] .station-workspace > :is(
+    .control-panel, .profile-panel, .evidence-rail
+  ) {
+    overscroll-behavior-y: contain !important;
+  }
+}
+
+/* Respect OS motion preferences without forcing animated page jumps. */
+@media (prefers-reduced-motion: reduce) {
+  .ocean-workbench[data-page="explore"] {
+    scroll-behavior: auto !important;
+  }
+}
