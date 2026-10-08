@@ -56,7 +56,9 @@
 }
 .ocean-workbench[data-page="explore"] .station-workspace > .visualization-stage .mpr-stage-view-switch {
   position:absolute !important; z-index:17;
-  left:12px; bottom:12px;
+  /* Keep the view switch in the scene's upper-right corner. The lower edge
+     contains genuine renderer/basemap tools and must remain clickable. */
+  left:auto; right:12px; top:12px; bottom:auto;
   display:inline-flex; align-items:center; justify-content:center;
   width:auto; height:auto; min-height:44px; max-width:calc(100% - 24px);
   padding:10px 13px !important;
@@ -81,7 +83,7 @@
     font-size:9px;
   }
   .ocean-workbench[data-page="explore"] .station-workspace > .visualization-stage .mpr-stage-view-switch {
-    bottom:8px; left:8px; min-height:44px;
+    top:8px; right:8px; bottom:auto; left:auto; min-height:44px;
   }
 }
 @media(prefers-reduced-motion:reduce){

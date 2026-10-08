@@ -126,6 +126,10 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: deploy
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - name: Checkout browser acceptance suite
         uses: actions/checkout@v4
@@ -252,4 +256,4 @@ jobs:
         working-directory: frontend
         env:
           OCEANTWIN_LIVE_URL: ${{ needs.deploy.outputs.page_url }}
-        run: npm run e2e:live
+        run: npm run e2e:live -- --shard=${{ matrix.shard }}/4
