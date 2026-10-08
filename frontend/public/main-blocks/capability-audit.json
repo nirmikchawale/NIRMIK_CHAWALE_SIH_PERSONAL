@@ -1,0 +1,3845 @@
+{
+  "schema": "oceancanvas-3db14-block-capability-audit-v1",
+  "note": "Static verified-source inventory, not individual GPU rendering proof or public deployment attestation.",
+  "source": {
+    "productId": "GLOBAL_MULTIYEAR_PHY_001_030",
+    "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+    "timeSemantics": "daily_mean"
+  },
+  "summary": {
+    "logicalBlocks": 140,
+    "sourceBackedPilots": 35,
+    "plannedBlocks": 105,
+    "multiDatePilots": 6,
+    "sourcePayloadFrames": 41,
+    "landBlocksMaterialized": 0,
+    "geographicallyEligiblePlannedBlocks": 70,
+    "geographicallyIneligiblePlannedBlocks": 35,
+    "independentlyObservationValidatedPilots": 0
+  },
+  "verifiedBaselineSeparateFrom140": {
+    "id": "BASE-GLORYS-001",
+    "date": "2024-01-02",
+    "depthLevels": 31,
+    "independentModelObservationValidation": "reference-baseline-only",
+    "notPartOfPilotInventory": true
+  },
+  "blocks": [
+    {
+      "id": "IO-001",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 60,
+        "east": 63,
+        "south": 23,
+        "north": 25
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15",
+        "2004-07-28"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-001/2004-03-15.json",
+          "sha256": "a6e07a7f34a5dfb240a9ab85f48265f227456cf2872ad26620071c24f409a8ce"
+        },
+        {
+          "date": "2004-07-28",
+          "path": "data/IO-001/2004-07-28.json",
+          "sha256": "72db3153979543821860b6dfb7a15ab30432f63445fde5b806c25b2ff0a05a64"
+        }
+      ]
+    },
+    {
+      "id": "IO-002",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 63,
+        "east": 66,
+        "south": 23,
+        "north": 25
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-002/2004-03-15.json",
+          "sha256": "347e215df1551ba76cf254a56d07e8a35eb278f16c206c15c61ba2765c7ce9eb"
+        }
+      ]
+    },
+    {
+      "id": "IO-003",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 66,
+        "east": 69,
+        "south": 23,
+        "north": 25
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.587045,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-004",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 69,
+        "east": 72,
+        "south": 23,
+        "north": 25
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-005",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 72,
+        "east": 75,
+        "south": 23,
+        "north": 25
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-006",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 75,
+        "east": 78,
+        "south": 23,
+        "north": 25
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-007",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 78,
+        "east": 81,
+        "south": 23,
+        "north": 25
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-008",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 81,
+        "east": 84,
+        "south": 23,
+        "north": 25
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-009",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 84,
+        "east": 87,
+        "south": 23,
+        "north": 25
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-010",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 87,
+        "east": 90,
+        "south": 23,
+        "north": 25
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-011",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 90,
+        "east": 93,
+        "south": 23,
+        "north": 25
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-012",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 93,
+        "east": 96,
+        "south": 23,
+        "north": 25
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-013",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 96,
+        "east": 99,
+        "south": 23,
+        "north": 25
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-014",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 99,
+        "east": 100,
+        "south": 23,
+        "north": 25
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-015",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 60,
+        "east": 63,
+        "south": 21,
+        "north": 23
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-015/2004-03-15.json",
+          "sha256": "9bc2960128133640c8f9f05c42e1a98a6a2fc10c64fcdae7eeb14f292373c319"
+        }
+      ]
+    },
+    {
+      "id": "IO-016",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 63,
+        "east": 66,
+        "south": 21,
+        "north": 23
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15",
+        "2004-07-28"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-016/2004-03-15.json",
+          "sha256": "dfcb7e5bfef0b4e928e5757be8edd9a21a26e14ca6806d571414a4dbae071849"
+        },
+        {
+          "date": "2004-07-28",
+          "path": "data/IO-016/2004-07-28.json",
+          "sha256": "49ad221efa0b1aab9adec9991baa4b70944c541dc894d401345831be5a62eeb5"
+        }
+      ]
+    },
+    {
+      "id": "IO-017",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 66,
+        "east": 69,
+        "south": 21,
+        "north": 23
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.991903,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-018",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 69,
+        "east": 72,
+        "south": 21,
+        "north": 23
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.242915,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-019",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 72,
+        "east": 75,
+        "south": 21,
+        "north": 23
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0.093117,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-020",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 75,
+        "east": 78,
+        "south": 21,
+        "north": 23
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-021",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 78,
+        "east": 81,
+        "south": 21,
+        "north": 23
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-022",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 81,
+        "east": 84,
+        "south": 21,
+        "north": 23
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-023",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 84,
+        "east": 87,
+        "south": 21,
+        "north": 23
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0.020243,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-024",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 87,
+        "east": 90,
+        "south": 21,
+        "north": 23
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.380567,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-025",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 90,
+        "east": 93,
+        "south": 21,
+        "north": 23
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.433198,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-026",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 93,
+        "east": 96,
+        "south": 21,
+        "north": 23
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-027",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 96,
+        "east": 99,
+        "south": 21,
+        "north": 23
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-028",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 99,
+        "east": 100,
+        "south": 21,
+        "north": 23
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-029",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 60,
+        "east": 63,
+        "south": 19,
+        "north": 21
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-029/2004-03-15.json",
+          "sha256": "3a9159a53999ad87c0886142c370d5789405aaff679389659cf2542e7d250b27"
+        }
+      ]
+    },
+    {
+      "id": "IO-030",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 63,
+        "east": 66,
+        "south": 19,
+        "north": 21
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-030/2004-03-15.json",
+          "sha256": "2065f6d08ff9f505877d82ea7cf20d35d7c9b676b5da0732eeb7da4571b285ba"
+        }
+      ]
+    },
+    {
+      "id": "IO-031",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 66,
+        "east": 69,
+        "south": 19,
+        "north": 21
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-031/2004-03-15.json",
+          "sha256": "5dc754552ae02387694005569483b5345c1916074c24fe1c3e3bb69732b91d26"
+        }
+      ]
+    },
+    {
+      "id": "IO-032",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 69,
+        "east": 72,
+        "south": 19,
+        "north": 21
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.951417,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-033",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 72,
+        "east": 75,
+        "south": 19,
+        "north": 21
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.283401,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-034",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 75,
+        "east": 78,
+        "south": 19,
+        "north": 21
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-035",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 78,
+        "east": 81,
+        "south": 19,
+        "north": 21
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-036",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 81,
+        "east": 84,
+        "south": 19,
+        "north": 21
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-037",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 84,
+        "east": 87,
+        "south": 19,
+        "north": 21
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.340081,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-038",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 87,
+        "east": 90,
+        "south": 19,
+        "north": 21
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-038/2004-03-15.json",
+          "sha256": "3086ac37a2da57091c5b5ecc3ab10a826d731a7470512285b3007e95561566b9"
+        }
+      ]
+    },
+    {
+      "id": "IO-039",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 90,
+        "east": 93,
+        "south": 19,
+        "north": 21
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.927126,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-040",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 93,
+        "east": 96,
+        "south": 19,
+        "north": 21
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0.125506,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-041",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 96,
+        "east": 99,
+        "south": 19,
+        "north": 21
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-042",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 99,
+        "east": 100,
+        "south": 19,
+        "north": 21
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-043",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 60,
+        "east": 63,
+        "south": 17,
+        "north": 19
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-044",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 63,
+        "east": 66,
+        "south": 17,
+        "north": 19
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-045",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 66,
+        "east": 69,
+        "south": 17,
+        "north": 19
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15",
+        "2004-07-28"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-045/2004-03-15.json",
+          "sha256": "feadbb108831453db787b11fe11dcda3b964a5bb922f70f30fa100a72b6eaac3"
+        },
+        {
+          "date": "2004-07-28",
+          "path": "data/IO-045/2004-07-28.json",
+          "sha256": "95915f4537ae8950d7463f2ccc60272766c62290841927ec3d58a818590c67ee"
+        }
+      ]
+    },
+    {
+      "id": "IO-046",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 69,
+        "east": 72,
+        "south": 17,
+        "north": 19
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-046/2004-03-15.json",
+          "sha256": "43eb1704092fc57c898b46bb4be41c7fd9ce300fd6e3d69e7a087e40993a2924"
+        }
+      ]
+    },
+    {
+      "id": "IO-047",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 72,
+        "east": 75,
+        "south": 17,
+        "north": 19
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.360324,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-048",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 75,
+        "east": 78,
+        "south": 17,
+        "north": 19
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-049",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 78,
+        "east": 81,
+        "south": 17,
+        "north": 19
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-050",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 81,
+        "east": 84,
+        "south": 17,
+        "north": 19
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.206478,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-051",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 84,
+        "east": 87,
+        "south": 17,
+        "north": 19
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.94332,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-052",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 87,
+        "east": 90,
+        "south": 17,
+        "north": 19
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-052/2004-03-15.json",
+          "sha256": "edc5d8ddf9fca6c4f3e51c974eebdddc441b0dabb02c1a282def4be1c61b92bc"
+        }
+      ]
+    },
+    {
+      "id": "IO-053",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 90,
+        "east": 93,
+        "south": 17,
+        "north": 19
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15",
+        "2004-07-28"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-053/2004-03-15.json",
+          "sha256": "1ebe951098f04b3e2c8720e465617abf67537011ea3167bf0dbf1272d82d6589"
+        },
+        {
+          "date": "2004-07-28",
+          "path": "data/IO-053/2004-07-28.json",
+          "sha256": "5dd729a1471519ce3e81d2c0ca168346db6f0f2715dfb9561f4de784824d9e29"
+        }
+      ]
+    },
+    {
+      "id": "IO-054",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 93,
+        "east": 96,
+        "south": 17,
+        "north": 19
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.465587,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-055",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 96,
+        "east": 99,
+        "south": 17,
+        "north": 19
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0.016194,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-056",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 99,
+        "east": 100,
+        "south": 17,
+        "north": 19
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-057",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 60,
+        "east": 63,
+        "south": 15,
+        "north": 17
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-058",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 63,
+        "east": 66,
+        "south": 15,
+        "north": 17
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-059",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 66,
+        "east": 69,
+        "south": 15,
+        "north": 17
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-059/2004-03-15.json",
+          "sha256": "1cfacdfb94c04239264a6493ad0999b9d199a514f1cc21e580dba0f35b71fbd8"
+        }
+      ]
+    },
+    {
+      "id": "IO-060",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 69,
+        "east": 72,
+        "south": 15,
+        "north": 17
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-060/2004-03-15.json",
+          "sha256": "9657a6b8c050cc8509ee75c27094d77257bce5da13424cf4545e3ff6e6d59ce9"
+        }
+      ]
+    },
+    {
+      "id": "IO-061",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 72,
+        "east": 75,
+        "south": 15,
+        "north": 17
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.530364,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-062",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 75,
+        "east": 78,
+        "south": 15,
+        "north": 17
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-063",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 78,
+        "east": 81,
+        "south": 15,
+        "north": 17
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0.129555,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-064",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 81,
+        "east": 84,
+        "south": 15,
+        "north": 17
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.842105,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-065",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 84,
+        "east": 87,
+        "south": 15,
+        "north": 17
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-065/2004-03-15.json",
+          "sha256": "ac7c7dcff68d2ba79ba892eb8b3c9289c3d5040273caa525be7e8481c71748d3"
+        }
+      ]
+    },
+    {
+      "id": "IO-066",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 87,
+        "east": 90,
+        "south": 15,
+        "north": 17
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-066/2004-03-15.json",
+          "sha256": "e2977687903c90f3eff8af3afbde872005805ad98e072f091dcf0cdef3ce764b"
+        }
+      ]
+    },
+    {
+      "id": "IO-067",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 90,
+        "east": 93,
+        "south": 15,
+        "north": 17
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-067/2004-03-15.json",
+          "sha256": "018494e2598d95fc05ca813c371d784e20a8516e857d4a8b44173b89ba97e0d4"
+        }
+      ]
+    },
+    {
+      "id": "IO-068",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 93,
+        "east": 96,
+        "south": 15,
+        "north": 17
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.724696,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-069",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 96,
+        "east": 99,
+        "south": 15,
+        "north": 17
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.453441,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-070",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 99,
+        "east": 100,
+        "south": 15,
+        "north": 17
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-071",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 60,
+        "east": 63,
+        "south": 13,
+        "north": 15
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-072",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 63,
+        "east": 66,
+        "south": 13,
+        "north": 15
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-073",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 66,
+        "east": 69,
+        "south": 13,
+        "north": 15
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-074",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 69,
+        "east": 72,
+        "south": 13,
+        "north": 15
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-075",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 72,
+        "east": 75,
+        "south": 13,
+        "north": 15
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.821862,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-075/2004-03-15.json",
+          "sha256": "8fe1d21d7284fb6544a14d426123821b3ff875a2b1a2c4165635b862a5ac4b94"
+        }
+      ]
+    },
+    {
+      "id": "IO-076",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 75,
+        "east": 78,
+        "south": 13,
+        "north": 15
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-077",
+      "region": "India East Coast",
+      "bounds": {
+        "west": 78,
+        "east": 81,
+        "south": 13,
+        "north": 15
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.291498,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-078",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 81,
+        "east": 84,
+        "south": 13,
+        "north": 15
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-079",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 84,
+        "east": 87,
+        "south": 13,
+        "north": 15
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-080",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 87,
+        "east": 90,
+        "south": 13,
+        "north": 15
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-081",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 90,
+        "east": 93,
+        "south": 13,
+        "north": 15
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.983806,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-082",
+      "region": "Andaman & Nicobar",
+      "bounds": {
+        "west": 93,
+        "east": 96,
+        "south": 13,
+        "north": 15
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.983806,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-082/2004-03-15.json",
+          "sha256": "db62891f16394e6851ab1bc43e94997262a03566b864d221091a65f1ca309f7f"
+        }
+      ]
+    },
+    {
+      "id": "IO-083",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 96,
+        "east": 99,
+        "south": 13,
+        "north": 15
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.712551,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-084",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 99,
+        "east": 100,
+        "south": 13,
+        "north": 15
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0.010989,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-085",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 60,
+        "east": 63,
+        "south": 11,
+        "north": 13
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-086",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 63,
+        "east": 66,
+        "south": 11,
+        "north": 13
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-087",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 66,
+        "east": 69,
+        "south": 11,
+        "north": 13
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-088",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 69,
+        "east": 72,
+        "south": 11,
+        "north": 13
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-089",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 72,
+        "east": 75,
+        "south": 11,
+        "north": 13
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.975709,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-089/2004-03-15.json",
+          "sha256": "5e4da4761d3a3f48dfd3ef34649f77bd0060aa5bd0fac4d804fafa88d71716c8"
+        }
+      ]
+    },
+    {
+      "id": "IO-090",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 75,
+        "east": 78,
+        "south": 11,
+        "north": 13
+      },
+      "oceanRelevance": "land",
+      "oceanFraction": 0.133603,
+      "geographicallyEligibleForMaterialization": false,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-091",
+      "region": "India East Coast",
+      "bounds": {
+        "west": 78,
+        "east": 81,
+        "south": 11,
+        "north": 13
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.364372,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-091/2004-03-15.json",
+          "sha256": "6474131c1128ff76e260b74f53fd80e0b2f06a72b41e2bee37176faeea460dff"
+        }
+      ]
+    },
+    {
+      "id": "IO-092",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 81,
+        "east": 84,
+        "south": 11,
+        "north": 13
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-093",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 84,
+        "east": 87,
+        "south": 11,
+        "north": 13
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-094",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 87,
+        "east": 90,
+        "south": 11,
+        "north": 13
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-095",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 90,
+        "east": 93,
+        "south": 11,
+        "north": 13
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.947368,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-096",
+      "region": "Andaman & Nicobar",
+      "bounds": {
+        "west": 93,
+        "east": 96,
+        "south": 11,
+        "north": 13
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.995951,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-096/2004-03-15.json",
+          "sha256": "d0805262cf00463e70b3c1ce6ad03d922229ca1708fc2ac324e2c822aa0af2b6"
+        }
+      ]
+    },
+    {
+      "id": "IO-097",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 96,
+        "east": 99,
+        "south": 11,
+        "north": 13
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.834008,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-098",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 99,
+        "east": 100,
+        "south": 11,
+        "north": 13
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.263736,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-099",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 60,
+        "east": 63,
+        "south": 9,
+        "north": 11
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-100",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 63,
+        "east": 66,
+        "south": 9,
+        "north": 11
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-101",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 66,
+        "east": 69,
+        "south": 9,
+        "north": 11
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-102",
+      "region": "Central Arabian Sea",
+      "bounds": {
+        "west": 69,
+        "east": 72,
+        "south": 9,
+        "north": 11
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-103",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 72,
+        "east": 75,
+        "south": 9,
+        "north": 11
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.991903,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-103/2004-03-15.json",
+          "sha256": "115af2de240515422add1504e658a3d8b62ec96ad86faeb35b1cd2da65dc8751"
+        }
+      ]
+    },
+    {
+      "id": "IO-104",
+      "region": "India West Coast",
+      "bounds": {
+        "west": 75,
+        "east": 78,
+        "south": 9,
+        "north": 11
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.408907,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-105",
+      "region": "India East Coast",
+      "bounds": {
+        "west": 78,
+        "east": 81,
+        "south": 9,
+        "north": 11
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.473684,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-105/2004-03-15.json",
+          "sha256": "07ff19883735d1b25369d4465d6d088ad456fb8f5a00429a5a04e5739cf55d32"
+        }
+      ]
+    },
+    {
+      "id": "IO-106",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 81,
+        "east": 84,
+        "south": 9,
+        "north": 11
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-107",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 84,
+        "east": 87,
+        "south": 9,
+        "north": 11
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-108",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 87,
+        "east": 90,
+        "south": 9,
+        "north": 11
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-109",
+      "region": "Bay of Bengal",
+      "bounds": {
+        "west": 90,
+        "east": 93,
+        "south": 9,
+        "north": 11
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.987854,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-110",
+      "region": "Andaman & Nicobar",
+      "bounds": {
+        "west": 93,
+        "east": 96,
+        "south": 9,
+        "north": 11
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-110/2004-03-15.json",
+          "sha256": "f770befeea12cf43a399ad127f914acf2e5c69aab86d9e152cce308cd2f18f92"
+        }
+      ]
+    },
+    {
+      "id": "IO-111",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 96,
+        "east": 99,
+        "south": 9,
+        "north": 11
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.817814,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-112",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 99,
+        "east": 100,
+        "south": 9,
+        "north": 11
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.604396,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-113",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 60,
+        "east": 63,
+        "south": 7,
+        "north": 9
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-114",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 63,
+        "east": 66,
+        "south": 7,
+        "north": 9
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-115",
+      "region": "Lakshadweep & Southern Arabian Sea",
+      "bounds": {
+        "west": 66,
+        "east": 69,
+        "south": 7,
+        "north": 9
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15",
+        "2004-07-28"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-115/2004-03-15.json",
+          "sha256": "060f5bf01c8377ebebd9e34bbd9741270feec41b38a3831867e4539072a01ca8"
+        },
+        {
+          "date": "2004-07-28",
+          "path": "data/IO-115/2004-07-28.json",
+          "sha256": "34fbb0666039af8cf88a8d79b3a61e19b48800f4cb1952ae74fcd9b6f1092989"
+        }
+      ]
+    },
+    {
+      "id": "IO-116",
+      "region": "Lakshadweep & Southern Arabian Sea",
+      "bounds": {
+        "west": 69,
+        "east": 72,
+        "south": 7,
+        "north": 9
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-116/2004-03-15.json",
+          "sha256": "4e5b10d69b9fff7ed26f63f73c530e911ec1c58bde1834b1956966ac7a6bb361"
+        }
+      ]
+    },
+    {
+      "id": "IO-117",
+      "region": "Lakshadweep & Southern Arabian Sea",
+      "bounds": {
+        "west": 72,
+        "east": 75,
+        "south": 7,
+        "north": 9
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.995951,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-118",
+      "region": "Lakshadweep & Southern Arabian Sea",
+      "bounds": {
+        "west": 75,
+        "east": 78,
+        "south": 7,
+        "north": 9
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.842105,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-119",
+      "region": "South of India",
+      "bounds": {
+        "west": 78,
+        "east": 81,
+        "south": 7,
+        "north": 9
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.59919,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15",
+        "2004-07-28"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-119/2004-03-15.json",
+          "sha256": "a86467ceaff2e77cb216e756a9d03c0cf2d4ab0ae22032796df93a04a7950a1f"
+        },
+        {
+          "date": "2004-07-28",
+          "path": "data/IO-119/2004-07-28.json",
+          "sha256": "05653573689918ebee142be47a2e1303fe0a593fa9a65db85d424b8cd8c5012c"
+        }
+      ]
+    },
+    {
+      "id": "IO-120",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 81,
+        "east": 84,
+        "south": 7,
+        "north": 9
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.809717,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-121",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 84,
+        "east": 87,
+        "south": 7,
+        "north": 9
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-121/2004-03-15.json",
+          "sha256": "97e31c3c9632af098e9a589a871c497bdc75344a001457c5bab3fe65e4cf7574"
+        }
+      ]
+    },
+    {
+      "id": "IO-122",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 87,
+        "east": 90,
+        "south": 7,
+        "north": 9
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-122/2004-03-15.json",
+          "sha256": "ec20af46c0e3e0d2c64661cfe4ddb15f7d4a0023d5d2bb6fc834192fc6837088"
+        }
+      ]
+    },
+    {
+      "id": "IO-123",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 90,
+        "east": 93,
+        "south": 7,
+        "north": 9
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-123/2004-03-15.json",
+          "sha256": "9babe948c9e945cbe0802a2254515f052ede6fd451d667bdab918ea202dc3891"
+        }
+      ]
+    },
+    {
+      "id": "IO-124",
+      "region": "Andaman & Nicobar",
+      "bounds": {
+        "west": 93,
+        "east": 96,
+        "south": 7,
+        "north": 9
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.983806,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-124/2004-03-15.json",
+          "sha256": "231f45d806dcf3a94bc825d2186af807013c153f16396d702d153af58ec8c972"
+        }
+      ]
+    },
+    {
+      "id": "IO-125",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 96,
+        "east": 99,
+        "south": 7,
+        "north": 9
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.898785,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-126",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 99,
+        "east": 100,
+        "south": 7,
+        "north": 9
+      },
+      "oceanRelevance": "coastal",
+      "oceanFraction": 0.263736,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-127",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 60,
+        "east": 63,
+        "south": 5,
+        "north": 7
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-128",
+      "region": "Western Arabian Sea",
+      "bounds": {
+        "west": 63,
+        "east": 66,
+        "south": 5,
+        "north": 7
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-129",
+      "region": "Lakshadweep & Southern Arabian Sea",
+      "bounds": {
+        "west": 66,
+        "east": 69,
+        "south": 5,
+        "north": 7
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-129/2004-03-15.json",
+          "sha256": "e9e1a639fd18e050ee2f7e8b9d226355a79c295173fff9c5a7b52055cb6abc0f"
+        }
+      ]
+    },
+    {
+      "id": "IO-130",
+      "region": "Lakshadweep & Southern Arabian Sea",
+      "bounds": {
+        "west": 69,
+        "east": 72,
+        "south": 5,
+        "north": 7
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-130/2004-03-15.json",
+          "sha256": "77651099bf0e3dc78e835eedafa92f762cf4abdd30104f23f91700a693ac8b13"
+        }
+      ]
+    },
+    {
+      "id": "IO-131",
+      "region": "Lakshadweep & Southern Arabian Sea",
+      "bounds": {
+        "west": 72,
+        "east": 75,
+        "south": 5,
+        "north": 7
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.97166,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-132",
+      "region": "Lakshadweep & Southern Arabian Sea",
+      "bounds": {
+        "west": 75,
+        "east": 78,
+        "south": 5,
+        "north": 7
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-133",
+      "region": "South of India",
+      "bounds": {
+        "west": 78,
+        "east": 81,
+        "south": 5,
+        "north": 7
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.834008,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "source-backed-render-ready-pilot",
+      "materialized": true,
+      "sourceSha256VerifiedByAudit": true,
+      "cesiumContractReady": true,
+      "waterColumnContractReady": true,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [
+        "thetao",
+        "so",
+        "currents"
+      ],
+      "availableDates": [
+        "2004-03-15"
+      ],
+      "depthEvidence": "source-payload-native-depth",
+      "sourcePayloads": [
+        {
+          "date": "2004-03-15",
+          "path": "data/IO-133/2004-03-15.json",
+          "sha256": "147e432e676f61e6fac37ab417357c50a8a27eb9fea2b37755cc665478ec3514"
+        }
+      ]
+    },
+    {
+      "id": "IO-134",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 81,
+        "east": 84,
+        "south": 5,
+        "north": 7
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.902834,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-135",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 84,
+        "east": 87,
+        "south": 5,
+        "north": 7
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-136",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 87,
+        "east": 90,
+        "south": 5,
+        "north": 7
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-137",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 90,
+        "east": 93,
+        "south": 5,
+        "north": 7
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 1,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-138",
+      "region": "Andaman & Nicobar",
+      "bounds": {
+        "west": 93,
+        "east": 96,
+        "south": 5,
+        "north": 7
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.931174,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-139",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 96,
+        "east": 99,
+        "south": 5,
+        "north": 7
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.919028,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    },
+    {
+      "id": "IO-140",
+      "region": "Eastern Indian Ocean",
+      "bounds": {
+        "west": 99,
+        "east": 100,
+        "south": 5,
+        "north": 7
+      },
+      "oceanRelevance": "ocean",
+      "oceanFraction": 0.934066,
+      "geographicallyEligibleForMaterialization": true,
+      "evidenceClass": "geography-only-planned",
+      "materialized": false,
+      "sourceSha256VerifiedByAudit": false,
+      "cesiumContractReady": false,
+      "waterColumnContractReady": false,
+      "individualProduction3DRenderProven": false,
+      "independentModelObservationValidated": false,
+      "availableVariables": [],
+      "availableDates": [],
+      "depthEvidence": "none",
+      "sourcePayloads": []
+    }
+  ]
+}

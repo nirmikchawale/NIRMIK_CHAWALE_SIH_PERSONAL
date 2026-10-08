@@ -20,7 +20,7 @@ test("3DB-07 integrates 112 ocean-intersecting targets into the primary Cesium E
   await expect(globe).toHaveAttribute("data-main-block-count", "112");
   await expect(globe).toHaveAttribute("data-active-main-block", "BASE-GLORYS-001");
   await expect(hud.getByText("112 retained", { exact: true })).toBeVisible();
-  await expect(hud.getByText("25 materialized", { exact: true })).toBeVisible();
+  await expect(hud.getByText("35 materialized", { exact: true })).toBeVisible();
   await expect(hud.getByText("28", { exact: true })).toBeVisible();
 
   const selector = hud.getByLabel("Active main block");

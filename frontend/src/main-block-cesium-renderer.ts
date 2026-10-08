@@ -312,7 +312,9 @@ export function buildCesiumCurrentsRenderPlan(
 ): CesiumMainBlockRenderPlan {
   if (!canCesiumRenderMainBlock(block)) return blockedPlan(block, "horizontal-currents");
 
-  assertVariableAvailable(block, currents.variable);
+  if (assertVariableAvailable(block, currents.variable) !== "currents") {
+    throw new Error("3DB-13 Cesium contract: horizontal-current vectors require the currents variable.");
+  }
   const date = assertTimeAvailable(block, currents.time);
   assertDepth(currents.depth_m);
   if (!currents.vectors.length) {
