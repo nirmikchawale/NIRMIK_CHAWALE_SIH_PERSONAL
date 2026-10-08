@@ -1201,6 +1201,17 @@ export default function App() {
               navigate("about");
               setProvenanceOpen(true);
             }
+            // Judge navigation must bring the actual selected view into focus,
+            // not leave it squeezed or offscreen behind the fixed presentation guide.
+            const destination = step === 1 ? "#mpr-water-column-section"
+              : step === 4 ? ".comparison-page"
+              : step === 5 ? ".info-page"
+              : "#mpr-3d-stage";
+            window.setTimeout(() => {
+              document.querySelector<HTMLElement>(destination)?.scrollIntoView({
+                block: "start", behavior: "auto"
+              });
+            }, 120);
           }} />}
           {page === "explore" ? (
             <div className="station-workspace" data-inspector={evidenceOpen || profilePanelOpen || workspaceMode === "analysis" ? "open" : "closed"}>
