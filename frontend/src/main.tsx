@@ -59,6 +59,8 @@ import "./mpr-dual-view-navigator.css";
 import "./mpr-geographic-section.css";
 // MPR-11: reorganize existing source-backed controls in the Geographic dock.
 import "./mpr-geographic-controls.css";
+// MPR-12: second genuine stacked Water Column 3D section, independent dock.
+import "./mpr-stacked-water-column.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
