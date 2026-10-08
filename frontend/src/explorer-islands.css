@@ -47,6 +47,8 @@
 
 /* Each island owns its internal grid and intrinsic vertical height. */
 .ocean-workbench[data-page="explore"] .explorer-landing-islands > .explorer-directory-shell {
+  /* VIS-02 accessibility contract: the shared island reset must not erase this. */
+  min-height: 66px;
   display: grid;
   align-content: start;
   grid-auto-rows: max-content;
@@ -102,11 +104,16 @@
 
 @media (max-width: 760px) {
   .ocean-workbench[data-page="explore"] .explorer-landing-islands {
-    gap: 16px;
+    /* Keep both islands within the first 900px mobile screen without overlap. */
+    gap: 10px;
   }
   .ocean-workbench[data-page="explore"] .explorer-landing-islands > :is(.explorer-directory-shell,.source-workbench) {
-    padding: 14px;
+    /* Trim container whitespace, not the 86px source-card touch targets. */
+    padding: 10px 12px;
     border-radius: 17px;
+  }
+  .ocean-workbench[data-page="explore"] .explorer-landing-islands > .source-workbench {
+    gap: 10px;
   }
   .ocean-workbench[data-page="explore"] .explorer-landing-islands .source-workbench-choices {
     grid-template-columns: minmax(0,1fr);
