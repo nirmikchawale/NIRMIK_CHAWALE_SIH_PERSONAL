@@ -36,8 +36,14 @@ test("Phase 3.5D loads a genuine pilot into Geographic and Water Column 3D witho
   await expect(context).toHaveAttribute("data-block-id", "IO-001", { timeout: 30_000 });
   await expect(context).toHaveAttribute("data-block-materialization", "pilot");
 
+  const detailsTrigger = page.getByTestId("pilot-block-details-trigger");
+  await expect(detailsTrigger).toBeVisible({ timeout: 30_000 });
+  await expect(detailsTrigger).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByTestId("pilot-renderer-bridge")).toHaveCount(0);
+  await detailsTrigger.click();
   const bridge = page.getByTestId("pilot-renderer-bridge");
   await expect(bridge).toBeVisible({ timeout: 30_000 });
+  await expect(detailsTrigger).toHaveAttribute("aria-expanded", "true");
   await expect(bridge).toContainText("SOURCE-BACKED MAIN BLOCK LIVE");
   await expect(bridge).toContainText("IO-001");
   await expect(bridge).toContainText("Geographic 3D");
@@ -49,6 +55,8 @@ test("Phase 3.5D loads a genuine pilot into Geographic and Water Column 3D witho
   await expect(workbench).toHaveAttribute("data-explore-source", "glorys");
   await expect(page.locator(".main-block-globe-hud select[aria-label='Active main block']")).toHaveValue("IO-001");
 
+  await page.getByRole("button", { name: "Close source-backed main block details" }).last().click();
+  await expect(bridge).toHaveCount(0);
   const openWaterColumn = page.getByRole("button", { name: "Open in Water Column 3D" });
   await expect(openWaterColumn).toBeEnabled({ timeout: 30_000 });
   await openWaterColumn.click();
@@ -59,6 +67,8 @@ test("Phase 3.5D loads a genuine pilot into Geographic and Water Column 3D witho
   await expect(page.locator(".water-column-summary")).toContainText("2004-03-15", { timeout: 30_000 });
   await expect(page.getByTestId("planned-main-block-shell")).toHaveCount(0);
 
+  await detailsTrigger.click();
+  await expect(bridge).toBeVisible();
   const returnToBaseline = page.getByTestId("pilot-return-baseline");
   await returnToBaseline.click();
   await expect.poll(() => page.evaluate(() => (window as typeof window & { __blockSwitchSentinel?: string }).__blockSwitchSentinel)).toBe("alive");
