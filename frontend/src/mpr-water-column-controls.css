@@ -1,0 +1,93 @@
+/* MPR-13: true water-column-native controls; all presentation tokens
+   inherited from the same sixteen saved Ocean Canvas glass themes. */
+.ocean-workbench[data-page="explore"] .mpr-water-column-controls {
+  display:flex; flex-direction:column; min-width:0;
+  overscroll-behavior-y:auto; gap:9px;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-control-group {
+  box-sizing:border-box; min-width:0;
+  border:1px solid var(--mpr-border);
+  border-radius:var(--mpr-radius-medium,20px);
+  background:var(--mpr-surface-raised);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-control-group > summary {
+  cursor:pointer; min-height:44px; box-sizing:border-box;
+  padding:13px; line-height:1.45;
+  font-size:12px; font-weight:800; color:var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-control-group[open] > summary {
+  color:var(--mpr-accent);
+  border-bottom:1px solid var(--mpr-border-active);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-control-group > summary:focus-visible {
+  outline:2px solid var(--mpr-focus); outline-offset:-3px;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-group-content {
+  display:flex; flex-direction:column; gap:12px;
+  padding:13px; min-width:0;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-group-content label {
+  display:flex; flex-direction:column; gap:7px;
+  min-width:0; color:var(--mpr-text); font-size:11px; font-weight:700;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-group-content label.mpr-water-toggle {
+  flex-direction:row; align-items:center;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-group-content :is(input,select) {
+  box-sizing:border-box; display:block; min-width:0; max-width:100%;
+  width:100%; min-height:38px; padding:7px 9px;
+  border:1px solid var(--mpr-border); border-radius:var(--mpr-radius-control);
+  background:var(--mpr-surface); color:var(--mpr-text);
+  font-family:inherit; font-size:12px;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-group-content input[type="range"] {
+  cursor:pointer; height:30px; padding:5px 0;
+  accent-color:var(--mpr-accent);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-group-content input[type="checkbox"] {
+  width:20px; height:20px; min-height:20px; padding:0; flex:none;
+  cursor:pointer; accent-color:var(--mpr-accent);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-group-content :is(input,select):disabled {
+  opacity:.55; cursor:not-allowed;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-group-content :is(input,select):focus-visible {
+  outline:2px solid var(--mpr-focus); outline-offset:2px;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-group-content small {
+  color:var(--mpr-text-muted); font-size:10px; line-height:1.55;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-range-inputs {
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; min-width:0;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-colour-ramp {
+  height:20px; border:1px solid var(--mpr-border-active);
+  border-radius:var(--mpr-radius-control);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-workflow-actions button {
+  width:100%; text-align:left; justify-content:flex-start;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-return {
+  width:100%; text-align:left; margin-top:2px;
+  color:var(--mpr-accent); background:var(--mpr-surface-raised);
+}
+@media(max-width:1120px) {
+  .ocean-workbench[data-page="explore"] .mpr-water-column-controls {
+    height:auto !important;
+  }
+}
+@media(max-width:520px) {
+  .ocean-workbench[data-page="explore"] .mpr-water-range-inputs {
+    grid-template-columns:minmax(0,1fr);
+  }
+  .ocean-workbench[data-page="explore"] .mpr-water-group-content {padding:10px;}
+}
+@media(forced-colors:active) {
+  .ocean-workbench[data-page="explore"] .mpr-water-control-group,
+  .ocean-workbench[data-page="explore"] .mpr-water-group-content :is(input,select,button) {
+    background:Canvas !important; color:CanvasText !important; border-color:CanvasText !important;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .ocean-workbench[data-page="explore"] .mpr-water-control-group * {transition:none !important;}
+}
