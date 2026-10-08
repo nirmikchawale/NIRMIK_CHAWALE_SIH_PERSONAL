@@ -968,7 +968,8 @@ export default function App() {
     plannedBlock ? "planned" : !eligible ? "unavailable" :
     ready ? "verified" : scienceLoading ? "loading" :
     error ? "unavailable" : "mismatch";
-  const geographicStatus = linkedStatus(acceptedGeographic);
+  const geographicReady = acceptedGeographic && (viewMode !== "volume" || variable === "currents" || acceptedWater);
+  const geographicStatus = linkedStatus(geographicReady);
   const waterStatus = linkedStatus(acceptedWater, waterEligible);
 
 
@@ -1296,9 +1297,9 @@ export default function App() {
                   aria-hidden={false}
                 >
                   <OceanGlobe
-                    field={acceptedGeographic ? field : null}
-                    volume={acceptedGeographic && acceptedWater && viewMode === "volume" ? volume : null}
-                    currents={acceptedGeographic ? currents : null}
+                    field={geographicReady ? field : null}
+                    volume={geographicReady && viewMode === "volume" ? volume : null}
+                    currents={geographicReady ? currents : null}
                     profiles={activeComparisonProfiles}
                     selectedProfileId={sourceMode === "glorys" ? selectedProfileId : ""}
                     importedProfiles={importedProfiles}
