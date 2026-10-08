@@ -67,16 +67,24 @@ for (const viewport of [
 
     const hud = page.getByTestId("integrated-main-block-hud");
     const canvas = page.locator(".globe-visualization-layer.active .cesium-host");
-    await expect(hud).toBeVisible();
     await expect(canvas).toBeVisible();
 
-    const [box, canvasBox] = await Promise.all([hud.boundingBox(), canvas.boundingBox()]);
+    const control = page.locator(".station-workspace > .control-panel");
+    // The ORIGINAL controls now live in the mobile drawer, not over Cesium.
+    await expect(canvas.locator('[data-testid="integrated-main-block-hud"]')).toHaveCount(0);
+    await expect(control).toHaveAttribute("data-mobile-open", "false");
+    await page.locator(".mobile-explore-tray button").first().click();
+    await expect(control).toHaveAttribute("data-mobile-open", "true");
+    await expect(control.getByTestId("mpr-block-region-group")).toBeVisible();
+    await expect(hud).toBeVisible();
+    const [box, dockBox] = await Promise.all([hud.boundingBox(), control.boundingBox()]);
     expect(box).not.toBeNull();
-    expect(canvasBox).not.toBeNull();
-    expect(box!.x).toBeGreaterThanOrEqual(canvasBox!.x - 1);
-    expect(box!.x + box!.width).toBeLessThanOrEqual(canvasBox!.x + canvasBox!.width + 1);
-    expect(box!.y).toBeGreaterThanOrEqual(canvasBox!.y - 1);
-    expect(box!.y + box!.height).toBeLessThanOrEqual(canvasBox!.y + canvasBox!.height + 1);
+    expect(dockBox).not.toBeNull();
+    expect(box!.x).toBeGreaterThanOrEqual(dockBox!.x - 2);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(dockBox!.x + dockBox!.width + 2);
+    expect(box!.y).toBeGreaterThanOrEqual(dockBox!.y - 2);
+    await control.getByRole("button", { name: "Close explorer controls" }).click();
+    await expect(control).toHaveAttribute("data-mobile-open", "false");
 
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(1);
