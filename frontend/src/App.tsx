@@ -31,7 +31,17 @@ import argoLogo4a from "./assets/exact-logo-04a.b64?raw";
 import argoLogo4b from "./assets/exact-logo-04b.b64?raw";
 import { PAGE_ITEMS, routeFromHash, type PageId } from "./navigation";
 import { readScientificWorkspaceContext } from "./scientific-context-runtime";
-import { subscribeActiveMainBlock } from "./main-block-runtime";
+import {
+  readActiveMainBlockId,
+  resolveMainBlock,
+  subscribeActiveMainBlock
+} from "./main-block-runtime";
+import { deriveMainBlockObservationIntegration } from "./main-block-observations";
+import { deriveMainBlockProvenanceEvidence } from "./main-block-provenance";
+import {
+  fetchPilotMainBlockManifest,
+  type PilotBlockManifest
+} from "./pilot-main-block-loader";
 import {
   buildIncoisChlorophyllCatalog,
   buildIncoisChlorophyllField,
@@ -109,6 +119,7 @@ export default function App() {
     groupImportedObservationProfiles(readImportedObservationRecords())
   );
   const [verifiedObservationProfiles, setVerifiedObservationProfiles] = useState<ImportedObservationProfile[]>([]);
+  const [pilotManifest, setPilotManifest] = useState<PilotBlockManifest | null>(null);
   const importedProfiles = useMemo(() => {
     const profilesById = new Map<string, ImportedObservationProfile>();
     for (const profile of verifiedObservationProfiles) profilesById.set(profile.id, profile);
@@ -146,8 +157,10 @@ export default function App() {
   useStartupScreen(Boolean(catalog), Boolean(startupError));
   const [degradedWarnings, setDegradedWarnings] = useState<string[]>([]);
   const [mainBlockRevision, setMainBlockRevision] = useState(0);
+  const [activeMainBlockId, setActiveMainBlockId] = useState(() => readActiveMainBlockId());
 
-  useEffect(() => subscribeActiveMainBlock(() => {
+  useEffect(() => subscribeActiveMainBlock((id) => {
+    setActiveMainBlockId(id);
     // 3DB-07 replaces the historical block-triggered full-page reload with an
     // in-session scientific source refresh. Reset only source-coupled state;
     // navigation, camera shell and the rest of the app session stay intact.
@@ -176,6 +189,26 @@ export default function App() {
       : sourceMode === "chlorophyll" && chlorophyllCatalog
         ? chlorophyllCatalog
         : catalog;
+  const activeMainBlock = useMemo(
+    () => resolveMainBlock(activeMainBlockId),
+    [activeMainBlockId]
+  );
+  const activeBlockObservationEvidence = useMemo(
+    () => deriveMainBlockObservationIntegration(activeMainBlock, {
+      comparisonProfiles: profiles,
+      verifiedProfiles: verifiedObservationProfiles
+    }),
+    [activeMainBlock, profiles, verifiedObservationProfiles]
+  );
+  const activeBlockProvenanceEvidence = useMemo(
+    () => deriveMainBlockProvenanceEvidence(activeMainBlock, {
+      manifest: pilotManifest,
+      runtimeProvenance: provenance,
+      observationIntegration: activeBlockObservationEvidence
+    }),
+    [activeMainBlock, pilotManifest, provenance, activeBlockObservationEvidence]
+  );
+
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -400,6 +433,27 @@ export default function App() {
     };
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchPilotMainBlockManifest()
+      .then((payload) => {
+        if (!cancelled) setPilotManifest(payload);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPilotManifest(null);
+          setDegradedWarnings((current) =>
+            current.includes("Main-block provenance manifest unavailable")
+              ? current
+              : [...current, "Main-block provenance manifest unavailable"]
+          );
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -1323,6 +1377,7 @@ export default function App() {
           <ProvenanceDrawer
             open={provenanceOpen}
             provenance={provenance}
+            blockEvidence={activeBlockProvenanceEvidence}
             onClose={() => setProvenanceOpen(false)}
           />
         </div>
