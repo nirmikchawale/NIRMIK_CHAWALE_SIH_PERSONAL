@@ -53,6 +53,8 @@ import "./mpr-ocean-intelligence.css";
 import "./mpr-active-main-block.css";
 // MPR-08: move evidence/QC entry points into Ocean Intelligence.
 import "./mpr-intelligence-evidence-hub.css";
+// MPR-09: scientific-view navigation on existing source-backed stage.
+import "./mpr-dual-view-navigator.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
