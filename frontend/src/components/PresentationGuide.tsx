@@ -12,12 +12,36 @@ const STEPS = [
 export function PresentationGuide({ onStep, onClose }: { onStep: (step: number) => void; onClose: () => void }) {
   const [step, setStep] = useState(0);
   useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
   }, [onClose]);
-  return <section className="presentation-guide" aria-label="Presentation guide">
-    <div><span className="eyebrow">Demo guide · {step + 1} / {STEPS.length}</span><h2>{STEPS[step].title}</h2><p>{STEPS[step].body}</p></div>
-    <div className="guide-actions"><button type="button" onClick={() => onStep(step)}>Show this step</button><button type="button" disabled={step === 0} onClick={() => { setStep(step - 1); onStep(step - 1); }}>Back</button><button type="button" disabled={step === STEPS.length - 1} onClick={() => { setStep(step + 1); onStep(step + 1); }}>Next →</button><button type="button" aria-label="Close presentation guide" onClick={onClose}>Close</button></div>
-  </section>;
+
+  const advance = (next: number) => {
+    const bounded = Math.max(0, Math.min(STEPS.length - 1, next));
+    setStep(bounded);
+    onStep(bounded);
+  };
+
+  return (
+    <section className="presentation-guide" aria-label="Presentation guide" data-testid="presentation-guide">
+      <header className="presentation-guide-header">
+        <div>
+          <span className="eyebrow">JUDGE PRESENTATION · {String(step + 1).padStart(2, "0")} / {STEPS.length}</span>
+          <h2>{STEPS[step].title}</h2>
+        </div>
+        <button type="button" className="presentation-guide-close" aria-label="Close presentation guide" onClick={onClose}>×</button>
+      </header>
+      <progress className="presentation-guide-progress" aria-label="Presentation step progress" max={STEPS.length} value={step + 1} />
+      <div className="presentation-guide-content"><p>{STEPS[step].body}</p></div>
+      <nav className="guide-actions" aria-label="Presentation step controls">
+        <button type="button" onClick={() => onStep(step)}>Show this step</button>
+        <button type="button" disabled={step === 0} onClick={() => advance(step - 1)}>Back</button>
+        <button type="button" disabled={step === STEPS.length - 1} onClick={() => advance(step + 1)}>Next →</button>
+        <button type="button" onClick={onClose}>Close</button>
+      </nav>
+    </section>
+  );
 }
