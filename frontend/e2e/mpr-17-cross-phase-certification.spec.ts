@@ -17,6 +17,12 @@ for(const width of [320,390,768,1024,1366,1440]) {
   await expect(root).toBeVisible();
   await expect(geo).toBeVisible();
   await expect(water).toBeVisible();
+  if(width<=760){
+    // Mobile uses the existing accessible bottom-sheet entry by design.
+    await expect(geographicControls).toHaveAttribute("data-mobile-open","false");
+    await page.locator(".mobile-explore-tray button").first().click();
+    await expect(geographicControls).toHaveAttribute("data-mobile-open","true");
+  }
   await expect(geographicControls).toBeVisible();
   await expect(waterControls).toBeVisible();
   await expect(inspectors).toBeVisible();
