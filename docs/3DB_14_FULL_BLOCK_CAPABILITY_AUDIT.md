@@ -20,7 +20,7 @@ The report distinguishes materialized source-backed pilots from geography-only l
 No source bytes, coordinates, measurements, original SHA-256 manifest digests, timestamps, renderer science, QC, observations, CSS, navigation, features or 16 themes were changed. Report changes are informational and read-only. No parallel RUI-owned files edited.
 
 ## Reproduction
-`python scripts/audit_3db14_capabilities.py --check` fails when report and canonical scientific source/runtime disagree. `--write` regenerates only the audit JSON after full native source verification. The dedicated 3DB-14 workflow runs source verification, Python negative tests, frontend build/typecheck and browser published-asset tests. All normal `tests` and `final-mvp` shared gates must pass on the exact PR head.
+`python -m scripts.audit_3db14_capabilities --check` fails when report and canonical scientific source/runtime disagree. `--write` regenerates only the audit JSON after full native source verification. The dedicated 3DB-14 workflow runs source verification, Python negative tests, frontend build/typecheck and browser published-asset tests. All normal `tests` and `final-mvp` shared gates must pass on the exact PR head.
 
 ## Roadmap interpretation
 Completing 3DB-14 and 3DB-15 means the **verified available** 3D rendering capabilities have been accepted and publicly deployed. It **does not materialize the 105 missing targets**. Delivering all 140 genuine 3D models would require an additional scientific data acquisition/coverage expansion milestone outside the currently authored 16-phase roadmap.

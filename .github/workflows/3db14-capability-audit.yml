@@ -23,7 +23,7 @@ jobs:
       - run: python -m pip install pytest
       - name: Verify all 41 native payload digests and 140 capability rows
         run: |
-          python scripts/audit_3db14_capabilities.py --check
+          python -m scripts.audit_3db14_capabilities --check
           python -m pytest -q tests/test_3db14_full_block_capability_audit.py tests/test_3db12_performance_lod.py
       - uses: actions/upload-artifact@v4
         with:
