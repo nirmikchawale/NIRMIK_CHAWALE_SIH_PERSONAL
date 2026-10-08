@@ -19,6 +19,10 @@ EXACT_FILES = {
     "frontend/src/components/SmartDualViewNavigator.tsx",
     "frontend/src/components/WaterColumnControlDock.tsx",
     "frontend/src/components/ExplorerInspectorAccess.tsx",
+    # Exact UI-only portability exceptions for the renderer-owned block control
+    # relocation. CI tests enforce original globe selection/science behavior.
+    "frontend/src/components/OceanGlobe.tsx",
+    "frontend/e2e/main-block-globe-integration.spec.ts",
     # Post-release RUI-02/MPR integration hardening: presentation + acceptance only.
     "frontend/src/components/ScientificContextHeader.tsx",
     "frontend/e2e/rui-context-header.spec.ts",
