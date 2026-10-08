@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 
 import { Phase35MainBlockEngine } from "./Phase35MainBlockEngine";
 import { Phase3ArabianAtlas } from "./Phase3ArabianAtlas";
+import { BlockDetailsWorkspace } from "./BlockDetailsWorkspace";
 
 export function ExplorerConsolidationHost() {
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
@@ -94,6 +95,7 @@ export function ExplorerConsolidationHost() {
           <strong>Geographic evidence blocks</strong>
           <small>Canonical launch point for verified/materialized block tools. Planned cells remain fail-closed.</small>
         </div>
+        <BlockDetailsWorkspace />
         <div className="explorer-block-system-launchers">
           <Phase35MainBlockEngine />
           <Phase3ArabianAtlas />
