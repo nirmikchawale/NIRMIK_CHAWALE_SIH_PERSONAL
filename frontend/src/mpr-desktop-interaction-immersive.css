@@ -37,7 +37,32 @@
 html:root, html:root > body, html:root > body > #root {
   min-height: 100dvh !important;
 }
+.ocean-workbench .immersive-screen-entry {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  position: relative;
+}
+.ocean-workbench .immersive-screen-entry .immersive-screen-note {
+  position: absolute;
+  z-index: 75;
+  top: calc(100% + 8px);
+  right: 0;
+  display: block;
+  width: min(300px, calc(100vw - 24px));
+  padding: 10px;
+  border: 1px solid var(--mpr-border);
+  border-radius: 10px;
+  background: var(--mpr-surface);
+  color: var(--mpr-text);
+  white-space: normal;
+  font-size: 11px;
+}
 .ocean-workbench .immersive-screen-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
   min-height: 40px;
   padding: 7px 12px;
   border-radius: var(--mpr-radius-control, 10px);
@@ -60,6 +85,13 @@ html:fullscreen body, html:fullscreen #root {
 }
 @media (max-width: 760px) {
   .ocean-workbench .immersive-screen-button {
-    min-height: 42px;
+    width: 38px;
+    min-width: 38px;
+    min-height: 38px;
+    padding: 5px;
+    font-size: 19px;
+  }
+  .ocean-workbench .immersive-screen-button-label {
+    display: none;
   }
 }
