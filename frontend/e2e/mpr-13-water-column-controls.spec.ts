@@ -56,6 +56,7 @@ test("MPR-13 numeric colour is shared with source-owned Geographic legend",async
  await expect(page.locator(".scientific-colorbar-hud")).toBeVisible();
  await palette.selectOption("icefire");
  await expect(water.locator(".water-column-shell")).toHaveAttribute("data-color-palette","icefire");
+ await dock.locator("details.mpr-water-control-group").last().locator("summary").click();
  await dock.getByRole("button",{name:/Sources & QC/}).click();
  await expect(page.getByRole("complementary",{name:"Scientific provenance and quality control"})).toBeVisible();
 });
