@@ -69,6 +69,8 @@ import "./mpr-linked-view-evidence.css";
 import "./mpr-responsive-inspectors.css";
 // MPR production hardening: remove duplicated scientific-context header strip.
 import "./mpr-context-consolidation.css";
+// MPR post-release: genuine main-block controller now in the Geographic dock.
+import "./mpr-block-region-relocation.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
