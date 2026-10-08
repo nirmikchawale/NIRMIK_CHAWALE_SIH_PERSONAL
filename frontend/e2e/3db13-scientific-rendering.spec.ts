@@ -8,6 +8,16 @@ const record = manifest.blocks.find((x: { id: string }) => x.id === "IO-001").pa
 const bytes = readFileSync(new URL("../public/main-blocks/data/IO-001/2004-03-15.json", import.meta.url));
 const buffer = (data: Uint8Array): ArrayBuffer => Uint8Array.from(data).buffer as ArrayBuffer;
 
+async function openExplore(page: import("@playwright/test").Page) {
+  await page.goto(process.env.OCEANTWIN_LIVE_URL!, { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".ocean-workbench")).toBeVisible({ timeout: 30_000 });
+  const skip = page.getByRole("button", { name: "Skip journey" });
+  if (await skip.isVisible().catch(() => false)) {
+    await skip.click({ timeout: 15_000 });
+    await expect(page.locator(".globe-shell[data-journey-phase]")).toHaveAttribute("data-journey-phase", "region", { timeout: 20_000 });
+  }
+}
+
 test("3DB-13 real source SHA-256 passes; corrupted bytes and missing manifest digest fail closed", async () => {
   expect(MAIN_BLOCK_FRAME_INTEGRITY_VERSION).toBe("3db-13-v1");
   expect(PHASE35B_PILOT_IDS).toHaveLength(35);
@@ -21,9 +31,10 @@ test("3DB-13 real source SHA-256 passes; corrupted bytes and missing manifest di
 
 test("3DB-13 globe pilot inventory and Water Column show scientifically truthful active frame", async ({ page }) => {
   if (!process.env.OCEANTWIN_LIVE_URL) throw new Error("OCEANTWIN_LIVE_URL required");
-  await page.addInitScript(() => localStorage.setItem("oceancanvas-active-main-block-v1", "IO-001"));
-  await page.goto(process.env.OCEANTWIN_LIVE_URL, { waitUntil: "domcontentloaded" });
-  await expect(page.getByTestId("integrated-main-block-hud").getByText("35 materialized", { exact: true })).toBeVisible({ timeout: 30_000 });
+  await openExplore(page);
+  const hud = page.getByTestId("integrated-main-block-hud");
+  await expect(hud.getByText("35 materialized", { exact: true })).toBeVisible({ timeout: 30_000 });
+  await hud.getByLabel("Active main block").selectOption("IO-001");
   const enter = page.getByRole("button", { name: "Open in Water Column 3D" });
   await expect(enter).toBeEnabled({ timeout: 30_000 });
   await enter.click();
@@ -36,8 +47,8 @@ test("3DB-13 globe pilot inventory and Water Column show scientifically truthful
 test("3DB-13 corrupted HTTP source frame never becomes an accepted scientific volume", async ({ page }) => {
   if (!process.env.OCEANTWIN_LIVE_URL) throw new Error("OCEANTWIN_LIVE_URL required");
   await page.route("**/main-blocks/data/IO-001/2004-03-15.json", (route) => route.fulfill({ status: 200, contentType: "application/json", body: '{"schema":"tampered"}' }));
-  await page.addInitScript(() => localStorage.setItem("oceancanvas-active-main-block-v1", "IO-001"));
-  await page.goto(process.env.OCEANTWIN_LIVE_URL, { waitUntil: "domcontentloaded" });
+  await openExplore(page);
+  await page.getByTestId("integrated-main-block-hud").getByLabel("Active main block").selectOption("IO-001");
   await expect(page.locator(".toast.error")).toContainText(/SHA-256 mismatch/, { timeout: 30_000 });
   await expect(page.locator('.water-column-shell[data-main-block-id="IO-001"]')).toHaveCount(0);
 });
