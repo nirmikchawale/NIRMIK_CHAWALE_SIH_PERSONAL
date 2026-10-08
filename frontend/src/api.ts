@@ -43,6 +43,9 @@ const ROBUST_Z_THRESHOLD = 3.5;
 const ROBUST_Z_NORMALIZER = 0.67448975;
 
 let pilotManifestPromise: Promise<PilotBlockManifest> | null = null;
+// Four recent source frames cap retained parsed payload memory across 35 pilots.
+// In-flight duplicate requests reuse a promise; failed requests are retryable.
+const MAX_PILOT_CACHE_FRAMES = 4;
 const pilotPayloadPromises = new Map<string, Promise<PilotBlockPayload>>();
 
 function safeProfileId(profileId: string): string {
@@ -70,7 +73,13 @@ function activePilotId(): string | null {
 }
 
 async function pilotManifest(): Promise<PilotBlockManifest> {
-  if (!pilotManifestPromise) pilotManifestPromise = fetchPilotMainBlockManifest();
+  if (!pilotManifestPromise) {
+    const pending = fetchPilotMainBlockManifest();
+    pilotManifestPromise = pending;
+    void pending.catch(() => {
+      if (pilotManifestPromise === pending) pilotManifestPromise = null;
+    });
+  }
   return pilotManifestPromise;
 }
 
@@ -88,9 +97,22 @@ async function pilotPayload(id: string, timeIndex: number): Promise<PilotBlockPa
   if (!date) throw new Error(`Time index ${timeIndex} is outside ${id}'s genuine source frames.`);
   const key = `${id}:${date}`;
   let promise = pilotPayloadPromises.get(key);
-  if (!promise) {
-    promise = fetchPilotMainBlock(id, date, manifest);
+  if (promise) {
+    // Map insertion order implements LRU, including repeated frame revisits.
+    pilotPayloadPromises.delete(key);
     pilotPayloadPromises.set(key, promise);
+    return promise;
+  }
+  promise = fetchPilotMainBlock(id, date, manifest);
+  pilotPayloadPromises.set(key, promise);
+  // A failed request must never permanently poison the cache.
+  void promise.catch(() => {
+    if (pilotPayloadPromises.get(key) === promise) pilotPayloadPromises.delete(key);
+  });
+  while (pilotPayloadPromises.size > MAX_PILOT_CACHE_FRAMES) {
+    const oldest = pilotPayloadPromises.keys().next().value;
+    if (oldest === undefined) break;
+    pilotPayloadPromises.delete(oldest);
   }
   return promise;
 }
