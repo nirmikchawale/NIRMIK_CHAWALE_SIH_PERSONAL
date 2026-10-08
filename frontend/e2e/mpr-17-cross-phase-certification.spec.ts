@@ -24,6 +24,10 @@ for(const width of [320,390,768,1024,1366,1440]) {
     await expect(geographicControls).toHaveAttribute("data-mobile-open","true");
   }
   await expect(geographicControls).toBeVisible();
+  if(width<=760){
+    await geographicControls.getByRole("button",{name:"Close explorer controls"}).click();
+    await expect(geographicControls).toHaveAttribute("data-mobile-open","false");
+  }
   await expect(waterControls).toBeVisible();
   await expect(inspectors).toBeVisible();
   await expect(page.locator(".station-workspace > .control-panel")).toHaveCount(1);
