@@ -72,9 +72,9 @@ test("Explorer directory and Ocean Intelligence own separate scrolling rows with
     }
     expect(actionsBox!.y).toBeGreaterThanOrEqual(Math.max(...boxes.map((box) => box.y + box.height)) + 2);
 
-    // Confirm scrolling moves the whole source section, rather than leaving it
-    // pinned over the 3D Explorer directory or the visualization.
-    const scroller = page.locator(".station-workspace");
+    // MPR-02 moves the Explorer scroll owner from the nested station
+    // to its app shell so the header and source islands scroll together.
+    const scroller = page.locator(".ocean-workbench[data-page='explore']");
     await scroller.evaluate((element) => { element.scrollTop = 0; });
     const before = await source.boundingBox();
     const travel = await scroller.evaluate((element) => {
@@ -84,6 +84,7 @@ test("Explorer directory and Ocean Intelligence own separate scrolling rows with
     expect(travel).toBeGreaterThan(100);
     const after = await source.boundingBox();
     expect(after!.y).toBeLessThan(before!.y - 80);
+    await expect(page.locator(".station-workspace")).toHaveCSS("overflow-y", "visible");
     await scroller.evaluate((element) => { element.scrollTop = 0; });
   }
 });
