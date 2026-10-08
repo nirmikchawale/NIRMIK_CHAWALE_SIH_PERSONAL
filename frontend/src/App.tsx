@@ -5,6 +5,8 @@ import { linkedSelectionKey, matchesGeographicPayload, matchesWaterColumnPayload
 import { ExplorerDirectoryNav } from "./components/ExplorerDirectoryNav";
 import { ExplorerWorkspaceModeIsland } from "./components/ExplorerWorkspaceModeIsland";
 import { RefreshControl } from "./components/RefreshControl";
+import { ImmersiveFullscreenButton } from "./components/ImmersiveFullscreenButton";
+import { getGlassTheme, initialGlassTheme } from "./theme";
 import { useOceanMotion } from "./useOceanMotion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -87,13 +89,10 @@ const THEME_STORAGE_KEY = "oceantwin-theme";
 const ARGO_COMPASS_LOGO_SRC = `data:image/png;base64,${argoLogo0}${argoLogo1}${argoLogo2}${argoLogo3a}${argoLogo3b}${argoLogo4a}${argoLogo4b}`;
 
 function initialTheme(): ThemeMode {
-  try {
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    if (stored === "light" || stored === "dark") return stored;
-  } catch {
-    // Storage can be unavailable in hardened/private browsing contexts.
-  }
-  return "dark";
+  // The Appearance Lab's explicit 16-preset selection is authoritative.
+  // For new visitors the initial scheme matches Arctic Mist, not the
+  // historical binary dark/light setting, avoiding a dark first paint.
+  return getGlassTheme(initialGlassTheme()).scheme;
 }
 
 export default function App() {
@@ -1043,6 +1042,7 @@ export default function App() {
         </div>
         <div className="header-status">
           <RefreshControl />
+          <ImmersiveFullscreenButton />
           <button className="present-button" type="button" aria-expanded={guideOpen} onClick={() => setGuideOpen((open) => !open)}>Present demo</button>
           {page === "explore" && (
             <div className="workspace-mode-switcher" role="group" aria-label="Explorer workspace mode">
