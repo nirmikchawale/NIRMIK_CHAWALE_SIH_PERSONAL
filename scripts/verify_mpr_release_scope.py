@@ -23,6 +23,7 @@ EXACT_FILES = {
     # Existing app regression tests repaired using the 3DB-15 owner branch.
     "frontend/e2e/live.spec.ts",
     "frontend/e2e/rui-nav-01-file-manager-shell.spec.ts",
+    "frontend/e2e/document-layout.spec.ts",
     "scripts/verify_mpr_release_scope.py",
     ".github/workflows/mpr-release-certification.yml",
 }
