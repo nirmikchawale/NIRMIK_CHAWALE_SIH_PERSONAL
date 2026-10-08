@@ -1,0 +1,159 @@
+/*
+ * RUI-MPR-10 — Geographic 3D full-width SECTION SHELL.
+ * Pure layout: the original OceanGlobe, ControlPanel, VisualizationDock,
+ * ScientificColorbarHud and independent inspector keep their React owners.
+ * Do not mount a second renderer or change scientific camera/data contracts.
+ * Tokens are inherited from the user-selected one of sixteen glass themes.
+ */
+.ocean-workbench[data-page="explore"] .mpr-geographic-heading {
+  grid-area: geo-title;
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 6px 18px; justify-content: space-between; min-width: 0;
+  padding: 12px clamp(15px,1.6vw,23px);
+  border: 1px solid var(--mpr-border-active);
+  border-radius: var(--mpr-radius-island);
+  background: var(--mpr-surface);
+  color: var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-heading > span {
+  flex: 1 0 100%; color: var(--mpr-accent);
+  font-weight: 800; letter-spacing: .11em; font-size: 10px;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-heading-main {
+  flex: 1 1 360px; min-width: 0;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-heading h2 {
+  margin: 0; color: var(--mpr-text);
+  font-size: clamp(18px,1.9vw,28px); line-height: 1.2;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-heading p,
+.ocean-workbench[data-page="explore"] .mpr-geographic-heading > small {
+  display: block; margin: 5px 0 0;
+  max-width: 65ch; color: var(--mpr-text-muted);
+  font-size: 11px; line-height: 1.5; overflow-wrap: anywhere;
+}
+@media (min-width: 1121px) {
+  /* Scene takes ~76%; the original, fully functional ControlPanel owns ~24%.
+     The original stage and renderer layers remain literally the same nodes. */
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace,
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"])[data-control-dock="open"] .station-workspace[data-inspector="open"] {
+    display: grid !important;
+    grid-template-columns: minmax(0,3.15fr) minmax(280px,1fr) !important;
+    grid-template-areas:
+      "directory directory"
+      "block block"
+      "dock dock"
+      "geo-title geo-title"
+      "scene controls"
+      "range controls"
+      "inspector inspector"
+      "evidence evidence" !important;
+    grid-template-rows: auto auto auto auto minmax(560px,80dvh) auto auto auto !important;
+    align-items: stretch; gap: clamp(10px,1vw,16px);
+    min-width: 0; height: auto !important;
+  }
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"])[data-control-dock="closed"] .station-workspace {
+    grid-template-columns: minmax(0,1fr) !important;
+    grid-template-areas:
+      "directory" "block" "dock" "geo-title"
+      "scene" "range" "inspector" "evidence" !important;
+    grid-template-rows: auto auto auto auto minmax(560px,80dvh) auto auto auto !important;
+  }
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"])[data-control-dock="open"] .station-workspace > .control-panel {
+    grid-area: controls;
+    align-self: stretch; min-width: 0; box-sizing: border-box;
+    height: 100% !important; min-height: 0;
+    max-height: none !important; overflow-y: auto !important;
+    overflow-x: hidden !important; overscroll-behavior-y: auto;
+    padding: 16px;
+    border: 1px solid var(--mpr-border-active);
+    border-radius: var(--mpr-radius-island);
+    background: var(--mpr-surface); color: var(--mpr-text);
+    box-shadow: var(--mpr-shadow);
+    scrollbar-width: thin;
+  }
+}
+/* Do not let the legacy fixed-height/column-lock CSS shrink the real scene. */
+.ocean-workbench[data-page="explore"] .station-workspace > .visualization-stage {
+  position: relative !important;
+  min-width: 0; width: 100% !important;
+  min-height: 0; height: 100% !important;
+  overflow: hidden !important;
+  border: 1px solid var(--mpr-border-active);
+  border-radius: var(--mpr-radius-island);
+  background: var(--mpr-surface-raised);
+  isolation: isolate;
+}
+.ocean-workbench[data-page="explore"] .station-workspace > .visualization-dock {
+  grid-area: dock;
+  max-height: none !important; height: auto !important;
+  min-height: 0; overflow: visible;
+}
+.ocean-workbench[data-page="explore"] .station-workspace > .scientific-colorbar-hud {
+  grid-area: range;
+  min-width: 0;
+  border: 1px solid var(--mpr-border);
+  border-radius: var(--mpr-radius-medium,20px);
+  background: var(--mpr-surface);
+}
+.ocean-workbench[data-page="explore"] .station-workspace > .visualization-stage .globe-shell {
+  width: 100% !important; height: 100% !important; min-width: 0;
+}
+.ocean-workbench[data-page="explore"] .station-workspace > .visualization-stage .cesium-host {
+  min-width: 0; min-height: 0;
+}
+/* Keep original camera, basemap, Argo and legend tools accessible. Their
+   scientific event handlers remain on the actual Cesium component. */
+.ocean-workbench[data-page="explore"] .station-workspace .renderer-tools {
+  scrollbar-width: thin;
+}
+@media (min-width: 761px) and (max-width: 1120px) {
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace {
+    grid-template-columns: minmax(0,1fr) !important;
+    grid-template-areas:
+      "directory" "block" "dock" "geo-title" "scene"
+      "controls" "range" "inspector" "evidence" !important;
+    grid-template-rows: auto auto auto auto minmax(520px,75dvh) auto auto auto auto !important;
+  }
+  .ocean-workbench[data-page="explore"] .station-workspace > .control-panel {
+    grid-area: controls; height: auto !important; max-height: none !important;
+    contain: none !important; overflow: visible !important;
+    border: 1px solid var(--mpr-border-active);
+    border-radius: var(--mpr-radius-medium,20px);
+  }
+}
+@media (max-width: 760px) {
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace {
+    display: grid !important; min-width: 0;
+    grid-template-columns: minmax(0,1fr) !important;
+    grid-template-areas:
+      "directory" "block" "dock" "geo-title" "scene"
+      "range" "controls" "inspector" "evidence" !important;
+    grid-template-rows: auto auto auto auto clamp(410px,66dvh,640px) auto auto auto auto !important;
+    align-items: stretch; gap: 10px;
+  }
+  .ocean-workbench[data-page="explore"] .mpr-geographic-heading { padding: 12px; }
+  .ocean-workbench[data-page="explore"] .station-workspace > .control-panel {
+    grid-area: controls; box-sizing: border-box;
+    max-height: 640px !important; min-width: 0; overflow-y: auto !important;
+  }
+}
+/* Focus and presentation retain their established single-stage layout.
+   The new heading doesn't become an unplaced implicit grid item. */
+.ocean-workbench[data-page="explore"].focus-mode .mpr-geographic-heading,
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .mpr-geographic-heading {
+  display: none !important;
+}
+@media (forced-colors: active) {
+  .ocean-workbench[data-page="explore"] .mpr-geographic-heading,
+  .ocean-workbench[data-page="explore"] .station-workspace > .visualization-stage {
+    border: 1px solid CanvasText !important;
+    color: CanvasText !important; background: Canvas !important;
+    box-shadow: none !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ocean-workbench[data-page="explore"] .station-workspace > .visualization-stage {
+    scroll-behavior: auto !important;
+  }
+}
