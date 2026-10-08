@@ -1,0 +1,20 @@
+import {expect,test} from "@playwright/test";
+const live=process.env.OCEANTWIN_LIVE_URL;
+test("orientation replay shows Earth, India, then real selected ocean block", async({page})=>{
+ test.setTimeout(160000);
+ if(!live)throw Error("OCEANTWIN_LIVE_URL required");
+ await page.setViewportSize({width:1440,height:900});
+ await page.goto(live.replace(/#.*$/,"")+"#/explore",{waitUntil:"domcontentloaded"});
+ const shell=page.locator(".globe-visualization-layer.active .globe-shell");
+ await expect(shell).toBeVisible();
+ const skip=page.getByRole("button",{name:"Skip journey"});
+ if(await skip.isVisible().catch(()=>false))await skip.click();
+ await expect(shell).toHaveAttribute("data-journey-phase","region",{timeout:30000});
+ await page.getByTestId("mpr-block-region-group").getByLabel("Active main block").selectOption("IO-047");
+ await expect(shell).toHaveAttribute("data-active-main-block","IO-047");
+ await shell.getByRole("button",{name:"Replay journey"}).click();
+ await expect(shell).toHaveAttribute("data-journey-phase","earth",{timeout:8000});
+ await expect(shell).toHaveAttribute("data-journey-phase","india",{timeout:15000});
+ await expect(shell).toHaveAttribute("data-journey-phase","region",{timeout:30000});
+ await expect(shell.locator(".ocean-journey")).toContainText("IO-047 ocean block");
+});
