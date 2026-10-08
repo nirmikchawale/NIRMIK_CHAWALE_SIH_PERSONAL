@@ -57,3 +57,28 @@ test("MPR-15 keeps original source QC semantics and no false profile enabled",as
  await expect(page.locator("#mpr-3d-stage")).toBeAttached();
  await expect(page.getByTestId("mpr-12-water-column-section")).toBeAttached();
 });
+
+
+for(const width of [390,1366]) {
+ test("MPR-15 preserves real presentation/focus demo and Escape return at "+width,async({page})=>{
+  await page.setViewportSize({width,height:900});
+  await page.emulateMedia({reducedMotion:"reduce"});
+  await page.goto(live!.replace(/#.*$/,"")+"#/explore",{waitUntil:"domcontentloaded"});
+  const app=page.locator('.ocean-workbench[data-page="explore"]');
+  const mode=page.getByRole("button",{name:"Presentation workspace"});
+  await expect(mode).toBeVisible();
+  await mode.click();
+  await expect(app).toHaveAttribute("data-workspace-mode","presentation");
+  await expect(page.getByTestId("mpr-15-inspector-access")).toBeHidden();
+  await page.keyboard.press("Escape");
+  await expect(app).toHaveAttribute("data-workspace-mode","explorer");
+  await expect(page.getByTestId("mpr-15-inspector-access")).toBeVisible();
+  const focus=page.getByRole("button",{name:"Focus 3D"});
+  await focus.click();
+  await expect(app).toHaveClass(/focus-mode/);
+  await page.keyboard.press("Escape");
+  await expect(app).not.toHaveClass(/focus-mode/);
+  await expect(page.locator("#mpr-3d-stage")).toBeAttached();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(2);
+ });
+}
