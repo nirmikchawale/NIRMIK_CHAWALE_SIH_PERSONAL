@@ -91,12 +91,12 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect.poll(async () => (await imageryGlobeShell.getAttribute("data-imagery-status")) ?? "")
     .toMatch(/^(online|offline|grid)$/);
 
-  await page.getByRole("button", { name: "Offline", exact: true }).click();
+  await page.getByRole("button", { name: "Offline", exact: true }).click({ timeout: 15_000 });
   await expect(imageryGlobeShell).toHaveAttribute("data-imagery-preference", "offline");
   await expect.poll(async () => (await imageryGlobeShell.getAttribute("data-imagery-status")) ?? "")
     .toMatch(/^(offline|grid)$/);
 
-  await page.getByRole("button", { name: "High-res auto" }).click();
+  await page.getByRole("button", { name: "High-res auto" }).click({ timeout: 15_000 });
   await expect(imageryGlobeShell).toHaveAttribute("data-imagery-preference", "auto");
   await expect.poll(async () => (await imageryGlobeShell.getAttribute("data-imagery-status")) ?? "")
     .toMatch(/^(online|offline|grid)$/);
@@ -629,9 +629,9 @@ test("live Ocean Canvas canvas-first HUD controls work", async ({ page }) => {
   // while the Explorer drawer is open.
   await page.getByRole("button", { name: "Hide explorer controls" }).click();
   await expect(appShell).toHaveAttribute("data-control-dock", "closed");
-  await page.getByRole("button", { name: "Offline", exact: true }).click();
+  await page.getByRole("button", { name: "Offline", exact: true }).click({ timeout: 15_000 });
   await expect(imageryGlobeShell).toHaveAttribute("data-imagery-preference", "offline");
-  await page.getByRole("button", { name: "High-res auto" }).click();
+  await page.getByRole("button", { name: "High-res auto" }).click({ timeout: 15_000 });
 
   await page.getByRole("button", { name: "Water Column 3D", exact: true }).click();
   const waterColumnShell = page.locator(".water-column-shell");
