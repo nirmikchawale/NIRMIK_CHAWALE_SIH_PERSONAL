@@ -1,0 +1,171 @@
+/*
+ * RUI-MPR-05 — 3D Explorer Feature Directory: one horizontal, scrollable island.
+ * All eleven existing scientific feature destinations are preserved. This is
+ * visual and interaction chrome only, not a new scientific view or data route.
+ * Inherit semantic colours/radii from the currently selected 16 glass presets.
+ */
+.ocean-workbench[data-page="explore"] .explorer-landing-islands > .explorer-directory-shell {
+  display: grid !important;
+  grid-template-columns: minmax(168px, 220px) minmax(0, 1fr) !important;
+  grid-template-areas: "directory-heading directory-track" !important;
+  grid-auto-rows: max-content;
+  gap: 14px !important;
+  align-items: center !important;
+  align-content: center !important;
+  min-height: 94px !important;
+  padding: 14px clamp(14px, 1.5vw, 22px) !important;
+  border: 1px solid var(--mpr-border-active) !important;
+  border-radius: var(--mpr-radius-island) !important;
+  background: var(--mpr-surface) !important;
+  color: var(--mpr-text);
+  box-shadow: var(--mpr-shadow);
+  isolation: isolate;
+  overflow: hidden !important;
+}
+.ocean-workbench[data-page="explore"] .explorer-directory-title {
+  grid-area: directory-heading;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+.ocean-workbench[data-page="explore"] .explorer-directory-title .mpr-directory-kicker {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  color: var(--mpr-accent);
+}
+.ocean-workbench[data-page="explore"] .explorer-directory-title strong {
+  color: var(--mpr-text);
+  font-size: clamp(13px, 1.08vw, 16px);
+  line-height: 1.15;
+}
+.ocean-workbench[data-page="explore"] .explorer-directory-title small {
+  color: var(--mpr-text-muted);
+  font-size: 10px;
+  line-height: 1.3;
+}
+.ocean-workbench[data-page="explore"] .explorer-landing-islands .explorer-directory-nav {
+  grid-area: directory-track;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  gap: 8px !important;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: auto;
+  min-height: 58px;
+  padding: 6px 2px 9px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: thin;
+  scrollbar-color: var(--mpr-border-active) transparent;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  touch-action: pan-x pan-y;
+}
+.ocean-workbench[data-page="explore"] .explorer-landing-islands .explorer-directory-nav > button {
+  display: inline-flex;
+  flex: 0 0 auto !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: max-content;
+  min-width: max-content;
+  min-height: 44px !important;
+  max-width: none;
+  padding: 10px 13px !important;
+  border: 1px solid var(--mpr-border) !important;
+  border-radius: var(--mpr-radius-control) !important;
+  background: var(--mpr-surface-raised) !important;
+  color: var(--mpr-text) !important;
+  font-size: 11px !important;
+  font-weight: 730;
+  line-height: 1.2;
+  letter-spacing: 0;
+  white-space: nowrap;
+  text-overflow: clip;
+  scroll-snap-align: start;
+  transition: background-color 130ms ease, border-color 130ms ease, color 130ms ease;
+}
+.ocean-workbench[data-page="explore"] .explorer-directory-nav > button svg {
+  display: block;
+  flex: 0 0 auto;
+  color: var(--mpr-accent);
+}
+.ocean-workbench[data-page="explore"] .explorer-directory-nav > button:hover {
+  border-color: var(--mpr-border-active) !important;
+  background: color-mix(in srgb, var(--mpr-accent) 10%, var(--mpr-surface-raised)) !important;
+  transform: none;
+}
+.ocean-workbench[data-page="explore"] .explorer-directory-nav > button:focus-visible {
+  outline: 2px solid var(--mpr-focus);
+  outline-offset: -2px;
+  border-color: var(--mpr-accent) !important;
+}
+.ocean-workbench[data-page="explore"] .mpr-directory-announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 900px) {
+  .ocean-workbench[data-page="explore"] .explorer-landing-islands > .explorer-directory-shell {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas: "directory-heading" "directory-track" !important;
+    gap: 8px !important;
+    padding: 12px 14px !important;
+  }
+  .ocean-workbench[data-page="explore"] .explorer-directory-title {
+    gap: 3px;
+  }
+  .ocean-workbench[data-page="explore"] .explorer-directory-title small { font-size: 10px; }
+}
+@media (max-width: 760px) {
+  .ocean-workbench[data-page="explore"] .explorer-landing-islands > .explorer-directory-shell {
+    padding: 11px 12px !important;
+    border-radius: var(--mpr-radius-island) !important;
+  }
+  .ocean-workbench[data-page="explore"] .explorer-landing-islands .explorer-directory-nav {
+    padding-bottom: 7px !important;
+    min-height: 58px;
+  }
+  .ocean-workbench[data-page="explore"] .explorer-directory-nav > button {
+    font-size: 11px !important;
+    min-height: 46px !important;
+    padding: 10px 12px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ocean-workbench[data-page="explore"] .explorer-directory-nav {
+    scroll-behavior: auto !important;
+  }
+  .ocean-workbench[data-page="explore"] .explorer-directory-nav > button {
+    transition: none !important;
+  }
+}
+@media (forced-colors: active) {
+  .ocean-workbench[data-page="explore"] .explorer-landing-islands > .explorer-directory-shell,
+  .ocean-workbench[data-page="explore"] .explorer-directory-nav > button {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border: 1px solid CanvasText !important;
+    box-shadow: none !important;
+  }
+  .ocean-workbench[data-page="explore"] .explorer-directory-nav > button:focus-visible {
+    outline-color: Highlight !important;
+  }
+}
