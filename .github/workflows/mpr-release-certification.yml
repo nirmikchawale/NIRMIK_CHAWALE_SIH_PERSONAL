@@ -145,7 +145,8 @@ jobs:
             e2e/mpr-14-linked-view-integrity.spec.ts \
             e2e/mpr-15-inspectors-responsive.spec.ts \
             e2e/mpr-16-all-themes-visual.spec.ts \
-            e2e/mpr-17-cross-phase-certification.spec.ts
+            e2e/mpr-17-cross-phase-certification.spec.ts \
+            e2e/mpr-presentation-block-details.spec.ts
       - name: Archive actual screenshot and Playwright evidence
         if: always()
         uses: actions/upload-artifact@v4

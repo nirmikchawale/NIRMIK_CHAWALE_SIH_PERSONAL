@@ -1,0 +1,358 @@
+/* MPR release correction: separate Block Details from the Block System
+   launcher and restore genuinely full-width, scrollable Presentation screens.
+   The actual source-backed Cesium and Water Column components are unchanged.
+   Loaded last to retire conflicting single-scene legacy layout rules. */
+.ocean-workbench[data-page="explore"] .station-workspace > .mpr-block-details-workspace {
+  grid-area: block !important;
+  align-self: stretch;
+  width: 100% !important;
+  min-width: 0;
+  max-width: 100%;
+  scroll-margin-top: 20px;
+}
+.ocean-workbench[data-page="explore"] .explorer-block-system-home {
+  grid-area: catalog !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  grid-template-rows: auto auto !important;
+  min-width: 0;
+  width: 100%;
+}
+.ocean-workbench[data-page="explore"] .explorer-block-system-home > .explorer-block-system-launchers {
+  grid-column: 1;
+  grid-row: 2;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Reserve two DISTINCT rows for the immediately visible Block Details section
+   and the specialised Block System catalog. These areas must not overlap.
+   Override the earlier MPR-10/12/15 selector groups and the old RUI grid. */
+@media(min-width:1121px) {
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace,
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"])[data-control-dock="open"] .station-workspace[data-inspector="open"] {
+    display: grid !important;
+    grid-template-columns: minmax(0,3.15fr) minmax(280px,1fr) !important;
+    grid-template-areas:
+      "directory directory"
+      "block block"
+      "catalog catalog"
+      "dock dock"
+      "geo-title geo-title"
+      "scene controls"
+      "range range"
+      "water water"
+      "inspect inspect"
+      "inspector inspector"
+      "evidence evidence" !important;
+    grid-template-rows:
+      auto auto auto auto auto minmax(560px,80dvh) auto
+      minmax(calc(80dvh + 155px),auto) auto auto auto !important;
+  }
+  .ocean-workbench[data-page="explore"]:not(.focus-mode)[data-control-dock="closed"] .station-workspace {
+    grid-template-columns: minmax(0,1fr) !important;
+    grid-template-areas:
+      "directory" "block" "catalog" "dock" "geo-title" "scene"
+      "range" "water" "inspect" "inspector" "evidence" !important;
+  }
+}
+@media(min-width:761px) and (max-width:1120px) {
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    grid-template-areas:
+      "directory" "block" "catalog" "dock" "geo-title"
+      "scene" "controls" "range" "water" "inspect" "inspector" "evidence" !important;
+    grid-template-rows:
+      auto auto auto auto auto minmax(520px,75dvh)
+      auto auto auto auto auto auto !important;
+  }
+}
+@media(max-width:760px) {
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    grid-template-areas:
+      "directory" "block" "catalog" "dock" "geo-title"
+      "scene" "range" "controls" "water" "inspect" "inspector" "evidence" !important;
+    grid-template-rows:
+      auto auto auto auto auto clamp(410px,66dvh,640px)
+      auto auto auto auto auto auto !important;
+  }
+}
+/* Make the independent block details unmistakable; catalog is a different
+   place. No absolute positioning, hidden popup, or overflow-clipping island. */
+.ocean-workbench[data-page="explore"] .station-workspace > .mpr-block-details-workspace {
+  border-width: 2px;
+  box-shadow: var(--mpr-shadow);
+  background: var(--mpr-surface);
+}
+.ocean-workbench[data-page="explore"] .station-workspace > .mpr-block-details-workspace .mpr-block-details-actions button {
+  min-height: 48px;
+}
+.ocean-workbench[data-page="explore"] .explorer-block-system-home {
+  background: var(--mpr-surface-raised);
+}
+
+/* PRESENTATION: retire the legacy empty first grid row, legacy scene
+   top/bottom clamps and the 3:1 compressed Water Column viewport. */
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100dvh !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .workspace-frame {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  height: auto !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  grid-template-rows: none !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .workspace-frame > .workspace {
+  position: relative !important;
+  display: block !important;
+  flex: 1 1 auto !important;
+  grid-row: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .station-workspace,
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .station-workspace[data-inspector="open"] {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  flex: 1 1 auto !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: clamp(10px,1.6vw,22px) !important;
+  margin: 0 !important;
+  gap: clamp(10px,1.25vw,18px);
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+  grid-template-columns: none !important;
+  grid-template-rows: none !important;
+  grid-template-areas: none !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .station-workspace > :is(
+  .explorer-landing-islands, .explorer-consolidation-slot,
+  .visualization-dock, .control-panel, .evidence-rail,
+  .scientific-colorbar-hud, .mpr-inspector-access,
+  .mobile-explore-tray, .analysis-split-panel, .source-workbench,
+  .profile-panel
+) { display: none !important; }
+
+/* Keep the active selection visible, but leave all five exploration actions
+   to the dedicated normal Explorer section, not a giant presentation card. */
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .station-workspace > .mpr-block-details-workspace {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px;
+  width: 100% !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .mpr-block-details-heading h3 {
+  font-size: 14px;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .mpr-block-details-facts,
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .mpr-block-details-actions,
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .mpr-block-details-truth,
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .mpr-block-details-live-notice {
+  display: none !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .presentation-mode-exit {
+  position: sticky !important;
+  top: 0 !important;
+  inset-inline: auto !important;
+  flex: 0 0 auto;
+  align-self: flex-end;
+  z-index: 90;
+  max-width: 100%;
+  min-height: 44px;
+}
+/* CRITICAL: the old RUI app-navigation-root is itself a 100%-height flex
+   child, even if its inner feature rail is hidden. It consumes the ENTIRE
+   presentation viewport and squeezes .workspace to nothing. The separate
+   RUI scientific-context-header also reserves a strip despite compact
+   active-block context already being shown by Presentation. */
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .workspace-frame > .app-navigation-root,
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .workspace-frame > .scientific-context-header {
+  display: none !important;
+  flex: 0 0 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .workspace-frame > .workspace {
+  order: 0 !important;
+  flex: 1 1 auto !important;
+  max-height: 100% !important;
+}
+
+/* Full-width scene with a predictable canvas and a bounded controls rail
+   INSIDE the same stage; do not squeeze the globe into a half-width row. */
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .station-workspace > .mpr-geographic-heading,
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .station-workspace > .mpr-water-column-section,
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .station-workspace > .visualization-stage {
+  position: relative !important;
+  left: auto !important; right: auto !important;
+  top: auto !important; bottom: auto !important;
+  flex-shrink: 0 !important;
+  align-self: stretch !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  grid-area: auto !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .station-workspace > .visualization-stage {
+  display: block !important;
+  flex: 0 0 clamp(630px,84dvh,900px) !important;
+  height: clamp(630px,84dvh,900px) !important;
+  min-height: 630px !important;
+  overflow: hidden !important;
+  isolation: isolate;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] #mpr-3d-stage > .globe-visualization-layer.active {
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] #mpr-3d-stage .globe-shell {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  grid-template-rows: minmax(390px,1fr) auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] #mpr-3d-stage .renderer-tools {
+  max-height: min(160px,25dvh) !important;
+  min-width: 0 !important;
+  overflow-y: auto !important;
+}
+/* Water Column uses ONE full-size view; control dock follows below rather
+   than stealing 25-50% of scene width in the judge experience. */
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .station-workspace > .mpr-water-column-section {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  grid-template-rows: auto clamp(500px,70dvh,780px) auto !important;
+  grid-template-areas: "water-header" "water-scene" "water-dock" !important;
+  height: auto !important;
+  min-height: 0 !important;
+  gap: 14px;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .mpr-water-column-section > .mpr-water-column-visualization {
+  grid-area: water-scene !important;
+  width: 100% !important;
+  min-height: 500px !important;
+  height: 100% !important;
+  max-width: 100% !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .mpr-water-column-section > .mpr-water-column-dock {
+  grid-area: water-dock !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  max-height: 340px !important;
+  height: auto !important;
+  overflow-y: auto !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .mpr-water-column-heading {
+  grid-area: water-header !important;
+  width: 100%;
+  min-width: 0;
+}
+@media(max-width:760px) {
+  .ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .station-workspace {
+    padding: 10px 9px 44px !important;
+  }
+  .ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .station-workspace > .visualization-stage {
+    flex: 0 0 clamp(440px,73dvh,670px) !important;
+    height: clamp(440px,73dvh,670px) !important;
+    min-height: 440px !important;
+  }
+  .ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] #mpr-3d-stage .globe-shell {
+    grid-template-rows: minmax(275px,1fr) auto !important;
+  }
+  .ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .station-workspace > .mpr-water-column-section {
+    grid-template-rows: auto clamp(390px,63dvh,610px) auto !important;
+  }
+  .ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .mpr-water-column-section > .mpr-water-column-visualization {
+    min-height: 390px !important;
+  }
+}
+
+/* JUDGE GUIDE: dedicated flow space above the destination page, not a
+   bottom-right floating card covering the 3D screen or comparison. */
+.ocean-workbench .workspace[data-judge-guide="open"] {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+.ocean-workbench .workspace[data-judge-guide="open"] > .presentation-guide {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 80 !important;
+  display: flex !important;
+  flex: 0 0 auto !important;
+  flex-direction: column;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  max-height: min(38dvh,280px) !important;
+  margin: 0 !important;
+  padding: 14px clamp(14px,2vw,26px) !important;
+  border-radius: 0 0 var(--mpr-radius-island,16px) var(--mpr-radius-island,16px);
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+.ocean-workbench .workspace[data-judge-guide="open"] > .presentation-guide .guide-actions {
+  grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+}
+.ocean-workbench .workspace[data-judge-guide="open"] > .station-workspace,
+.ocean-workbench .workspace[data-judge-guide="open"] > :is(
+  .feature-page,.telemetry-page,.comparison-page,.anomaly-page,
+  .data-lab-page,.info-page
+) {
+  position: relative !important;
+  inset: auto !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  width: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+@media(max-width:760px) {
+  .ocean-workbench .workspace[data-judge-guide="open"] > .presentation-guide {
+    max-height: min(43dvh,360px) !important;
+    padding: 10px 12px !important;
+  }
+  .ocean-workbench .workspace[data-judge-guide="open"] > .presentation-guide .guide-actions {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+}

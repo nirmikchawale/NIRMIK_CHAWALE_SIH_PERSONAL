@@ -3,6 +3,7 @@ import { WaterColumnControlDock } from "./components/WaterColumnControlDock";
 import { ExplorerInspectorAccess } from "./components/ExplorerInspectorAccess";
 import { linkedSelectionKey, matchesGeographicPayload, matchesWaterColumnPayload } from "./linked-view-integrity";
 import { ExplorerDirectoryNav } from "./components/ExplorerDirectoryNav";
+import { BlockDetailsWorkspace } from "./components/BlockDetailsWorkspace";
 import { ExplorerWorkspaceModeIsland } from "./components/ExplorerWorkspaceModeIsland";
 import { RefreshControl } from "./components/RefreshControl";
 import { ImmersiveFullscreenButton } from "./components/ImmersiveFullscreenButton";
@@ -1163,7 +1164,7 @@ export default function App() {
           onNavigate={navigate}
         />
 
-        <div className="workspace">
+        <div className="workspace" data-judge-guide={guideOpen ? "open" : "closed"}>
           {guideOpen && <PresentationGuide onClose={() => setGuideOpen(false)} onStep={(step) => {
             setFocusMode(false);
             setWorkspaceMode("explorer");
@@ -1231,6 +1232,10 @@ export default function App() {
                    evidenceLoading={scienceLoading} evidenceError={Boolean(error)}
                    evidenceDegraded={degradedWarnings.length > 0} />
               </div>
+              <BlockDetailsWorkspace onOpenControls={() => {
+                setControlDockOpen(true);
+                if (window.matchMedia("(max-width: 760px)").matches) setMobileSheet("controls");
+              }} />
               {workspaceMode === "presentation" && (
                 <button
                   type="button"
