@@ -50,7 +50,7 @@ export const GLASS_THEMES: readonly GlassThemeDefinition[] = [
   { id:"cloud-prism", label:"Cloud Prism", shortLabel:"Prism", scheme:"light", family:"neutral", description:"Neutral cloud glass with restrained cyan-violet prismatic edges.", swatches:["#f7f9fb","#e7edf1","#607894"] }
 ] as const;
 
-export const DEFAULT_GLASS_THEME: GlassThemeId = "abyss-noir";
+export const DEFAULT_GLASS_THEME: GlassThemeId = "arctic-mist";
 export const LEGACY_THEME_STORAGE_KEY = "oceantwin-theme";
 export const GLASS_THEME_STORAGE_KEY = "oceantwin-glass-theme-v2";
 
@@ -68,7 +68,7 @@ export function initialGlassTheme(): GlassThemeId {
   try {
     const stored = window.localStorage.getItem(GLASS_THEME_STORAGE_KEY);
     if (isGlassThemeId(stored)) return stored;
-    return window.localStorage.getItem(LEGACY_THEME_STORAGE_KEY) === "light" ? "polar-frost" : DEFAULT_GLASS_THEME;
+    // New viewers start in Arctic Mist. Existing explicit 16-theme choices win.\n    return DEFAULT_GLASS_THEME;
   } catch {
     return DEFAULT_GLASS_THEME;
   }
