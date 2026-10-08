@@ -1,0 +1,75 @@
+name: 3db11-genuine-indian-ocean-scale-out
+
+on:
+  push:
+    branches:
+      - 3db-11-indian-ocean-scale-out
+    paths:
+      - .github/workflows/3db11-scale-out.yml
+      - scripts/materialize_3db11_scaleout.py
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: 3db11-scientific-acquisition
+  cancel-in-progress: false
+
+jobs:
+  acquire-validate-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout 3DB-11 scientific branch
+        uses: actions/checkout@v4
+        with:
+          ref: 3db-11-indian-ocean-scale-out
+          fetch-depth: 0
+
+      - name: Set up acquisition Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install genuine-source and science test dependencies
+        run: python -m pip install "numpy>=2.2,<3" "xarray>=2025.1,<2027" "netCDF4>=1.7,<2" "pytest>=8,<10"
+
+      - name: Validate original 25 pilot scientific inventory and frozen target plan
+        run: |
+          python scripts/main_block_materialization.py verify
+          python scripts/materialize_3db11_scaleout.py --plan-only
+
+      - name: Acquire ten real OPeNDAP water-column blocks and validate each
+        run: python -u scripts/materialize_3db11_scaleout.py
+
+      - name: Independent offline end-state deep validation
+        run: |
+          python scripts/materialize_3db11_scaleout.py --verify-only
+          python scripts/main_block_materialization.py verify
+
+      - name: Run science regression suite on all promoted evidence
+        run: |
+          python -m pytest -q tests/test_3db11_indian_ocean_scale_out.py tests/test_3db02_genuine_pilot_acquisition.py tests/test_3db01_materialization_foundation.py tests/test_3db10_provenance_scientific_evidence.py tests/test_phase35b_manifest.py
+
+      - name: Commit only validated science evidence to isolated phase branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/public/main-blocks frontend/src/main-block-runtime.ts \
+            frontend/e2e/3db00-capability-contract.spec.ts \
+            frontend/e2e/main-block-engine.spec.ts \
+            tests/test_3db01_materialization_foundation.py \
+            tests/test_3db02_genuine_pilot_acquisition.py \
+            tests/test_3db10_provenance_scientific_evidence.py \
+            tests/test_phase35b_manifest.py \
+            docs/3DB_11_INDIAN_OCEAN_SCALE_OUT.md
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo "Genuine scale-out evidence already committed."
+            exit 0
+          fi
+          git commit -m "data(3db11): promote ten verified Indian Ocean GLORYS pilot blocks"
+          git push origin HEAD:3db-11-indian-ocean-scale-out

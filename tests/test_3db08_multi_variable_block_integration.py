@@ -29,9 +29,9 @@ def test_3db08_all_existing_pilot_payloads_are_genuinely_multi_variable() -> Non
     pilots = [entry for entry in manifest["blocks"] if entry["materialization"] == "pilot"]
     planned = [entry for entry in manifest["blocks"] if entry["materialization"] == "planned"]
 
-    assert len(pilots) == 25
-    assert len(planned) == 115
-    assert sum(len(entry["payloads"]) for entry in pilots) == 31
+    assert len(pilots) == 35
+    assert len(planned) == 105
+    assert sum(len(entry["payloads"]) for entry in pilots) == 41
     assert all(entry["payloads"] == [] for entry in planned)
 
     for entry in pilots:

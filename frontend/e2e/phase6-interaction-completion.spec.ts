@@ -34,7 +34,7 @@ test("Phase 6 materialized-block controls are live across workspaces and deep-li
   const blockControl = page.getByTestId("scientific-context-materialized-control");
   await expect(blockControl).toBeVisible();
   const select = page.getByLabel("Active materialized scientific block");
-  await expect(select.locator("option")).toHaveCount(26);
+  await expect(select.locator("option")).toHaveCount(36);
 
   await select.selectOption("IO-001");
   await expect(bar).toHaveAttribute("data-block-id", "IO-001", { timeout: 30_000 });

@@ -18,7 +18,7 @@ test("3DB-00 keeps every planned logical block scientifically locked", () => {
     .filter((block) => !pilotIds.has(block.id))
     .map((block) => resolveMainBlock(block.id));
 
-  expect(planned).toHaveLength(115);
+  expect(planned).toHaveLength(105);
 
   for (const block of planned) {
     const capability = deriveMainBlockCapabilities(block);
@@ -39,7 +39,7 @@ test("3DB-00 keeps every planned logical block scientifically locked", () => {
 });
 
 test("3DB-00 exposes source-backed pilots without inventing observation validation", () => {
-  expect(PHASE35B_PILOT_IDS).toHaveLength(25);
+  expect(PHASE35B_PILOT_IDS).toHaveLength(35);
 
   for (const id of PHASE35B_PILOT_IDS) {
     const block = resolveMainBlock(id);

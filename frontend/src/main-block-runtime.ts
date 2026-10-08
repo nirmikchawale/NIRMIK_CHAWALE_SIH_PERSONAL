@@ -18,7 +18,8 @@ export const PHASE35B_PILOT_IDS = [
   "IO-045", "IO-046", "IO-052", "IO-053", "IO-065", "IO-075",
   "IO-089", "IO-091", "IO-096", "IO-103", "IO-105", "IO-110",
   "IO-115", "IO-116", "IO-119", "IO-121", "IO-129", "IO-133",
-  "IO-029"
+  "IO-029", "IO-082", "IO-066", "IO-059", "IO-122", "IO-130",
+  "IO-030", "IO-124", "IO-067", "IO-060", "IO-123"
 ] as const;
 
 export const PHASE35B_MULTI_DATE_PILOT_IDS = [

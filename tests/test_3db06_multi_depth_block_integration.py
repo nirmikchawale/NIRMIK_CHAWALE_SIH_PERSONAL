@@ -23,8 +23,8 @@ def test_3db06_every_materialized_payload_preserves_one_genuine_multi_depth_axis
     manifest = _manifest()
     expected_axis: list[float] | None = None
 
-    assert manifest["integrity"]["pilot_block_count"] == 25
-    assert len(manifest["payloads"]) == 31
+    assert manifest["integrity"]["pilot_block_count"] == 35
+    assert len(manifest["payloads"]) == 41
     assert manifest["integrity"]["synthetic_depths"] is False
     assert manifest["integrity"]["land_blocks_materialized"] == 0
 
