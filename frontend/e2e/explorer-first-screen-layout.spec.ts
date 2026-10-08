@@ -18,9 +18,10 @@ test("Explorer directory and Ocean Intelligence own separate scrolling rows with
   await page.goto(liveUrl.replace(/#.*$/, "") + "#/explore", { waitUntil: "domcontentloaded" });
   const islands = page.getByTestId("explorer-landing-islands");
   const directory = page.getByTestId("rui-nav-02-explorer-directory");
+  await expect(islands.locator(":scope > .mpr-workspace-mode-island")).toHaveCount(1);
   await expect(islands.locator(":scope > .explorer-directory-shell")).toHaveCount(1);
   await expect(islands.locator(":scope > .source-workbench")).toHaveCount(1);
-  await expect(islands.locator(":scope > *")).toHaveCount(2);
+  await expect(islands.locator(":scope > *")).toHaveCount(3);
   const source = page.getByRole("region", { name: "Scientific source workspace" });
   const cards = [
     page.getByRole("button", { name: "GLORYS baseline" }),
@@ -51,6 +52,9 @@ test("Explorer directory and Ocean Intelligence own separate scrolling rows with
     );
     expect(titleBox).not.toBeNull();
     expect(actionsBox).not.toBeNull();
+    const modeBox = await islands.getByTestId("mpr-04-workspace-mode-island").boundingBox();
+    expect(modeBox).not.toBeNull();
+    expect(modeBox!.y + modeBox!.height).toBeLessThanOrEqual(directoryBox!.y - 15);
     expect(directoryBox!.y + directoryBox!.height).toBeLessThanOrEqual(sourceBox!.y - 15);
     expect(titleBox!.y).toBeGreaterThanOrEqual(sourceBox!.y - 1);
 
@@ -99,7 +103,9 @@ test("independent Explorer island controls preserve workspace navigation and sou
   await expect(directory).toBeVisible();
   await expect(sources).toBeVisible();
 
-  const workspace = directory.getByRole("group", { name: "Explorer workspace mode" });
+  const modeIsland = islands.getByTestId("mpr-04-workspace-mode-island");
+  await expect(modeIsland).toBeVisible();
+  const workspace = modeIsland.getByRole("group", { name: "Explorer workspace mode" });
   await workspace.getByRole("button", { name: "Analysis Split workspace" }).click();
   await expect(page.locator(".ocean-workbench")).toHaveAttribute("data-workspace-mode", "analysis");
   await expect(sources).toBeVisible();

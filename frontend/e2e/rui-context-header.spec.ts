@@ -29,7 +29,9 @@ test("RUI-02 desktop moves shared science context out of navigation into compact
   await expect(header.locator('[data-context-field="time"]')).toBeVisible();
   await expect(header.locator('[data-context-field="depth"]')).toBeVisible();
 
-  await sidebar.getByRole("button", { name: "Collapse workspace sidebar" }).click();
+  await page.getByRole("button", { name: "Open Explore workspaces" }).click();
+  await expect(sidebar).toBeVisible();
+  await sidebar.getByRole("button", { name: "Close workspace directory" }).click();
   await expect(header).toBeVisible();
   await expect(context).toHaveAttribute("data-block-id", "BASE-GLORYS-001");
 
@@ -50,6 +52,7 @@ test("RUI-02 desktop moves shared science context out of navigation into compact
   await expect(header).toContainText("Geographic selection only");
   await expect(header).toContainText(/remain anchored to verified source evidence/i);
 
+  await page.getByRole("button", { name: "Open Analyze workspaces" }).click();
   await sidebar.locator('[data-workspace-id="telemetry"]').click();
   await expect(page).toHaveURL(/#\/telemetry$/);
   await expect(header).toBeVisible();
@@ -96,6 +99,7 @@ test("RUI-02 mobile keeps navigation and scientific context independently access
   await trigger.click();
   const sidebar = page.getByRole("navigation", { name: "Ocean Canvas workspaces" });
   await expect(sidebar).toBeVisible();
+  await sidebar.getByRole("button", { name: "Analyze", exact: true }).click();
   await sidebar.locator('[data-workspace-id="telemetry"]').click();
   await expect(page).toHaveURL(/#\/telemetry$/);
   await expect(navRoot).toHaveAttribute("data-mobile-open", "false");

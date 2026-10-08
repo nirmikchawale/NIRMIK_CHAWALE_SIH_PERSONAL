@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { PageId } from "../navigation";
+import type { NavigationGroupId, PageId } from "../navigation";
+import { MprIcon, type MprIconName } from "./MprIcon";
 import {
   NAVIGATION_TREE,
   breadcrumbForPage,
@@ -14,14 +15,22 @@ interface Props {
   onNavigate: (page: PageId) => void;
 }
 
-const SIDEBAR_STORAGE_KEY = "ocean-canvas-rui-sidebar-collapsed";
+const MPR_NAV_STORAGE_KEY = "ocean-canvas-mpr03-rail-collapsed";
 const MOBILE_QUERY = "(max-width: 900px)";
+const GROUP_ICONS: Record<NavigationGroupId, MprIconName> = {
+  explore: "explore", analyse: "analyze", data: "data", science: "science"
+};
+const GROUP_DISPLAY: Record<NavigationGroupId, string> = {
+  explore: "Explore", analyse: "Analyze", data: "Data", science: "Science"
+};
 
 function initialCollapsed(): boolean {
   try {
-    return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
+    // Deliberately separate from the old 272px sidebar preference. Reading
+    // storage is side-effect free under React StrictMode double initialization.
+    return window.localStorage.getItem(MPR_NAV_STORAGE_KEY) !== "false";
   } catch {
-    return false;
+    return true;
   }
 }
 
@@ -33,21 +42,28 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
   const [collapsed, setCollapsed] = useState(initialCollapsed);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileLayout, setMobileLayout] = useState(initialMobileLayout);
+  const [selectedGroup, setSelectedGroup] = useState<NavigationGroupId>(() => navigationGroupForPage(page).id);
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
+  const railButtonRefs = useRef<Partial<Record<NavigationGroupId, HTMLButtonElement | null>>>({});
+  const directoryRef = useRef<HTMLElement>(null);
 
   const currentPage = pageItem(page);
   const currentGroup = navigationGroupForPage(page);
   const breadcrumbs = breadcrumbForPage(page);
-  const mobileClosed = mobileLayout && !mobileOpen;
-  const sidebarInert = focusMode || mobileClosed;
+  const drawerOpen = !focusMode && (mobileLayout ? mobileOpen : !collapsed);
+  const sidebarInert = !drawerOpen;
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(SIDEBAR_STORAGE_KEY, collapsed ? "true" : "false");
+      window.localStorage.setItem(MPR_NAV_STORAGE_KEY, collapsed ? "true" : "false");
     } catch {
       // Sidebar persistence is optional; the workstation remains fully usable without storage.
     }
   }, [collapsed]);
+
+  useEffect(() => {
+    setSelectedGroup(navigationGroupForPage(page).id);
+  }, [page]);
 
   useEffect(() => {
     const media = window.matchMedia(MOBILE_QUERY);
@@ -60,31 +76,67 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
     return () => media.removeEventListener?.("change", syncLayout);
   }, []);
 
-  const closeMobileNavigation = useCallback((restoreFocus = true) => {
+  const closeNavigation = useCallback((restoreFocus = true) => {
     setMobileOpen(false);
+    setCollapsed(true);
     if (restoreFocus) {
-      window.requestAnimationFrame(() => mobileTriggerRef.current?.focus());
+      window.requestAnimationFrame(() => {
+        if (window.matchMedia(MOBILE_QUERY).matches) mobileTriggerRef.current?.focus();
+        else railButtonRefs.current[selectedGroup]?.focus();
+      });
     }
-  }, []);
+  }, [selectedGroup]);
+
+  const openGroup = useCallback((group: NavigationGroupId) => {
+    setSelectedGroup(group);
+    if (mobileLayout) setMobileOpen(true);
+    else setCollapsed(false);
+  }, [mobileLayout]);
 
   useEffect(() => {
-    if (!mobileOpen) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      event.preventDefault();
-      closeMobileNavigation(true);
+    if (!drawerOpen) return;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const focusSelectedCategory = () => directoryRef.current?.querySelector<HTMLButtonElement>(".mpr-drawer-category.is-selected")?.focus();
+    const focusId = window.requestAnimationFrame(focusSelectedCategory);
+    // Wait for the overlay to become focusable after its opening visibility transition.
+    const focusFallbackId = window.setTimeout(focusSelectedCategory, 190);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeNavigation(true);
+      } else if (event.key === "Tab" && directoryRef.current) {
+        const focusable = Array.from(directoryRef.current.querySelectorAll<HTMLElement>(
+          'button:not(:disabled):not([hidden]):not([tabindex="-1"])'
+        )).filter(node => node.getClientRects().length > 0);
+        if (!focusable.length) return;
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault(); last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault(); first.focus();
+        }
+      }
     };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [closeMobileNavigation, mobileOpen]);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.cancelAnimationFrame(focusId);
+      window.clearTimeout(focusFallbackId);
+      window.removeEventListener("keydown", onKeyDown);
+      // Explicit click/route navigation restores to its correct launcher.
+      void previousFocus;
+    };
+  }, [closeNavigation, drawerOpen, selectedGroup]);
 
   useEffect(() => {
-    if (focusMode) setMobileOpen(false);
+    if (focusMode) {
+      setMobileOpen(false);
+      setCollapsed(true);
+    }
   }, [focusMode]);
 
   const navigateFromSidebar = (nextPage: PageId) => {
     onNavigate(nextPage);
-    if (mobileLayout) closeMobileNavigation(true);
+    closeNavigation(true);
   };
 
   return (
@@ -94,7 +146,32 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
       data-collapsed={collapsed ? "true" : "false"}
       data-mobile-open={mobileOpen ? "true" : "false"}
       data-nav-directory={currentGroup.id}
+      data-drawer-open={drawerOpen ? "true" : "false"}
+      data-selected-group={selectedGroup}
     >
+      {!mobileLayout && (
+        <div className="mpr-workspace-rail" role="group" aria-label="Workspace categories" data-testid="mpr-workspace-rail">
+          <div className="mpr-rail-brand" aria-label="Ocean Canvas"><span aria-hidden="true">OC</span></div>
+          {NAVIGATION_TREE.map((group) => (
+            <button
+              ref={(node) => { railButtonRefs.current[group.id] = node; }}
+              className={`mpr-rail-category ${currentGroup.id === group.id ? "is-current" : ""} ${drawerOpen && selectedGroup === group.id ? "is-open" : ""}`}
+              data-workspace-group={group.id}
+              key={group.id}
+              type="button"
+              title={`${GROUP_DISPLAY[group.id]} workspaces`}
+              aria-label={`Open ${GROUP_DISPLAY[group.id]} workspaces`}
+              aria-current={currentGroup.id === group.id ? "true" : undefined}
+              aria-expanded={drawerOpen && selectedGroup === group.id}
+              aria-controls="ocean-canvas-workspace-navigation"
+              onClick={() => openGroup(group.id)}
+            >
+              <MprIcon name={GROUP_ICONS[group.id]} size={21}/>
+              <span>{GROUP_DISPLAY[group.id]}</span>
+            </button>
+          ))}
+        </div>
+      )}
       <div
         className="mobile-workspace-nav"
         data-testid="mobile-workspace-nav"
@@ -108,7 +185,7 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
           aria-controls="ocean-canvas-workspace-navigation"
           aria-expanded={mobileOpen}
           tabIndex={focusMode ? -1 : undefined}
-          onClick={() => setMobileOpen(true)}
+          onClick={() => openGroup(currentGroup.id)}
         >
           <span aria-hidden="true">☰</span>
           <span>Workspaces</span>
@@ -119,16 +196,17 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
         </div>
       </div>
 
-      {mobileLayout && mobileOpen && (
+      {drawerOpen && (
         <button
           type="button"
-          className="sidebar-backdrop"
-          aria-label="Close workspace navigation"
-          onClick={() => closeMobileNavigation(true)}
+          className="sidebar-backdrop mpr-workspaces-backdrop"
+          aria-label="Dismiss workspace directory"
+          onClick={() => closeNavigation(true)}
         />
       )}
 
       <nav
+        ref={directoryRef}
         id="ocean-canvas-workspace-navigation"
         className="feature-rail feature-rail-left rui-sidebar"
         aria-label="Ocean Canvas workspaces"
@@ -146,18 +224,17 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
           <button
             type="button"
             className="sidebar-collapse"
-            aria-label={collapsed ? "Expand workspace sidebar" : "Collapse workspace sidebar"}
-            aria-expanded={!collapsed}
-            title={collapsed ? "Expand workspace sidebar" : "Collapse workspace sidebar"}
-            onClick={() => setCollapsed((value) => !value)}
+            aria-label="Close workspace directory"
+            title="Close workspace directory"
+            onClick={() => closeNavigation(true)}
           >
-            <span aria-hidden="true">{collapsed ? "›" : "‹"}</span>
+            <span aria-hidden="true">×</span>
           </button>
           <button
             type="button"
             className="sidebar-mobile-close"
             aria-label="Close workspace navigation"
-            onClick={() => closeMobileNavigation(true)}
+            onClick={() => closeNavigation(true)}
           >
             <span aria-hidden="true">×</span>
           </button>
@@ -173,6 +250,21 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
           </ol>
         </div>
 
+        <div className="mpr-drawer-categories" role="group" aria-label="Choose workspace category">
+          {NAVIGATION_TREE.map(group => (
+            <button
+              key={group.id}
+              type="button"
+              className={`mpr-drawer-category ${selectedGroup === group.id ? "is-selected" : ""}`}
+              aria-pressed={selectedGroup === group.id}
+              onClick={() => setSelectedGroup(group.id)}
+            >
+              <MprIcon name={GROUP_ICONS[group.id]} size={17}/>
+              <span>{GROUP_DISPLAY[group.id]}</span>
+            </button>
+          ))}
+        </div>
+
         <div
           className="rui-sidebar-groups"
           role="tree"
@@ -185,6 +277,8 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
               data-nav-group={group.label}
               data-directory-view={group.id}
               aria-labelledby={`rui-nav-group-${group.id}`}
+              aria-hidden={selectedGroup !== group.id ? true : undefined}
+              hidden={selectedGroup !== group.id}
               key={group.id}
             >
               <div className="rui-nav-group-label" id={`rui-nav-group-${group.id}`}>
@@ -207,6 +301,7 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
                       <button
                         type="button"
                         className={`rui-nav-item ${active ? "active" : ""}`}
+                        aria-current={active ? "page" : undefined}
                         onClick={(event) => {
                           event.stopPropagation();
                           navigateFromSidebar(item.id);

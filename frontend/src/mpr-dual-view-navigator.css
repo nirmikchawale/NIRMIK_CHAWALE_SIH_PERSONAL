@@ -1,0 +1,101 @@
+/* MPR-09: one canonical navigator for today's active scientific stage.
+   Future MPR-10/11 introduce simultaneous stacked sections, not fake canvases. */
+.ocean-workbench[data-page="explore"] .station-workspace > .visualization-dock {
+  min-width:0; gap:9px;
+  border-color:var(--mpr-border-active) !important;
+  border-radius:var(--mpr-radius-island) !important;
+  background:var(--mpr-surface) !important;
+  color:var(--mpr-text) !important;
+  box-shadow:var(--mpr-shadow) !important;
+}
+.ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  width:100%; min-width:0;
+  gap:clamp(8px,1.1vw,15px);
+  padding:4px;
+}
+.ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator button {
+  display:flex; box-sizing:border-box; min-width:0;
+  min-height:54px; padding:10px 13px !important;
+  align-items:center; justify-content:flex-start; gap:10px;
+  border:1px solid var(--mpr-border) !important;
+  border-radius:var(--mpr-radius-control) !important;
+  background:var(--mpr-surface-raised) !important;
+  color:var(--mpr-text-muted) !important;
+  font-size:12px; font-weight:750; line-height:1.25;
+  transition:background-color 150ms ease,color 150ms ease,border-color 150ms ease;
+}
+.ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator button[aria-pressed="true"] {
+  background:color-mix(in srgb,var(--mpr-accent) 13%,var(--mpr-surface-raised)) !important;
+  color:var(--mpr-text) !important;
+  border-color:var(--mpr-accent) !important;
+  box-shadow:inset 0 -2px var(--mpr-accent) !important;
+}
+.ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator button[aria-pressed="false"] {
+  opacity:.85;
+}
+.ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator button:disabled {
+  opacity:.46; cursor:not-allowed; box-shadow:none !important;
+}
+.ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator button:focus-visible,
+.ocean-workbench[data-page="explore"] .station-workspace .mpr-stage-view-switch:focus-visible {
+  outline:2px solid var(--mpr-focus) !important; outline-offset:2px;
+}
+.ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator .mode-icon {
+  color:var(--mpr-accent); flex-shrink:0;
+}
+.ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator .mode-label {
+  min-width:0;
+}
+.ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator .mode-label :is(strong,small) {
+  white-space:normal; overflow-wrap:anywhere;
+}
+.ocean-workbench[data-page="explore"] .station-workspace > .visualization-stage {
+  scroll-margin-top:16px;
+}
+.ocean-workbench[data-page="explore"] .station-workspace > .visualization-stage .mpr-stage-view-switch {
+  position:absolute !important; z-index:17;
+  left:12px; bottom:12px;
+  display:inline-flex; align-items:center; justify-content:center;
+  width:auto; height:auto; min-height:44px; max-width:calc(100% - 24px);
+  padding:10px 13px !important;
+  border:1px solid var(--mpr-border-active);
+  border-radius:var(--mpr-radius-control);
+  background:var(--mpr-surface-raised);
+  color:var(--mpr-text);
+  font-size:11px; font-weight:800; line-height:1.35;
+  box-shadow:var(--mpr-shadow); cursor:pointer;
+}
+.ocean-workbench[data-page="explore"] .station-workspace > .visualization-stage .mpr-stage-view-switch:disabled {
+  opacity:.55; cursor:not-allowed;
+}
+@media(max-width:600px){
+  .ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator button {
+    padding:9px 7px !important; gap:6px; min-height:52px;
+  }
+  .ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator .mode-number {
+    display:none;
+  }
+  .ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator .mode-label small {
+    font-size:9px;
+  }
+  .ocean-workbench[data-page="explore"] .station-workspace > .visualization-stage .mpr-stage-view-switch {
+    bottom:8px; left:8px; min-height:44px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator button {
+    transition:none !important;
+  }
+}
+@media(forced-colors:active){
+  .ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator button,
+  .ocean-workbench[data-page="explore"] .station-workspace .mpr-stage-view-switch {
+    background:Canvas !important; border-color:CanvasText !important;
+    color:CanvasText !important; box-shadow:none !important;
+  }
+  .ocean-workbench[data-page="explore"] .station-workspace .mpr-dual-view-navigator button[aria-pressed="true"] {
+    outline:2px solid Highlight;
+  }
+}

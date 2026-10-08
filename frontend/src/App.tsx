@@ -1,5 +1,6 @@
 import { SourceWorkbench } from "./components/SourceWorkbench";
 import { ExplorerDirectoryNav } from "./components/ExplorerDirectoryNav";
+import { ExplorerWorkspaceModeIsland } from "./components/ExplorerWorkspaceModeIsland";
 import { RefreshControl } from "./components/RefreshControl";
 import { useOceanMotion } from "./useOceanMotion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -965,22 +966,6 @@ export default function App() {
               >
                 {controlDockOpen ? "Hide controls" : "Controls"}
               </button>
-              <button
-                type="button"
-                className="header-action-button"
-                aria-label="Focus 3D"
-                onClick={() => setFocusMode(true)}
-              >
-                Focus 3D
-              </button>
-              <button
-                type="button"
-                className="header-action-button"
-                aria-label="Sources & QC"
-                onClick={() => setProvenanceOpen(true)}
-              >
-                Sources & QC
-              </button>
             </div>
           )}
           {focusMode && (
@@ -1085,16 +1070,20 @@ export default function App() {
           {page === "explore" ? (
             <div className="station-workspace" data-inspector={evidenceOpen || profilePanelOpen || workspaceMode === "analysis" ? "open" : "closed"}>
               <div className="explorer-landing-islands" data-testid="explorer-landing-islands" aria-label="Explorer feature and ocean source islands">
-                <ExplorerDirectoryNav
+                <ExplorerWorkspaceModeIsland
                   workspaceMode={workspaceMode}
                   focusMode={focusMode}
                   onWorkspaceModeChange={handleWorkspaceModeChange}
                   onFocus3D={() => setFocusMode(true)}
                 />
+                <ExplorerDirectoryNav />
                 <SourceWorkbench source={sourceMode} operationalAvailable={Boolean(operationalCatalog) && !operationalError}
                   chlorophyllAvailable={Boolean(chlorophyllCatalog) && !chlorophyllError} onSource={handleSourceModeChange}
                   onOverview={() => { setProfilePanelOpen(false); setWorkspaceMode("explorer"); setEvidenceOpen(true); }}
-                  onCompare={() => navigate("compare")} onData={() => navigate("data-lab")} />
+                  onCompare={() => navigate("compare")} onData={() => navigate("data-lab")}
+                   onSources={() => setProvenanceOpen(true)}
+                   evidenceLoading={scienceLoading} evidenceError={Boolean(error)}
+                   evidenceDegraded={degradedWarnings.length > 0} />
               </div>
               {workspaceMode === "presentation" && (
                 <button
@@ -1121,30 +1110,6 @@ export default function App() {
                 onCompare={() => navigate("compare")}
                 onSources={() => setProvenanceOpen(true)}
               />
-              {!evidenceOpen && !focusMode && (
-                <button
-                  type="button"
-                  className="evidence-status-pill"
-                  aria-label="Open evidence inspector"
-                  onClick={() => {
-                    setProfilePanelOpen(false);
-                    setMobileSheet("none");
-                    setWorkspaceMode("explorer");
-                    setEvidenceOpen(true);
-                  }}
-                >
-                  <span>Ocean intelligence</span>
-                  <strong>
-                    {activeSelectedProfile
-                      ? `Argo ${activeSelectedProfile.platform_id} · Active`
-                      : error
-                        ? "Field unavailable"
-                        : scienceLoading
-                          ? "Updating field…"
-                          : "Verified field · Active"}
-                  </strong>
-                </button>
-              )}
               {mobileSheet !== "none" && (
                 <button
                   type="button"
@@ -1211,6 +1176,7 @@ export default function App() {
               />
 
               <div
+                id="mpr-3d-stage"
                 className="visualization-stage"
                 data-visualization-mode={visualizationMode}
                 aria-label="Connected geographic and water-column visualization stage"
@@ -1262,6 +1228,14 @@ export default function App() {
                     theme={theme}
                   />
                 </div>
+                <button type="button"
+                  className="mpr-stage-view-switch"
+                  aria-label={visualizationMode === "globe" ? "Switch to Water Column 3D" : "Switch to Geographic 3D"}
+                  title={visualizationMode === "globe" ? "Switch to eligible Water Column 3D" : "Return to Geographic 3D"}
+                  disabled={visualizationMode === "globe" && (sourceMode === "chlorophyll" || (sourceMode !== "glorys" && variable === "currents"))}
+                  onClick={() => setVisualizationMode(current => current === "globe" ? "water-column" : "globe")}>
+                  {visualizationMode === "globe" ? "Water Column 3D ↗" : "Geographic 3D ↗"}
+                </button>
               </div>
 
               {selectedVariable && (

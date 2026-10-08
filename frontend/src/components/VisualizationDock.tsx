@@ -1,4 +1,5 @@
 import type { VisualizationMode } from "../types";
+import { SmartDualViewNavigator } from "./SmartDualViewNavigator";
 
 interface Props {
   mode: VisualizationMode;
@@ -11,25 +12,6 @@ interface Props {
   modelLabel: string;
   observationLabel: string;
   onChange: (mode: VisualizationMode) => void;
-}
-
-function GlobeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M3.8 12h16.4M12 3.5c2.3 2.2 3.6 5 3.6 8.5S14.3 18.3 12 20.5M12 3.5c-2.3 2.2-3.6 5-3.6 8.5s1.3 6.3 3.6 8.5" />
-    </svg>
-  );
-}
-
-function ColumnIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M5 5.5 12 3l7 2.5-7 2.5-7-2.5Z" />
-      <path d="M5 5.5v13L12 21l7-2.5v-13M12 8v13" />
-      <path d="m5 12.1 7 2.5 7-2.5" />
-    </svg>
-  );
 }
 
 function compactUtc(value: string): string {
@@ -64,36 +46,11 @@ export function VisualizationDock({
         }</small>
       </div>
 
-      <div className="visualization-dock-modes">
-        <button
-          type="button"
-          className={mode === "globe" ? "active" : ""}
-          aria-pressed={mode === "globe"}
-          onClick={() => onChange("globe")}
-        >
-          <span className="mode-number">VIEW 1</span>
-          <span className="mode-icon"><GlobeIcon /></span>
-          <span className="mode-label">
-            <strong>Geographic View</strong>
-            <small>Earth + study-region context</small>
-          </span>
-        </button>
-        <button
-          type="button"
-          className={mode === "water-column" ? "active" : ""}
-          aria-pressed={mode === "water-column"}
-          disabled={!waterColumnAvailable}
-          title={waterColumnAvailable ? "Open scientific water-column 3D" : "Water-column 3D is unavailable for this source"}
-          onClick={() => onChange("water-column")}
-        >
-          <span className="mode-number">VIEW 2</span>
-          <span className="mode-icon"><ColumnIcon /></span>
-          <span className="mode-label">
-            <strong>Water Column 3D</strong>
-            <small>{waterColumnAvailable ? "actual lon · lat · positive-down depth" : "unavailable for selected source"}</small>
-          </span>
-        </button>
-      </div>
+      <SmartDualViewNavigator
+        mode={mode}
+        waterColumnAvailable={waterColumnAvailable}
+        onChange={onChange}
+      />
 
       <div className="visualization-context-row" aria-label="Current scientific context">
         <div>

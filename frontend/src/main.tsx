@@ -41,6 +41,20 @@ import "./explorer-islands.css";
 import "./mpr-design-foundation.css";
 // MPR-02: Explorer-only shell scrolling, without changing other routes.
 import "./mpr-explorer-scroll.css";
+// MPR-03: theme-neutral category rail + overlay workspace directory.
+import "./mpr-workspaces-navigation.css";
+// MPR-04: independent 16-theme Workspace Mode island.
+import "./mpr-workspace-mode.css";
+// MPR-05: one theme-aware, horizontally scrollable feature directory.
+import "./mpr-feature-directory.css";
+// MPR-06: responsive source selector, no scientific contract changes.
+import "./mpr-ocean-intelligence.css";
+// MPR-07: source-backed Active Main Block disclosure.
+import "./mpr-active-main-block.css";
+// MPR-08: move evidence/QC entry points into Ocean Intelligence.
+import "./mpr-intelligence-evidence-hub.css";
+// MPR-09: scientific-view navigation on existing source-backed stage.
+import "./mpr-dual-view-navigator.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
