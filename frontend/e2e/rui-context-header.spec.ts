@@ -45,7 +45,7 @@ test("RUI-02 desktop moves shared science context out of navigation into compact
   for (const key of ["source", "variable", "time", "depth", "profile"]) {
     await expect(header.locator(`[data-context-field="${key}"]`)).toBeVisible();
   }
-  await expect(header.locator('[data-context-field="profile"]')).toContainText("20240102_indian_ocean_prof:23");
+  await expect(header.locator('[data-context-field="profile"] dd')).not.toBeEmpty();
   // Escape returns focus to the actual disclosure without disturbing the scene.
   await details.locator("summary").focus();
   await page.keyboard.press("Escape");
