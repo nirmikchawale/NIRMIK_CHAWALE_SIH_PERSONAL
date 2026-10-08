@@ -75,11 +75,12 @@ export function WaterColumnControlDock({
 
   return (
     <aside className="mpr-water-column-dock mpr-water-column-controls"
-      data-testid="mpr-13-water-column-controls"
+      data-testid="mpr-12-water-column-dock"
+      data-mpr-phase="13"
       aria-label="Water Column 3D scientific tools"
       data-native-timestamp={time}
       data-source-variable={variable}>
-      <header className="mpr-water-column-dock-heading">
+      <header className="mpr-water-column-dock-heading" data-testid="mpr-13-water-column-controls">
         <span>WATER COLUMN · GENUINE SCIENTIFIC CONTROLS</span>
         <strong>Water Column 3D</strong>
         <small>{loading ? "Loading native scientific evidence…" :
@@ -236,10 +237,11 @@ export function WaterColumnControlDock({
             Native 3D camera presets ↗
           </button>
           <button type="button" onClick={onSourceEvidence}>Sources &amp; QC ↗</button>
-          <button type="button" onClick={onGeographicView}>Return to Geographic 3D ↗</button>
           <small>Zoom and orbit remain owned by the real WaterColumn3D renderer and its keyboard/canvas controls.</small>
         </div>
       </details>
+      <button type="button" className="mpr-water-column-return" aria-label="Return to Geographic 3D"
+        onClick={onGeographicView}>Geographic 3D ↗</button>
     </aside>
   );
 }
