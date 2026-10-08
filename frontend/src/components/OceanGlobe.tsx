@@ -166,8 +166,8 @@ export function OceanGlobe({
       if (event.ctrlKey || event.metaKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
       const workspace = toolbar.closest<HTMLElement>(".station-workspace");
       if (!workspace) return;
-      const factor = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16
-        : event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? toolbar.clientHeight : 1;
+      const factor = event.deltaMode === 1 ? 16
+        : event.deltaMode === 2 ? toolbar.clientHeight : 1;
       const delta = event.deltaY * factor;
       if (!delta) return;
       const canScrollLocal = delta > 0
