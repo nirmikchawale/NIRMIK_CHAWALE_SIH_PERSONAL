@@ -1,0 +1,59 @@
+name: 3db15-final-production-acceptance
+
+on:
+  push:
+    branches: [3db-15-final-production-acceptance]
+  pull_request:
+    paths:
+      - "frontend/e2e/3db15-final-production-acceptance.spec.ts"
+      - "docs/3DB_15_FINAL_3D_BLOCK_ACCEPTANCE.md"
+      - ".github/workflows/3db15-final-acceptance.yml"
+      - "frontend/public/main-blocks/**"
+      - "frontend/src/main-block-*.ts"
+
+jobs:
+  source-verified-release-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install pytest
+      - name: Fail-closed full inventory/source validation
+        run: |
+          python -m scripts.audit_3db14_capabilities --check
+          python -m pytest -q tests/test_3db14_full_block_capability_audit.py tests/test_3db12_performance_lod.py
+      - run: python -m pip install -r backend/requirements.txt
+      - run: python scripts/export_static_science.py --output frontend/public/science-static
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - working-directory: frontend
+        run: npm ci
+      - working-directory: frontend
+        run: npm run typecheck
+      - working-directory: frontend
+        env:
+          VITE_STATIC_SCIENCE: "true"
+        run: npm run build
+      - working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Serve actual production build
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/3db15-preview.log 2>&1 &
+          ready=0
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then cat /tmp/3db15-preview.log; exit 1; fi
+      - name: Accept all source frames and representative rendered Water Column
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: "http://127.0.0.1:4173/#/explore"
+        run: npx playwright test -c playwright.live.config.ts e2e/3db15-final-production-acceptance.spec.ts
