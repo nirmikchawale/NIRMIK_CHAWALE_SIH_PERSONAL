@@ -65,6 +65,8 @@ import "./mpr-stacked-water-column.css";
 import "./mpr-water-column-controls.css";
 // MPR-14: never paint stale or mixed-source field/volume evidence.
 import "./mpr-linked-view-evidence.css";
+// MPR-15: real scientific inspectors, responsive keyboard/touch and footer.
+import "./mpr-responsive-inspectors.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
