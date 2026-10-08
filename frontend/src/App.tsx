@@ -1,5 +1,6 @@
 import { SourceWorkbench } from "./components/SourceWorkbench";
 import { ExplorerDirectoryNav } from "./components/ExplorerDirectoryNav";
+import { ExplorerWorkspaceModeIsland } from "./components/ExplorerWorkspaceModeIsland";
 import { RefreshControl } from "./components/RefreshControl";
 import { useOceanMotion } from "./useOceanMotion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -965,14 +966,7 @@ export default function App() {
               >
                 {controlDockOpen ? "Hide controls" : "Controls"}
               </button>
-              <button
-                type="button"
-                className="header-action-button"
-                aria-label="Focus 3D"
-                onClick={() => setFocusMode(true)}
-              >
-                Focus 3D
-              </button>
+
               <button
                 type="button"
                 className="header-action-button"
@@ -1085,12 +1079,13 @@ export default function App() {
           {page === "explore" ? (
             <div className="station-workspace" data-inspector={evidenceOpen || profilePanelOpen || workspaceMode === "analysis" ? "open" : "closed"}>
               <div className="explorer-landing-islands" data-testid="explorer-landing-islands" aria-label="Explorer feature and ocean source islands">
-                <ExplorerDirectoryNav
+                <ExplorerWorkspaceModeIsland
                   workspaceMode={workspaceMode}
                   focusMode={focusMode}
                   onWorkspaceModeChange={handleWorkspaceModeChange}
                   onFocus3D={() => setFocusMode(true)}
                 />
+                <ExplorerDirectoryNav />
                 <SourceWorkbench source={sourceMode} operationalAvailable={Boolean(operationalCatalog) && !operationalError}
                   chlorophyllAvailable={Boolean(chlorophyllCatalog) && !chlorophyllError} onSource={handleSourceModeChange}
                   onOverview={() => { setProfilePanelOpen(false); setWorkspaceMode("explorer"); setEvidenceOpen(true); }}
