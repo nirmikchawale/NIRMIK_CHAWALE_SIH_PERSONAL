@@ -873,29 +873,6 @@ export default function App() {
   );
   const currentPage = PAGE_ITEMS.find((item) => item.id === page) ?? PAGE_ITEMS[0];
 
-  if (!catalog) {
-    return (
-      <div className="boot-screen" data-theme={theme}>
-        <img className="boot-brand-logo" src={ARGO_COMPASS_LOGO_SRC} alt="The Optimizers Argo Compass logo" />
-        <h1>Ocean Canvas</h1>
-        {startupError ? (
-          <div className="boot-error-card">
-            <strong>Scientific API unavailable</strong>
-            <p>{startupError}</p>
-            <p>Local fail-safe: launch START_OCEANTWIN.cmd. The Streamlit scientific reference remains the emergency fallback.</p>
-            <button onClick={() => window.location.reload()}>Retry connection</button>
-          </div>
-        ) : (
-          <p>Connecting to verified scientific evidence…</p>
-        )}
-      </div>
-    );
-  }
-
-  const activeExploreCatalog = exploreCatalog ?? catalog;
-  const activeComparisonProfiles = sourceMode === "glorys" ? profiles : [];
-  const activeSelectedProfile = sourceMode === "glorys" ? selectedProfile : null;
-
   // MPR-12: update the navigator from ACTUAL scroll visibility, without
   // reissuing scientific requests or triggering scroll from a scroll observer.
   useEffect(() => {
@@ -931,6 +908,30 @@ export default function App() {
       if (pending) window.cancelAnimationFrame(pending);
     };
   }, [page]);
+
+
+  if (!catalog) {
+    return (
+      <div className="boot-screen" data-theme={theme}>
+        <img className="boot-brand-logo" src={ARGO_COMPASS_LOGO_SRC} alt="The Optimizers Argo Compass logo" />
+        <h1>Ocean Canvas</h1>
+        {startupError ? (
+          <div className="boot-error-card">
+            <strong>Scientific API unavailable</strong>
+            <p>{startupError}</p>
+            <p>Local fail-safe: launch START_OCEANTWIN.cmd. The Streamlit scientific reference remains the emergency fallback.</p>
+            <button onClick={() => window.location.reload()}>Retry connection</button>
+          </div>
+        ) : (
+          <p>Connecting to verified scientific evidence…</p>
+        )}
+      </div>
+    );
+  }
+
+  const activeExploreCatalog = exploreCatalog ?? catalog;
+  const activeComparisonProfiles = sourceMode === "glorys" ? profiles : [];
+  const activeSelectedProfile = sourceMode === "glorys" ? selectedProfile : null;
 
 
   return (
