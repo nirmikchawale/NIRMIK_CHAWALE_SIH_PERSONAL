@@ -32,7 +32,9 @@ for (const width of [1440, 390]) {
 
     const contextHeader = page.getByTestId("scientific-context-header");
     await expect(contextHeader).toBeInViewport();
-    await expect(page.locator(".science-footer")).not.toBeVisible();
+    // The footer stays in the document for accessibility; only its *viewport*
+    // visibility matters before a user scrolls to the bottom of Explorer.
+    await expect(page.locator(".science-footer")).not.toBeInViewport();
 
     const routes = [
       { route: "telemetry", category: "Analyze" },

@@ -1,0 +1,180 @@
+/* MPR-12: real, separately mounted scientific water-column BELOW Cesium.
+   Both visualizations retain their original component/renderer ownership. */
+.ocean-workbench[data-page="explore"] .station-workspace > .mpr-water-column-section {
+  grid-area: water;
+  display: grid; grid-template-columns: minmax(0,3.15fr) minmax(280px,1fr);
+  grid-template-rows: auto minmax(560px,80dvh);
+  grid-template-areas: "water-header water-header" "water-scene water-dock";
+  align-items: stretch; gap: clamp(10px,1vw,16px); min-width: 0;
+  max-width: 100%; scroll-margin-top: 18px;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-heading {
+  grid-area: water-header; display:flex; flex-wrap:wrap; flex-direction:column;
+  justify-content:center; gap:5px; min-width:0;
+  padding: 14px clamp(15px,1.6vw,23px);
+  border:1px solid var(--mpr-border-active);
+  border-radius:var(--mpr-radius-island);
+  background:var(--mpr-surface); color:var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-heading span {
+  font-size:10px; font-weight:800; letter-spacing:.13em; color:var(--mpr-accent);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-heading h2 {
+  margin:0; font-size:clamp(19px,1.9vw,28px); line-height:1.2; color:var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-heading p {
+  margin:0; font-size:11px; line-height:1.5; color:var(--mpr-text-muted);
+  overflow-wrap:anywhere;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-visualization {
+  grid-area:water-scene; position:relative;
+  min-width:0; min-height:0; height:100%; width:100%;
+  border:1px solid var(--mpr-border-active);
+  border-radius:var(--mpr-radius-island);
+  background:var(--mpr-surface-raised); overflow:hidden;
+}
+.ocean-workbench[data-page="explore"] .station-workspace .mpr-water-column-section .water-column-visualization-layer {
+  position:relative !important; inset:auto !important;
+  display:block; width:100%; height:100%; min-width:0; min-height:0;
+  overflow:hidden; visibility:visible !important; pointer-events:auto;
+}
+.ocean-workbench[data-page="explore"] .station-workspace .mpr-water-column-section .globe-shell {
+  display:grid !important; grid-template-columns:minmax(0,1fr);
+  grid-template-rows:minmax(260px,1fr) auto;
+  position:relative !important; width:100% !important; height:100% !important;
+  min-height:0 !important; inset:auto !important; overflow:hidden !important;
+  border:none; border-radius:0;
+}
+.ocean-workbench[data-page="explore"] .station-workspace .mpr-water-column-section .water-column-canvas {
+  grid-area:1/1/2/2; position:relative !important;
+  width:100% !important; height:100% !important; min-width:0; min-height:0;
+}
+.ocean-workbench[data-page="explore"] .station-workspace .mpr-water-column-section .renderer-tools {
+  grid-area:2/1/3/2; overflow:auto; max-height:160px;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-dock {
+  grid-area:water-dock;
+  display:flex; flex-direction:column; align-items:stretch; gap:13px;
+  align-self:stretch; height:100%; box-sizing:border-box; min-height:0; min-width:0;
+  overflow:auto; overscroll-behavior-y:auto; scrollbar-width:thin;
+  padding:clamp(12px,1.3vw,20px);
+  border:1px solid var(--mpr-border-active);
+  border-radius:var(--mpr-radius-island);
+  background:var(--mpr-surface); color:var(--mpr-text);
+  box-shadow:var(--mpr-shadow);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-dock-heading {
+  display:flex; flex-direction:column; gap:6px;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-dock-heading span {
+  font-size:10px; font-weight:800; letter-spacing:.12em; color:var(--mpr-accent);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-dock-heading strong {
+  font-size:17px; color:var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-dock-heading small {
+  font-size:11px; line-height:1.5; color:var(--mpr-text-muted);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-native-context {
+  margin:0; display:grid; gap:7px; min-width:0;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-native-context div {
+  display:flex; flex-wrap:wrap; justify-content:space-between; gap:5px 10px;
+  padding:9px 10px; border:1px solid var(--mpr-border);
+  border-radius:var(--mpr-radius-control);
+  background:var(--mpr-surface-raised);
+  overflow-wrap:anywhere; min-width:0;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-native-context dt {
+  font-size:10px; color:var(--mpr-text-muted);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-native-context dd {
+  margin:0; font-size:11px; font-weight:720; color:var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-dock button {
+  min-height:44px; border:1px solid var(--mpr-border-active);
+  border-radius:var(--mpr-radius-control); background:var(--mpr-surface-raised);
+  color:var(--mpr-text); padding:10px; cursor:pointer; font-weight:700;
+  line-height:1.4;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-dock button:disabled {
+  opacity:.5; cursor:not-allowed;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-dock button:focus-visible {
+  outline:2px solid var(--mpr-focus); outline-offset:2px;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-unavailable {
+  display:flex; flex-direction:column; justify-content:center;
+  width:100%; height:100%; min-height:390px; box-sizing:border-box;
+  padding:clamp(18px,3vw,36px); color:var(--mpr-text); background:var(--mpr-surface);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-unavailable strong {
+  font-size:17px;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-unavailable p {
+  max-width:60ch; line-height:1.6; font-size:12px; color:var(--mpr-text-muted);
+}
+@media(min-width:1121px) {
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace,
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"])[data-control-dock="closed"] .station-workspace,
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace[data-inspector="open"] {
+    grid-template-areas:
+      "directory directory" "block block" "dock dock" "geo-title geo-title"
+      "scene controls" "range controls" "water water"
+      "inspector inspector" "evidence evidence" !important;
+    grid-template-rows: auto auto auto auto minmax(560px,80dvh) auto auto auto auto !important;
+  }
+  .ocean-workbench[data-page="explore"]:not(.focus-mode)[data-control-dock="closed"] .station-workspace {
+    grid-template-columns:minmax(0,1fr) !important;
+    grid-template-areas:
+      "directory" "block" "dock" "geo-title" "scene" "range"
+      "water" "inspector" "evidence" !important;
+  }
+}
+@media(min-width:761px) and (max-width:1120px) {
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace {
+    grid-template-areas:
+      "directory" "block" "dock" "geo-title" "scene"
+      "controls" "range" "water" "inspector" "evidence" !important;
+    grid-template-rows: auto auto auto auto minmax(520px,75dvh) auto auto auto auto auto !important;
+  }
+  .ocean-workbench[data-page="explore"] .mpr-water-column-section {
+    grid-template-columns:minmax(0,1fr) !important;
+    grid-template-rows:auto minmax(460px,70dvh) auto !important;
+    grid-template-areas:"water-header" "water-scene" "water-dock" !important;
+  }
+  .ocean-workbench[data-page="explore"] .mpr-water-column-dock {
+    max-height:none; overflow:visible; height:auto;
+  }
+}
+@media(max-width:760px) {
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace {
+    grid-template-areas:
+      "directory" "block" "dock" "geo-title" "scene" "range"
+      "controls" "water" "inspector" "evidence" !important;
+    grid-template-rows:auto auto auto auto clamp(410px,66dvh,640px) auto auto auto auto auto !important;
+  }
+  .ocean-workbench[data-page="explore"] .station-workspace > .mpr-water-column-section {
+    display:grid; grid-template-columns:minmax(0,1fr) !important;
+    grid-template-rows:auto clamp(410px,66dvh,640px) auto !important;
+    grid-template-areas:"water-header" "water-scene" "water-dock" !important;
+    gap:10px;
+  }
+  .ocean-workbench[data-page="explore"] .mpr-water-column-dock {
+    height:auto; max-height:680px; overflow:auto;
+  }
+}
+/* Preserve legacy focus/presentation native stage interaction; a scroll target
+   remains in the DOM but should not intercept the single-scene special mode. */
+.ocean-workbench[data-page="explore"].focus-mode .mpr-water-column-section,
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .mpr-water-column-section {
+  display:none !important;
+}
+@media(forced-colors:active) {
+  .ocean-workbench[data-page="explore"] .mpr-water-column-section :is(
+    .mpr-water-column-heading,.mpr-water-column-visualization,.mpr-water-column-dock
+  ) { background:Canvas !important; color:CanvasText !important; border-color:CanvasText !important; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .ocean-workbench[data-page="explore"] .mpr-water-column-section { scroll-behavior:auto !important; }
+}

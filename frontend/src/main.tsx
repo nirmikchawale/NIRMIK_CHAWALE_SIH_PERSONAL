@@ -55,6 +55,18 @@ import "./mpr-active-main-block.css";
 import "./mpr-intelligence-evidence-hub.css";
 // MPR-09: scientific-view navigation on existing source-backed stage.
 import "./mpr-dual-view-navigator.css";
+// MPR-10: full-width Geographic 3D view and responsive right-side dock.
+import "./mpr-geographic-section.css";
+// MPR-11: reorganize existing source-backed controls in the Geographic dock.
+import "./mpr-geographic-controls.css";
+// MPR-12: second genuine stacked Water Column 3D section, independent dock.
+import "./mpr-stacked-water-column.css";
+// MPR-13: genuine depth/time, colour, geometry and camera-linked controls.
+import "./mpr-water-column-controls.css";
+// MPR-14: never paint stale or mixed-source field/volume evidence.
+import "./mpr-linked-view-evidence.css";
+// MPR-15: real scientific inspectors, responsive keyboard/touch and footer.
+import "./mpr-responsive-inspectors.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

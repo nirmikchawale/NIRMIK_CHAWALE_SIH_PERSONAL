@@ -1,4 +1,7 @@
 import { SourceWorkbench } from "./components/SourceWorkbench";
+import { WaterColumnControlDock } from "./components/WaterColumnControlDock";
+import { ExplorerInspectorAccess } from "./components/ExplorerInspectorAccess";
+import { linkedSelectionKey, matchesGeographicPayload, matchesWaterColumnPayload } from "./linked-view-integrity";
 import { ExplorerDirectoryNav } from "./components/ExplorerDirectoryNav";
 import { ExplorerWorkspaceModeIsland } from "./components/ExplorerWorkspaceModeIsland";
 import { RefreshControl } from "./components/RefreshControl";
@@ -177,6 +180,47 @@ export default function App() {
     setMainBlockRevision((current) => current + 1);
   }), []);
 
+  const inspectorOriginRef = useRef<HTMLElement | null>(null);
+  const inspectorWasOpenRef = useRef(false);
+  const rememberInspectorOrigin = () => {
+    if (document.activeElement instanceof HTMLElement) {
+      inspectorOriginRef.current = document.activeElement;
+    }
+  };
+  const closeScientificInspectors = useCallback(() => {
+    setEvidenceOpen(false);
+    setProvenanceOpen(false);
+    setProfilePanelOpen(false);
+    setMobileSheet("none");
+  }, []);
+  // Keep legacy inspector drawers usable with keyboard, including mobile.
+  useEffect(() => {
+    if (page !== "explore") return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (provenanceOpen || evidenceOpen || profilePanelOpen || mobileSheet !== "none") {
+        event.preventDefault();
+        closeScientificInspectors();
+      } else if (focusMode) {
+        event.preventDefault();
+        setFocusMode(false);
+      } else if (workspaceMode === "presentation") {
+        event.preventDefault();
+        setWorkspaceMode("explorer");
+        setControlDockOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [page, provenanceOpen, evidenceOpen, profilePanelOpen, mobileSheet, focusMode, workspaceMode, closeScientificInspectors]);
+  useEffect(() => {
+    const anyOpen = provenanceOpen || evidenceOpen || profilePanelOpen || mobileSheet !== "none";
+    if (inspectorWasOpenRef.current && !anyOpen && inspectorOriginRef.current?.isConnected) {
+      window.requestAnimationFrame(() => inspectorOriginRef.current?.focus({ preventScroll:true }));
+    }
+    inspectorWasOpenRef.current = anyOpen;
+  }, [provenanceOpen, evidenceOpen, profilePanelOpen, mobileSheet]);
+
   const operationalCatalog = useMemo(
     () => operationalSnapshot ? buildIncoisExploreCatalog(operationalSnapshot) : null,
     [operationalSnapshot]
@@ -191,6 +235,15 @@ export default function App() {
       : sourceMode === "chlorophyll" && chlorophyllCatalog
         ? chlorophyllCatalog
         : catalog;
+  const linkedExpectation = {
+    sourceId: exploreCatalog?.dataset.dataset_id ?? "",
+    mainBlockId: activeMainBlockId, mainBlockRevision, variable, timeIndex,
+    time: exploreCatalog?.coordinates.time[timeIndex] ?? "",
+    depthIndex, depthM: exploreCatalog?.coordinates.depth[depthIndex] ?? 0
+  };
+  const linkedKey = linkedSelectionKey(linkedExpectation);
+  const [geographicAcceptedKey, setGeographicAcceptedKey] = useState("");
+  const [waterAcceptedKey, setWaterAcceptedKey] = useState("");
   const activeMainBlock = useMemo(
     () => resolveMainBlock(activeMainBlockId),
     [activeMainBlockId]
@@ -582,6 +635,10 @@ export default function App() {
     setVolume(null);
     setCurrents(null);
     setCurrentsVolume(null);
+    setGeographicAcceptedKey("");
+    setWaterAcceptedKey("");
+    const selection = linkedExpectation;
+    const requestKey = linkedKey;
 
     if (sourceMode === "incois") {
       try {
@@ -589,11 +646,16 @@ export default function App() {
         if (variable === "currents" || variable === "chlorophyll") {
           throw new Error("Selected variable is unavailable in the INCOIS physical snapshot.");
         }
-        if (visualizationMode === "water-column" || viewMode === "volume") {
-          setVolume(buildIncoisVolume(operationalSnapshot, variable, timeIndex));
-        } else {
-          setField(buildIncoisField(operationalSnapshot, variable, timeIndex, depthIndex));
-        }
+        // Two independently mounted genuine views use the SAME native source/time.
+        // The field remains depth-indexed; the water column retains source depth values.
+        const geo = buildIncoisField(operationalSnapshot, variable, timeIndex, depthIndex);
+        const deep = buildIncoisVolume(operationalSnapshot, variable, timeIndex);
+        if (matchesGeographicPayload(geo, selection)) {
+          setField(geo); setGeographicAcceptedKey(requestKey);
+        } else setError("INCOIS geographic native source/time/depth mismatch; field withheld.");
+        if (matchesWaterColumnPayload(deep, selection)) {
+          setVolume(deep); setWaterAcceptedKey(requestKey);
+        } else setError("INCOIS water-column native source/time mismatch; volume withheld.");
       } catch (reason) {
         setError(reason instanceof Error ? reason.message : String(reason));
       } finally {
@@ -608,7 +670,10 @@ export default function App() {
         if (variable !== "chlorophyll") {
           throw new Error("Only chlorophyll is available in the selected ocean-colour source.");
         }
-        setField(buildIncoisChlorophyllField(chlorophyllSnapshot, timeIndex));
+        const geo = buildIncoisChlorophyllField(chlorophyllSnapshot, timeIndex);
+        if (matchesGeographicPayload(geo, selection)) {
+          setField(geo); setGeographicAcceptedKey(requestKey);
+        } else setError("INCOIS chlorophyll native source/time mismatch; surface field withheld.");
       } catch (reason) {
         setError(reason instanceof Error ? reason.message : String(reason));
       } finally {
@@ -623,35 +688,40 @@ export default function App() {
       return;
     }
 
-    const request =
-      variable === "currents"
-        ? visualizationMode === "water-column"
-          ? api.currentsVolume(timeIndex).then((payload) => {
-              if (!cancelled) setCurrentsVolume(payload);
-            })
-          : api.currents(timeIndex, depthIndex).then((payload) => {
-              if (!cancelled) setCurrents(payload);
-            })
-        : visualizationMode === "water-column" || viewMode === "volume"
-          ? api.volume(variable, timeIndex).then((payload) => {
-              if (!cancelled) setVolume(payload);
-            })
-          : api.field(variable, timeIndex, depthIndex).then((payload) => {
-              if (!cancelled) setField(payload);
-            });
+    // Retain both original source-backed APIs, request them concurrently, never
+    // turn a depth slice into a synthetic volume or fabricate missing data.
+    const requests = variable === "currents"
+      ? [
+          api.currents(timeIndex, depthIndex).then(payload => {
+            if (!cancelled && matchesGeographicPayload(payload, selection)) { setCurrents(payload); setGeographicAcceptedKey(requestKey); }
+          }),
+          api.currentsVolume(timeIndex).then(payload => {
+            if (!cancelled && matchesWaterColumnPayload(payload, selection)) { setCurrentsVolume(payload); setWaterAcceptedKey(requestKey); }
+          })
+        ]
+      : [
+          api.field(variable, timeIndex, depthIndex).then(payload => {
+            if (!cancelled && matchesGeographicPayload(payload, selection)) { setField(payload); setGeographicAcceptedKey(requestKey); }
+          }),
+          api.volume(variable, timeIndex).then(payload => {
+            if (!cancelled && matchesWaterColumnPayload(payload, selection)) { setVolume(payload); setWaterAcceptedKey(requestKey); }
+          })
+        ];
 
-    request
-      .catch((reason: Error) => {
-        if (!cancelled) setError(reason.message);
-      })
-      .finally(() => {
-        if (!cancelled) setScienceLoading(false);
-      });
+    Promise.allSettled(requests).then(outcomes => {
+      if (cancelled) return;
+      const failures = outcomes.filter(outcome => outcome.status === "rejected");
+      if (failures.length) {
+        const reason = (failures[0] as PromiseRejectedResult).reason;
+        setError(reason instanceof Error ? reason.message : String(reason));
+      }
+      setScienceLoading(false);
+    });
 
     return () => {
       cancelled = true;
     };
-  }, [exploreCatalog, sourceMode, operationalSnapshot, chlorophyllSnapshot, variable, viewMode, visualizationMode, depthIndex, timeIndex]);
+  }, [exploreCatalog, sourceMode, operationalSnapshot, chlorophyllSnapshot, variable, depthIndex, timeIndex, activeMainBlockId, mainBlockRevision]);
 
   const handleProfileSelection = useCallback((profileId: string) => {
     setSelectedImportedProfileId("");
@@ -774,10 +844,22 @@ export default function App() {
     }
   }, [operationalCatalog, chlorophyllCatalog, catalog, variable, colorPalette]);
 
-  const handleEnterWaterColumn = useCallback(() => {
-    if (sourceMode === "chlorophyll" || (sourceMode === "incois" && variable === "currents")) return;
-    setVisualizationMode("water-column");
+  const handleViewNavigation = useCallback((target: VisualizationMode) => {
+    if (target === "water-column" &&
+      (sourceMode === "chlorophyll" || (sourceMode === "incois" && variable === "currents"))) return;
+    setVisualizationMode(target);
+    window.requestAnimationFrame(() => {
+      const id = target === "globe" ? "mpr-3d-stage" : "mpr-water-column-section";
+      const element = document.getElementById(id);
+      if (!element) return;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      element.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" });
+    });
   }, [sourceMode, variable]);
+
+  const handleEnterWaterColumn = useCallback(() => {
+    handleViewNavigation("water-column");
+  }, [handleViewNavigation]);
 
   const handleWorkspaceModeChange = useCallback((nextMode: WorkspaceMode) => {
     setWorkspaceMode(nextMode);
@@ -857,6 +939,43 @@ export default function App() {
   );
   const currentPage = PAGE_ITEMS.find((item) => item.id === page) ?? PAGE_ITEMS[0];
 
+  // MPR-12: update the navigator from ACTUAL scroll visibility, without
+  // reissuing scientific requests or triggering scroll from a scroll observer.
+  useEffect(() => {
+    if (page !== "explore") return;
+    const root = document.querySelector<HTMLElement>('.ocean-workbench[data-page="explore"]');
+    if (!root) return;
+    let pending = 0;
+    const reflectVisibleSection = () => {
+      pending = 0;
+      const geo = document.getElementById("mpr-3d-stage");
+      const water = document.getElementById("mpr-water-column-section");
+      if (!geo || !water) return;
+      const rootBox = root.getBoundingClientRect();
+      const center = rootBox.top + rootBox.height * 0.48;
+      const isVisible = (rect: DOMRect) =>
+        rect.bottom > rootBox.top && rect.top < rootBox.bottom;
+      const g = geo.getBoundingClientRect();
+      const w = water.getBoundingClientRect();
+      if (!isVisible(g) && !isVisible(w)) return;
+      const distance = (rect: DOMRect) => Math.abs((rect.top + rect.bottom) / 2 - center);
+      const next: VisualizationMode = isVisible(w) &&
+        (!isVisible(g) || distance(w) < distance(g)) ? "water-column" : "globe";
+      setVisualizationMode(current => current === next ? current : next);
+    };
+    const onScroll = () => {
+      if (!pending) pending = window.requestAnimationFrame(reflectVisibleSection);
+    };
+    root.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      root.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (pending) window.cancelAnimationFrame(pending);
+    };
+  }, [page]);
+
+
   if (!catalog) {
     return (
       <div className="boot-screen" data-theme={theme}>
@@ -879,6 +998,22 @@ export default function App() {
   const activeExploreCatalog = exploreCatalog ?? catalog;
   const activeComparisonProfiles = sourceMode === "glorys" ? profiles : [];
   const activeSelectedProfile = sourceMode === "glorys" ? selectedProfile : null;
+  const plannedBlock = sourceMode === "glorys" && activeMainBlock.materialization === "planned";
+  const acceptedGeographic = !plannedBlock && !scienceLoading &&
+    geographicAcceptedKey === linkedKey &&
+    matchesGeographicPayload(variable === "currents" ? currents : field, linkedExpectation);
+  const waterEligible = sourceMode !== "chlorophyll" && (sourceMode === "glorys" || variable !== "currents");
+  const acceptedWater = !plannedBlock && waterEligible && !scienceLoading &&
+    waterAcceptedKey === linkedKey &&
+    matchesWaterColumnPayload(variable === "currents" ? currentsVolume : volume, linkedExpectation);
+  const linkedStatus = (ready: boolean, eligible = true) =>
+    plannedBlock ? "planned" : !eligible ? "unavailable" :
+    ready ? "verified" : scienceLoading ? "loading" :
+    error ? "unavailable" : "mismatch";
+  const geographicReady = acceptedGeographic && (viewMode !== "volume" || variable === "currents" || acceptedWater);
+  const geographicStatus = linkedStatus(geographicReady);
+  const waterStatus = linkedStatus(acceptedWater, waterEligible);
+
 
   return (
     <div
@@ -1154,6 +1289,19 @@ export default function App() {
                 onIsoValueChange={setIsoValue}
               />
 
+              <header className="mpr-geographic-heading" data-testid="mpr-10-geographic-heading">
+                <span>GEOGRAPHIC 3D · SCIENTIFIC OCEAN VIEW</span>
+                <div className="mpr-geographic-heading-main">
+                  <h2>Explore the ocean in three dimensions</h2>
+                  <p>{selectedVariable?.label ?? variable} · {activeExploreCatalog.dataset.region} · native scientific field</p>
+                </div>
+                <small>{sourceMode === "chlorophyll"
+                  ? "Satellite surface only · no artificial subsurface field"
+                  : scienceLoading
+                    ? "Updating the selected genuine scientific field"
+                    : "Interactive Cesium globe · connected to active source and block"}</small>
+              </header>
+
               <VisualizationDock
                 mode={visualizationMode}
                 waterColumnAvailable={sourceMode !== "chlorophyll" && (sourceMode === "glorys" || variable !== "currents")}
@@ -1172,23 +1320,28 @@ export default function App() {
                         ? "Unavailable"
                         : "Not selected"
                 }
-                onChange={setVisualizationMode}
+                onChange={handleViewNavigation}
               />
 
               <div
                 id="mpr-3d-stage"
                 className="visualization-stage"
                 data-visualization-mode={visualizationMode}
+                data-linked-evidence={geographicStatus}
+                data-linked-source={sourceMode}
+                data-linked-block={activeMainBlockId}
+                data-linked-time={linkedExpectation.time}
+                data-linked-variable={variable}
                 aria-label="Connected geographic and water-column visualization stage"
               >
                 <div
-                  className={`visualization-layer globe-visualization-layer ${visualizationMode === "globe" ? "active" : ""}`}
-                  aria-hidden={visualizationMode !== "globe"}
+                  className="visualization-layer globe-visualization-layer active"
+                  aria-hidden={false}
                 >
                   <OceanGlobe
-                    field={visualizationMode === "globe" ? field : null}
-                    volume={visualizationMode === "globe" ? volume : null}
-                    currents={visualizationMode === "globe" ? currents : null}
+                    field={geographicReady ? field : null}
+                    volume={geographicReady && viewMode === "volume" ? volume : null}
+                    currents={geographicReady ? currents : null}
                     profiles={activeComparisonProfiles}
                     selectedProfileId={sourceMode === "glorys" ? selectedProfileId : ""}
                     importedProfiles={importedProfiles}
@@ -1209,35 +1362,135 @@ export default function App() {
                     canEnterWaterColumn={sourceMode !== "chlorophyll" && (sourceMode === "glorys" || variable !== "currents")}
                   />
                 </div>
-                <div
-                  className={`visualization-layer water-column-visualization-layer ${visualizationMode === "water-column" ? "active" : ""}`}
-                  aria-hidden={visualizationMode !== "water-column"}
-                >
-                  <WaterColumn3D
-                    volume={visualizationMode === "water-column" ? volume : null}
-                    currentsVolume={visualizationMode === "water-column" ? currentsVolume : null}
-                    selectedDepthM={activeExploreCatalog.coordinates.depth[depthIndex] ?? 0}
-                    verticalExaggeration={verticalExaggeration}
-                    opacity={waterColumnOpacity / 100}
-                    colorPalette={colorPalette}
-                    colorScale={colorScale}
-                    colorMinimum={colorMinimum}
-                    colorMaximum={colorMaximum}
-                    isoSurfaceEnabled={isoSurfaceEnabled}
-                    isoValue={isoValue}
-                    theme={theme}
-                  />
-                </div>
+                {geographicStatus !== "verified" && (
+                  <div className="mpr-linked-evidence-status" role="status" data-testid="mpr-14-geographic-status">
+                    <strong>{geographicStatus === "planned" ? "Planned block · field withheld" :
+                      geographicStatus === "loading" ? "Loading source-backed geographic field…" :
+                      "Geographic evidence unavailable or mismatched"}</strong>
+                    <small>{error || "No stale or copied scientific values are rendered for this selection."}</small>
+                  </div>
+                )}
                 <button type="button"
                   className="mpr-stage-view-switch"
                   aria-label={visualizationMode === "globe" ? "Switch to Water Column 3D" : "Switch to Geographic 3D"}
                   title={visualizationMode === "globe" ? "Switch to eligible Water Column 3D" : "Return to Geographic 3D"}
                   disabled={visualizationMode === "globe" && (sourceMode === "chlorophyll" || (sourceMode !== "glorys" && variable === "currents"))}
-                  onClick={() => setVisualizationMode(current => current === "globe" ? "water-column" : "globe")}>
+                  onClick={() => handleViewNavigation(visualizationMode === "globe" ? "water-column" : "globe")}>
                   {visualizationMode === "globe" ? "Water Column 3D ↗" : "Geographic 3D ↗"}
                 </button>
               </div>
 
+              <section id="mpr-water-column-section"
+                className="mpr-water-column-section"
+                data-testid="mpr-12-water-column-section"
+                data-scientific-source={sourceMode}
+                data-native-time={activeExploreCatalog.coordinates.time[timeIndex] ?? "Unavailable"}
+                data-native-depth={activeExploreCatalog.coordinates.depth[depthIndex] ?? 0}
+                data-eligible={waterEligible ? "true" : "false"}
+                data-linked-evidence={waterStatus}
+                data-linked-block={activeMainBlockId}
+                data-linked-variable={variable}
+                aria-label="Independent source-backed Water Column 3D section">
+                <header className="mpr-water-column-heading">
+                  <span>WATER COLUMN 3D · NATIVE MODEL GEOMETRY</span>
+                  <h2>Explore the ocean below the surface</h2>
+                  <p>{selectedVariable?.label ?? variable} · {activeExploreCatalog.dataset.region} · {activeExploreCatalog.coordinates.time[timeIndex] ?? "Native time unavailable"}</p>
+                </header>
+                <div className="mpr-water-column-visualization"
+                  data-renderer-mounted="true">
+                  <div className="visualization-layer water-column-visualization-layer active"
+                    aria-hidden={false}>
+                    {waterStatus === "verified" ? (
+                      <WaterColumn3D
+                        volume={variable === "currents" ? null : acceptedWater ? volume : null}
+                        currentsVolume={variable === "currents" && acceptedWater ? currentsVolume : null}
+                        selectedDepthM={activeExploreCatalog.coordinates.depth[depthIndex] ?? 0}
+                        verticalExaggeration={verticalExaggeration}
+                        opacity={waterColumnOpacity / 100}
+                        colorPalette={colorPalette}
+                        colorScale={colorScale}
+                        colorMinimum={colorMinimum}
+                        colorMaximum={colorMaximum}
+                        isoSurfaceEnabled={isoSurfaceEnabled}
+                        isoValue={isoValue}
+                        theme={theme}
+                      />
+                    ) : (
+                      <div className="mpr-water-column-unavailable" role="status">
+                        <strong>{waterStatus === "planned" ? "Planned block · water-column evidence withheld" :
+                          waterStatus === "loading" ? "Loading native water-column evidence…" :
+                          waterStatus === "mismatch" ? "Native source/time/volume mismatch · evidence withheld" :
+                            "Water-column data unavailable for this scientific source"}</strong>
+                        <p>{sourceMode === "chlorophyll"
+                          ? "INCOIS satellite chlorophyll is surface-only; it has no measured or modelled subsurface depth axis."
+                          : "The current INCOIS physical snapshot does not provide a verified full-depth currents volume."}</p>
+                        <p>No copied, extrapolated or synthetic ocean values are displayed.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <WaterColumnControlDock
+                  catalog={activeExploreCatalog}
+                  variable={variable}
+                  depthIndex={depthIndex}
+                  timeIndex={timeIndex}
+                  profiles={activeComparisonProfiles}
+                  selectedProfileId={selectedProfileId}
+                  opacity={waterColumnOpacity}
+                  verticalExaggeration={verticalExaggeration}
+                  isoSurfaceEnabled={isoSurfaceEnabled}
+                  isoValue={isoValue}
+                  palette={colorPalette}
+                  scale={colorScale}
+                  minimum={colorMinimum}
+                  maximum={colorMaximum}
+                  loading={scienceLoading || waterStatus === "mismatch"}
+                  error={waterStatus === "mismatch" ? "Native volume metadata does not match this selection." : error}
+                  onVariableChange={handleVariableChange}
+                  onDepthChange={setDepthIndex}
+                  onTimeChange={setTimeIndex}
+                  onProfileChange={handleProfileSelection}
+                  onOpacityChange={setWaterColumnOpacity}
+                  onVerticalExaggerationChange={setVerticalExaggeration}
+                  onIsoSurfaceEnabledChange={setIsoSurfaceEnabled}
+                  onIsoValueChange={setIsoValue}
+                  onPaletteChange={setColorPalette}
+                  onScaleChange={setColorScale}
+                  onMinimumChange={setColorMinimum}
+                  onMaximumChange={setColorMaximum}
+                  onSourceEvidence={() => setProvenanceOpen(true)}
+                  onGeographicView={() => handleViewNavigation("globe")}
+                />
+              </section>
+
+              <ExplorerInspectorAccess
+                evidenceOpen={evidenceOpen}
+                provenanceOpen={provenanceOpen}
+                observationOpen={profilePanelOpen || mobileSheet === "observation"}
+                profileAvailable={Boolean(selectedImportedProfile || activeSelectedProfile)}
+                scientificError={error}
+                onEvidence={() => {
+                  rememberInspectorOrigin();
+                  setProfilePanelOpen(false);
+                  setMobileSheet("none");
+                  setEvidenceOpen(true);
+                  window.requestAnimationFrame(() => document.querySelector<HTMLElement>('.evidence-rail[data-open="true"]')?.scrollIntoView({ block:"start", behavior:"auto" }));
+                }}
+                onProvenance={() => {
+                  rememberInspectorOrigin();
+                  setProvenanceOpen(true);
+                  window.requestAnimationFrame(() => document.querySelector<HTMLElement>(".provenance-drawer")?.scrollIntoView({ block:"start", behavior:"auto" }));
+                }}
+                onObservation={() => {
+                  if (!selectedImportedProfile && !activeSelectedProfile) return;
+                  rememberInspectorOrigin();
+                  setEvidenceOpen(false);
+                  setProfilePanelOpen(true);
+                  if (window.matchMedia("(max-width:760px)").matches) setMobileSheet("observation");
+                  window.requestAnimationFrame(() => document.querySelector<HTMLElement>('.profile-panel[data-context-open="true"]')?.scrollIntoView({ block:"nearest", behavior:"auto" }));
+                }}
+                onClose={closeScientificInspectors}
+              />
               {selectedVariable && (
                 <ScientificColorbarHud
                   label={selectedVariable.label}

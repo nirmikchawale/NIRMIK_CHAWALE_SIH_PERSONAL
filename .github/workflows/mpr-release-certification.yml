@@ -1,0 +1,181 @@
+name: mpr-10-17-release-certification
+
+# This workflow certifies a candidate; it never merges or deploys production.
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mpr-release-cert-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  release-scope:
+    name: frontend-only-release-scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch current authoritative main
+        run: git fetch --no-tags origin main
+      - name: Reject source, API, 3DB algorithm and dataset changes
+        run: |
+          python scripts/verify_mpr_release_scope.py \
+            --base origin/main --head HEAD \
+            --output mpr-release-scope.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mpr-10-17-scope-${{ github.run_id }}
+          path: mpr-release-scope.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  scientific-regression:
+    name: existing-scientific-contracts
+    needs: release-scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install original scientific dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install -r backend/requirements.txt
+      - name: Preserve frozen source and FastAPI scientific contracts
+        run: python -m pytest -q tests backend/tests
+      - name: Verify source adapters compile without changing their implementations
+        run: python -m compileall -q app.py config.py oceantwin src backend api tests
+
+  build-and-browser-certification:
+    name: browser-acceptance-and-96-real-theme-images
+    needs: release-scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 85
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install native evidence export dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r backend/requirements.txt
+      - name: Generate original read-only static science and source inventory
+        run: |
+          set -euo pipefail
+          python scripts/export_static_science.py --output frontend/public/science-static
+          python scripts/fetch_incois_operational.py --output frontend/public/operational/incois-argo-10d-vam.json
+          python scripts/fetch_incois_chlorophyll.py --output frontend/public/operational/incois-chlorophyll.json
+          python scripts/verify_incois_opendap.py --output frontend/public/operational/opendap-verification.json
+          python scripts/fetch_verified_observation_breadth.py --output frontend/public/observations/verified-profiles.json
+          python scripts/create_netcdf_browser_fixture.py --output frontend/public/samples/cf-profile-fixture.nc
+      - name: Install React/Cesium and Playwright dependencies
+        working-directory: frontend
+        run: npm install
+      - name: Build exact candidate production frontend
+        working-directory: frontend
+        env:
+          VITE_STATIC_SCIENCE: 'true'
+        run: |
+          npm run typecheck
+          npm run build
+      - name: Verify original science evidence exists in the built artifact
+        run: |
+          set -euo pipefail
+          test -s frontend/dist/science-static/manifest.json
+          test -s frontend/dist/science-static/catalog.json
+          test -s frontend/dist/science-static/currents-volume/t0.json
+          test -s frontend/dist/operational/incois-argo-10d-vam.json
+          test -s frontend/dist/operational/incois-chlorophyll.json
+          test -s frontend/dist/observations/verified-profiles.json
+          test -s frontend/dist/cesiumStatic/Assets/Textures/NaturalEarthII/0/0/0.jpg
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('frontend/dist')
+          catalog=json.loads((root/'science-static/catalog.json').read_text())
+          observation=json.loads((root/'observations/verified-profiles.json').read_text())
+          chl=json.loads((root/'operational/incois-chlorophyll.json').read_text())
+          assert catalog['capabilities']['current_vectors'] is True
+          assert observation['integrity']['synthetic_measurements'] is False
+          assert chl['integrity']['surface_only'] is True
+          assert chl['integrity']['synthetic_depths'] is False
+          print('Real science and source integrity present in built frontend')
+          PY
+      - name: Install software-rendered Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Serve built production frontend locally
+        working-directory: frontend
+        run: |
+          python -m http.server 4174 --bind 127.0.0.1 --directory dist > /tmp/mpr-preview.log 2>&1 &
+          echo $! > /tmp/mpr-preview.pid
+          for attempt in $(seq 1 40); do
+            if curl --silent --fail http://127.0.0.1:4174/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/mpr-preview.log
+          exit 1
+      - name: Full RUI-MPR10–17 targeted Chromium certification
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+        run: |
+          npx playwright test -c playwright.live.config.ts \
+            e2e/mpr-10-geographic-section.spec.ts \
+            e2e/mpr-11-geographic-controls.spec.ts \
+            e2e/mpr-12-stacked-water-column.spec.ts \
+            e2e/mpr-13-water-column-controls.spec.ts \
+            e2e/mpr-14-linked-view-integrity.spec.ts \
+            e2e/mpr-15-inspectors-responsive.spec.ts \
+            e2e/mpr-16-all-themes-visual.spec.ts \
+            e2e/mpr-17-cross-phase-certification.spec.ts
+      - name: Archive actual screenshot and Playwright evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpr-10-17-real-browser-evidence-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            frontend/playwright-report
+            frontend/*.log
+            /tmp/mpr-preview.log
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Cleanly stop local preview
+        if: always()
+        run: |
+          if test -s /tmp/mpr-preview.pid; then
+            kill "$(cat /tmp/mpr-preview.pid)" || true
+          fi
+
+  release-readiness:
+    name: all-release-certification-gates
+    needs:
+      - release-scope
+      - scientific-regression
+      - build-and-browser-certification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all exact candidate checks to be green
+        run: |
+          echo "MPR-10–17 source, science and real-browser certification gates passed."
+          echo "This does not merge or publish to GitHub Pages."
+          echo "Next gate: full final-mvp and 3DB CI, human review of 96 screenshots;"
+          echo "then merge to main, wait for Pages deployment and run independent live public Chromium."

@@ -9,22 +9,14 @@ interface Props {
 
 /**
  * MPR-09: the canonical, science-safe dual-view navigator. The current MVP
- * owns one switchable real renderer stage; future MPR-10/11 stacked sections
- * will reuse these controls when each renderer acquires its separate anchor.
- * Do not invent a second dataset or a second scene here.
+ * navigates between two independently mounted, source-backed renderers.
+ * Selection stays in the canonical view mode, not an alternate dataset.
  */
 export function SmartDualViewNavigator({ mode, waterColumnAvailable, onChange }: Props) {
   const moveToView = (target: VisualizationMode) => {
     if (target === "water-column" && !waterColumnAvailable) return;
     onChange(target);
-    // Scroll the real current visualization into view. A future stacked renderer
-    // will expose distinct canonical section IDs, not fabricated placeholders.
-    window.requestAnimationFrame(() => {
-      const stage = document.getElementById("mpr-3d-stage");
-      if (!stage) return;
-      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      stage.scrollIntoView({ block: "start", inline: "nearest", behavior: reducedMotion ? "auto" : "smooth" });
-    });
+    // App handles scrolling to the REAL Geographic or Water Column section.
   };
 
   return (
@@ -50,7 +42,7 @@ export function SmartDualViewNavigator({ mode, waterColumnAvailable, onChange }:
         className={mode === "water-column" ? "active" : ""}
         aria-pressed={mode === "water-column"}
         aria-label="Water Column 3D"
-        aria-controls="mpr-3d-stage"
+        aria-controls="mpr-water-column-section"
         disabled={!waterColumnAvailable}
         title={waterColumnAvailable ? "Open actual water-column 3D" : "Water-column 3D unavailable for this source"}
         onClick={() => moveToView("water-column")}>

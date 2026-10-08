@@ -1,0 +1,163 @@
+/* MPR-15: accessible native inspector entry and repaired mobile layouts. */
+.ocean-workbench[data-page="explore"] .station-workspace > .mpr-inspector-access {
+  grid-area:inspect;
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+  gap:12px 24px; min-width:0; box-sizing:border-box;
+  padding:clamp(12px,1.6vw,22px);
+  border:1px solid var(--mpr-border-active);
+  border-radius:var(--mpr-radius-island);
+  background:var(--mpr-surface); color:var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-inspector-access-heading {
+  display:flex; flex-direction:column; gap:5px; flex:1 1 220px; min-width:0;
+}
+.ocean-workbench[data-page="explore"] .mpr-inspector-access-heading > span {
+  font-size:10px; letter-spacing:.13em; font-weight:800; color:var(--mpr-accent);
+}
+.ocean-workbench[data-page="explore"] .mpr-inspector-access-heading > strong {
+  font-size:15px; line-height:1.35; color:var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-inspector-access-heading > small,
+.ocean-workbench[data-page="explore"] .mpr-inspector-keyboard-help {
+  font-size:11px; line-height:1.5; color:var(--mpr-text-muted);
+}
+.ocean-workbench[data-page="explore"] .mpr-inspector-access-actions {
+  display:flex; flex:1 1 420px; gap:8px; min-width:0; flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.ocean-workbench[data-page="explore"] .mpr-inspector-access-actions button {
+  box-sizing:border-box; min-height:44px; min-width:0; max-width:100%;
+  padding:10px 12px; text-align:center;
+  border:1px solid var(--mpr-border);
+  border-radius:var(--mpr-radius-control);
+  background:var(--mpr-surface-raised); color:var(--mpr-text);
+  font:inherit; font-size:11px; font-weight:750; line-height:1.35;
+  cursor:pointer;
+}
+.ocean-workbench[data-page="explore"] .mpr-inspector-access-actions button[aria-expanded="true"] {
+  border-color:var(--mpr-accent);
+  background:color-mix(in srgb,var(--mpr-accent) 10%,var(--mpr-surface));
+  box-shadow:inset 0 -2px var(--mpr-accent);
+}
+.ocean-workbench[data-page="explore"] .mpr-inspector-access-actions button:disabled {
+  opacity:.48; cursor:not-allowed;
+}
+.ocean-workbench[data-page="explore"] .mpr-inspector-access-actions button:focus-visible,
+.ocean-workbench[data-page="explore"] .station-workspace > :is(.control-panel,.evidence-rail,.profile-panel) button:focus-visible,
+.ocean-workbench[data-page="explore"] .provenance-drawer button:focus-visible {
+  outline:2px solid var(--mpr-focus) !important; outline-offset:2px;
+}
+.ocean-workbench[data-page="explore"] .mpr-inspector-keyboard-help {
+  flex:1 0 100%;
+}
+.ocean-workbench[data-page="explore"] .science-footer,
+.ocean-workbench[data-page="explore"] .science-footer span {
+  max-width:100%; min-width:0; overflow-wrap:anywhere;
+}
+@media(min-width:1121px) {
+  /* Match the specific MPR-10 open-dock + open-inspector selector too.
+     Otherwise its earlier eight-row grid wins the cascade and places the
+     MPR-12 water volume and MPR-15 inspector into implicit overlapping tracks. */
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"])[data-control-dock="open"] .station-workspace[data-inspector="open"],
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace,
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"])[data-control-dock="closed"] .station-workspace {
+    grid-template-areas:
+      "directory directory" "block block" "dock dock"
+      "geo-title geo-title" "scene controls" "range range"
+      "water water" "inspect inspect" "inspector inspector" "evidence evidence" !important;
+    grid-template-rows:auto auto auto auto minmax(560px,80dvh) auto minmax(calc(80dvh + 155px),auto) auto auto auto !important;
+  }
+  .ocean-workbench[data-page="explore"]:not(.focus-mode)[data-control-dock="closed"] .station-workspace {
+    grid-template-columns:minmax(0,1fr) !important;
+    grid-template-areas:
+      "directory" "block" "dock" "geo-title" "scene" "range"
+      "water" "inspect" "inspector" "evidence" !important;
+  }
+  /* Reserve a full-width scientific colourbar AFTER the two-column scene.
+     The renderer's own column keeps its scrollable native control dock. */
+  .ocean-workbench[data-page="explore"] .station-workspace > .scientific-colorbar-hud {
+    grid-area:range; position:relative; align-self:start; min-width:0;
+  }
+  .ocean-workbench[data-page="explore"] .station-workspace > .control-panel {
+    grid-area:controls; min-height:0; max-height:80dvh !important;
+    overflow-y:auto !important;
+  }
+  /* Keep each real water-column + inspector row in normal grid flow rather
+     than allowing a 3D canvas's height to visually overrun the next row. */
+  .ocean-workbench[data-page="explore"] .station-workspace > .mpr-water-column-section {
+    grid-area:water; align-self:start; height:auto !important;
+    min-height:calc(80dvh + 155px); min-width:0;
+  }
+  .ocean-workbench[data-page="explore"] .station-workspace > .mpr-inspector-access {
+    grid-area:inspect; position:relative; align-self:start;
+  }
+  .ocean-workbench[data-page="explore"] .station-workspace > .evidence-rail[data-open="true"],
+  .ocean-workbench[data-page="explore"] .station-workspace > .profile-panel[data-context-open="true"] {
+    contain:none !important; min-height:0; height:auto !important;
+    max-height:min(72dvh,850px) !important;
+    overflow:auto !important; scrollbar-width:thin; overscroll-behavior:contain;
+  }
+}
+@media(min-width:761px) and (max-width:1120px) {
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace {
+    grid-template-areas:
+      "directory" "block" "dock" "geo-title" "scene" "controls" "range"
+      "water" "inspect" "inspector" "evidence" !important;
+    grid-template-rows:auto auto auto auto minmax(520px,75dvh) auto auto auto auto auto auto !important;
+  }
+}
+@media(max-width:760px) {
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace {
+    grid-template-areas:
+      "directory" "block" "dock" "geo-title" "scene" "range"
+      "controls" "water" "inspect" "inspector" "evidence" !important;
+    grid-template-rows:auto auto auto auto clamp(410px,66dvh,640px) auto auto auto auto auto auto !important;
+  }
+  .ocean-workbench[data-page="explore"] .mpr-inspector-access-actions {
+    display:grid; width:100%; flex:1 0 100%;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .ocean-workbench[data-page="explore"] .mpr-inspector-access-actions button {
+    white-space:normal; min-height:48px; padding:10px 7px;
+  }
+  .ocean-workbench[data-page="explore"] .station-workspace > :is(.evidence-rail,.profile-panel) {
+    contain:none !important; box-sizing:border-box;
+    width:100% !important; min-width:0; max-width:100%;
+    height:auto !important; max-height:min(75dvh,720px) !important;
+    overflow:auto !important; overscroll-behavior:contain;
+    padding:12px !important; border-radius:var(--mpr-radius-island);
+  }
+  .ocean-workbench[data-page="explore"] .provenance-drawer {
+    box-sizing:border-box; max-width:calc(100% - 24px) !important;
+    margin:12px !important; width:calc(100% - 24px) !important;
+    padding:12px !important; max-height:75dvh !important;
+    overflow:auto !important; scrollbar-width:thin; overscroll-behavior:contain;
+    border-radius:var(--mpr-radius-island);
+  }
+  .ocean-workbench[data-page="explore"] .science-footer {
+    box-sizing:border-box; padding:12px;
+    display:flex; flex-direction:column; align-items:flex-start;
+  }
+}
+@media(max-width:345px) {
+  .ocean-workbench[data-page="explore"] .mpr-inspector-access-actions {
+    grid-template-columns:minmax(0,1fr);
+  }
+}
+.ocean-workbench[data-page="explore"].focus-mode .mpr-inspector-access,
+.ocean-workbench[data-page="explore"][data-workspace-mode="presentation"] .mpr-inspector-access {
+  display:none !important;
+}
+@media(forced-colors:active) {
+  .ocean-workbench[data-page="explore"] .mpr-inspector-access,
+  .ocean-workbench[data-page="explore"] .mpr-inspector-access-actions button {
+    background:Canvas !important; color:CanvasText !important;
+    border-color:CanvasText !important; box-shadow:none !important;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .ocean-workbench[data-page="explore"] .mpr-inspector-access *,
+  .ocean-workbench[data-page="explore"] .mpr-inspector-access {
+    scroll-behavior:auto !important; transition:none !important;
+  }
+}

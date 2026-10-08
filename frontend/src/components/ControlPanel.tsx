@@ -225,6 +225,7 @@ export function ControlPanel({
   return (
     <aside
       className="control-panel"
+      data-mpr-geographic-dock="true"
       data-mobile-open={mobileOpen ? "true" : "false"}
       aria-label="Scientific explorer controls"
     >
@@ -237,11 +238,42 @@ export function ControlPanel({
           Close
         </button>
       </div>
+      <header className="mpr-geographic-dock-heading" data-testid="mpr-11-geographic-dock">
+        <span>GEOGRAPHIC 3D · TOOL DOCK</span>
+        <h3>Explore controls</h3>
+        <p>These are the original source-backed layer, depth, native time and observation controls.</p>
+      </header>
+      <nav className="mpr-geographic-tool-links" aria-label="Geographic tools">
+        {([
+          ["Block & region", ".explorer-block-system-home"],
+          ["Display range", ".scientific-colorbar-hud"],
+          ["Camera", "#mpr-3d-stage .camera-control-stack"],
+          ["Basemap", "#mpr-3d-stage .imagery-control"]
+        ] as const).map(([label, selector]) => (
+          <button type="button" key={label}
+            disabled={(label === "Camera" || label === "Basemap") && visualizationMode !== "globe"}
+            onClick={() => {
+              const element = document.querySelector<HTMLElement>(selector);
+              if (!element) return;
+              element.scrollIntoView({ block: "nearest", behavior: "auto" });
+              const focusTarget = element.querySelector<HTMLElement>("button,select,input,[tabindex]");
+              focusTarget?.focus({ preventScroll: true });
+            }}
+          >{label} ↗</button>
+        ))}
+      </nav>
       <nav className="control-section-nav" aria-label="Jump to exploration controls">
         {[["Variables", "explore-variables"], ["Depth", "explore-depth"], ["Time", "explore-time"], ["Observations", "explore-observations"]].map(([label, id]) =>
-          <button key={id} type="button" onClick={() => document.getElementById(id)?.scrollIntoView({ block: "nearest", behavior: "auto" })}>{label}</button>
+          <button key={id} type="button" onClick={() => {
+              const target = document.getElementById(id);
+              const group = target?.closest<HTMLDetailsElement>("details.mpr-geographic-control-group");
+              if (group && !group.open) group.open = true;
+              target?.scrollIntoView({ block: "nearest", behavior: "auto" });
+            }}>{label}</button>
         )}
       </nav>
+      <details className="mpr-geographic-control-group" open>
+        <summary>Variables &amp; field layers</summary>
       <section id="explore-variables">
         <div className="section-kicker">Explore</div>
         <div className="variable-switcher variable-switcher-rich" aria-label="Ocean variable">
@@ -414,7 +446,10 @@ export function ControlPanel({
           </div>
         </details>
       </section>
+      </details>
 
+      <details className="mpr-geographic-control-group" open>
+        <summary>Depth &amp; section</summary>
       <section className="water-column-story" id="explore-depth">
         <div className="section-kicker">Water column</div>
         {surfaceOnly ? (
@@ -496,7 +531,10 @@ export function ControlPanel({
           </div>
         )}
       </section>
+      </details>
 
+      <details className="mpr-geographic-control-group" open>
+        <summary>Native time</summary>
       <section className="time-story" id="explore-time">
         <div className="section-kicker">Time</div>
         {catalog.capabilities.time_animation ? (
@@ -519,7 +557,10 @@ export function ControlPanel({
           </div>
         )}
       </section>
+      </details>
 
+      <details className="mpr-geographic-control-group" open>
+        <summary>Observations &amp; Argo</summary>
       <section className="observation-story" id="explore-observations">
         <div className="section-kicker">Observations</div>
         <p className="section-story-copy">
@@ -550,7 +591,10 @@ export function ControlPanel({
             : "Markers on the globe are also clickable."}
         </p>
       </section>
+      </details>
 
+      <details className="mpr-geographic-control-group mpr-geographic-source-group" open>
+        <summary>Source status &amp; scientific quality</summary>
       <section className="source-card">
         <div className="section-kicker">Source status</div>
         <strong>{catalog.dataset.label}</strong>
@@ -565,6 +609,7 @@ export function ControlPanel({
           the same adapter and provenance architecture used for broader operational deployment.
         </p>
       </section>
+      </details>
     </aside>
   );
 }

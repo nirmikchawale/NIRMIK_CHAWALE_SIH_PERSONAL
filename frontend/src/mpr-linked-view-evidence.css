@@ -1,0 +1,37 @@
+/* MPR-14: scientific evidence states are visible and never masquerade as rendered measurements. */
+.ocean-workbench[data-page="explore"] .mpr-linked-evidence-status {
+  position:absolute; z-index:18; top:12px; left:12px;
+  display:flex; flex-direction:column; gap:6px; width:max-content;
+  max-width:min(440px,calc(100% - 24px)); padding:13px 15px;
+  background:var(--mpr-surface-raised); color:var(--mpr-text);
+  border:1px solid var(--mpr-border-active); border-radius:var(--mpr-radius-control);
+  box-shadow:var(--mpr-shadow); pointer-events:none; overflow-wrap:anywhere;
+}
+.ocean-workbench[data-page="explore"] .mpr-linked-evidence-status strong {
+  color:var(--mpr-text); font-size:12px; line-height:1.4;
+}
+.ocean-workbench[data-page="explore"] .mpr-linked-evidence-status small {
+  color:var(--mpr-text-muted); font-size:11px; line-height:1.45;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-section[data-linked-evidence="loading"] .mpr-water-column-unavailable,
+.ocean-workbench[data-page="explore"] .mpr-water-column-section[data-linked-evidence="mismatch"] .mpr-water-column-unavailable,
+.ocean-workbench[data-page="explore"] .mpr-water-column-section[data-linked-evidence="planned"] .mpr-water-column-unavailable {
+  background:var(--mpr-surface-raised); color:var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] :is(.mpr-linked-evidence-status,.mpr-water-column-unavailable):focus-visible {
+  outline:2px solid var(--mpr-focus); outline-offset:2px;
+}
+@media(max-width:390px) {
+  .ocean-workbench[data-page="explore"] .mpr-linked-evidence-status {
+    top:8px; left:8px; max-width:calc(100% - 16px); padding:10px;
+  }
+}
+@media(forced-colors:active) {
+  .ocean-workbench[data-page="explore"] .mpr-linked-evidence-status {
+    background:Canvas !important; color:CanvasText !important;
+    border-color:CanvasText !important;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .ocean-workbench[data-page="explore"] .mpr-linked-evidence-status {transition:none !important;}
+}

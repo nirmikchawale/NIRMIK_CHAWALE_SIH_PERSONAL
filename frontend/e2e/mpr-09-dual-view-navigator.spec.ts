@@ -17,16 +17,17 @@ for (const width of [1440, 1024, 390, 320]) {
     await expect(nav.locator("button")).toHaveCount(2);
     await expect(stage).toHaveCount(1);
     await expect(globe).toHaveAttribute("aria-controls", "mpr-3d-stage");
-    await expect(column).toHaveAttribute("aria-controls", "mpr-3d-stage");
+    await expect(column).toHaveAttribute("aria-controls", "mpr-water-column-section");
     await expect(globe).toHaveAttribute("aria-pressed", "true");
     await expect(column).toHaveAttribute("aria-pressed", "false");
     const originalSource = await page.locator(".ocean-workbench").getAttribute("data-explore-source");
     if (await column.isEnabled()) {
       await column.click();
-      await expect(stage).toHaveAttribute("data-visualization-mode", "water-column");
+      await expect(page.getByTestId("mpr-12-water-column-section")).toBeVisible();
+      await expect(page.getByTestId("mpr-12-water-column-section").locator(".water-column-visualization-layer")).toHaveClass(/active/);
       await expect(column).toHaveAttribute("aria-pressed", "true");
       await expect(nav).toHaveAttribute("data-active-view", "water-column");
-      await page.getByRole("button", { name: "Switch to Geographic 3D" }).click();
+      await page.getByTestId("mpr-12-water-column-section").getByRole("button", { name: "Return to Geographic 3D" }).click();
       await expect(stage).toHaveAttribute("data-visualization-mode", "globe");
       await expect(globe).toHaveAttribute("aria-pressed", "true");
     } else {
