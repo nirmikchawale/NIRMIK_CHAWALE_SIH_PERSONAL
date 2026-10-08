@@ -55,6 +55,7 @@ test("MPR-03 directory keyboard trap and dismissal preserves underlying 3D width
 
 test("MPR-03 mobile directory never clips its category actions at 320px", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 760 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(live!);
   await page.getByRole("button", { name: "Open workspace navigation" }).click();
   const nav = page.getByRole("navigation", { name: "Ocean Canvas workspaces" });
