@@ -226,10 +226,10 @@
 }
 .ocean-workbench .app-navigation-root .rui-sidebar .sidebar-collapse,
 .ocean-workbench .app-navigation-root .rui-sidebar .sidebar-mobile-close {
-  min-width: 42px;
-  min-height: 42px;
-  width: 42px;
-  height: 42px;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--mpr-radius-control);
 }
 
