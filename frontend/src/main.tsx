@@ -43,6 +43,8 @@ import "./mpr-design-foundation.css";
 import "./mpr-explorer-scroll.css";
 // MPR-03: theme-neutral category rail + overlay workspace directory.
 import "./mpr-workspaces-navigation.css";
+// MPR-04: independent 16-theme Workspace Mode island.
+import "./mpr-workspace-mode.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
