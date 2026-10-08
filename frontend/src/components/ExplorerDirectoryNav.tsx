@@ -1,5 +1,3 @@
-type WorkspaceMode = "explorer" | "analysis" | "presentation";
-
 type ExplorerDirectoryId =
   | "overview"
   | "workspace"
@@ -12,13 +10,6 @@ type ExplorerDirectoryId =
   | "observations"
   | "render-quality"
   | "context-info";
-
-interface Props {
-  workspaceMode: WorkspaceMode;
-  focusMode: boolean;
-  onWorkspaceModeChange: (mode: WorkspaceMode) => void;
-  onFocus3D: () => void;
-}
 
 const DIRECTORIES: Array<{ id: ExplorerDirectoryId; label: string; target: string }> = [
   { id: "overview", label: "Overview", target: ".evidence-status-pill, .evidence-rail" },
@@ -40,12 +31,7 @@ function revealDirectory(target: string) {
   element.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 
-export function ExplorerDirectoryNav({
-  workspaceMode,
-  focusMode,
-  onWorkspaceModeChange,
-  onFocus3D
-}: Props) {
+export function ExplorerDirectoryNav() {
   return (
     <section
       className="explorer-directory-shell"
@@ -71,43 +57,7 @@ export function ExplorerDirectoryNav({
         ))}
       </nav>
 
-      <div className="explorer-directory-workspace" aria-label="Explorer workspace layout">
-        <span>WORKSPACE</span>
-        <div className="workspace-mode-switcher explorer-workspace-mode-switcher" role="group" aria-label="Explorer workspace mode">
-          <button
-            type="button"
-            className={workspaceMode === "explorer" ? "active" : ""}
-            aria-pressed={workspaceMode === "explorer"}
-            aria-label="Explorer workspace"
-            onClick={() => onWorkspaceModeChange("explorer")}
-          >
-            Explorer
-          </button>
-          <button
-            type="button"
-            className={workspaceMode === "analysis" ? "active" : ""}
-            aria-pressed={workspaceMode === "analysis"}
-            aria-label="Analysis Split workspace"
-            onClick={() => onWorkspaceModeChange("analysis")}
-          >
-            Analysis Split
-          </button>
-          <button
-            type="button"
-            className={workspaceMode === "presentation" ? "active" : ""}
-            aria-pressed={workspaceMode === "presentation"}
-            aria-label="Presentation workspace"
-            onClick={() => onWorkspaceModeChange("presentation")}
-          >
-            Presentation
-          </button>
-        </div>
-        {!focusMode && (
-          <button type="button" className="explorer-focus-button" aria-label="Focus 3D" onClick={onFocus3D}>
-            Focus 3D
-          </button>
-        )}
-      </div>
+
     </section>
   );
 }
