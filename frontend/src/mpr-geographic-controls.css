@@ -1,0 +1,131 @@
+/* RUI-MPR-11 — presentation-only organization of existing source-backed
+ * ControlPanel handlers. Never duplicate event handlers or scientific data. */
+.ocean-workbench[data-page="explore"] .station-workspace > .control-panel[data-mpr-geographic-dock="true"] {
+  color: var(--mpr-text); background: var(--mpr-surface);
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-dock-heading {
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 4px 0 12px; min-width: 0;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-dock-heading > span {
+  font-size: 10px; font-weight: 800; letter-spacing: .12em;
+  color: var(--mpr-accent);
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-dock-heading h3 {
+  margin: 0; font-size: clamp(17px,1.35vw,21px);
+  line-height: 1.25; color: var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-dock-heading p {
+  margin: 0; font-size: 11px; line-height: 1.5;
+  color: var(--mpr-text-muted); overflow-wrap: anywhere;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-tool-links {
+  display: grid; grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 7px; margin: 0 0 12px; min-width: 0;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-tool-links button {
+  display: inline-flex; align-items: center; justify-content: space-between;
+  text-align: left; min-height: 44px; min-width: 0; padding: 9px 10px !important;
+  border-radius: var(--mpr-radius-control);
+  border: 1px solid var(--mpr-border);
+  background: var(--mpr-surface-raised); color: var(--mpr-text);
+  font-weight: 700; font-size: 11px; line-height: 1.35;
+  cursor: pointer; white-space: normal;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-tool-links button:disabled {
+  cursor: not-allowed; opacity: .5;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-tool-links button:not(:disabled):hover {
+  border-color: var(--mpr-border-active);
+  background: color-mix(in srgb,var(--mpr-accent) 9%,var(--mpr-surface-raised));
+}
+.ocean-workbench[data-page="explore"] .control-panel[data-mpr-geographic-dock="true"] > .control-section-nav {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  padding: 9px 0 13px; margin: 0 0 10px;
+  border-bottom: 1px solid var(--mpr-border);
+}
+.ocean-workbench[data-page="explore"] .control-panel[data-mpr-geographic-dock="true"] > .control-section-nav button {
+  min-height: 36px; border: 1px solid var(--mpr-border);
+  background: var(--mpr-surface-raised); color: var(--mpr-text-muted);
+  border-radius: var(--mpr-radius-control); padding: 7px 9px;
+  font-size: 10px; font-weight: 700;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-control-group {
+  display: block; min-width: 0; margin: 0 0 10px;
+  border: 1px solid var(--mpr-border);
+  border-radius: var(--mpr-radius-medium,20px);
+  background: var(--mpr-surface-raised);
+  overflow: clip;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-control-group > summary {
+  cursor: pointer; padding: 13px 14px; min-height: 44px;
+  box-sizing: border-box; color: var(--mpr-text);
+  background: var(--mpr-surface-raised);
+  font-size: 12px; font-weight: 800; line-height: 1.4;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-control-group[open] > summary {
+  border-bottom: 1px solid var(--mpr-border-active);
+  color: var(--mpr-accent);
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-control-group > section {
+  padding: 10px 12px 14px !important; min-width: 0;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-control-group > section > .section-kicker {
+  color: var(--mpr-text-muted);
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-control-group :is(
+  select,input[type="range"],.time-story,.bathymetric-depth-controller,
+  .advanced-control-body,.variable-switcher
+) {max-width:100%; min-width:0;}
+.ocean-workbench[data-page="explore"] .mpr-geographic-control-group .variable-switcher {
+  display: grid; grid-template-columns: minmax(0,1fr);
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-control-group .variable-switcher button {
+  min-width: 0; text-align: left;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-control-group .depth-zone-track {
+  min-width: 0;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-source-group .source-card {
+  overflow-wrap: anywhere;
+}
+.ocean-workbench[data-page="explore"] .mpr-geographic-control-group > summary:focus-visible,
+.ocean-workbench[data-page="explore"] .mpr-geographic-tool-links button:focus-visible {
+  outline: 2px solid var(--mpr-focus); outline-offset: -3px;
+}
+@media (min-width:1121px) {
+  .ocean-workbench[data-page="explore"][data-control-dock="open"] .station-workspace > .control-panel[data-mpr-geographic-dock="true"] {
+    overscroll-behavior-y: auto !important;
+  }
+}
+@media (min-width:761px) and (max-width:1120px) {
+  .ocean-workbench[data-page="explore"] .mpr-geographic-tool-links {
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+}
+@media (max-width:760px) {
+  .ocean-workbench[data-page="explore"] .mpr-geographic-dock-heading {
+    padding-top: 4px;
+  }
+  .ocean-workbench[data-page="explore"] .mpr-geographic-tool-links button { min-height: 44px; }
+  .ocean-workbench[data-page="explore"] .mpr-geographic-control-group > section { padding: 10px !important; }
+}
+@media (max-width:345px) {
+  .ocean-workbench[data-page="explore"] .mpr-geographic-tool-links {
+    grid-template-columns:minmax(0,1fr);
+  }
+}
+@media (forced-colors:active) {
+  .ocean-workbench[data-page="explore"] .mpr-geographic-control-group,
+  .ocean-workbench[data-page="explore"] .mpr-geographic-control-group > summary,
+  .ocean-workbench[data-page="explore"] .mpr-geographic-tool-links button {
+    border-color:CanvasText !important; color:CanvasText !important;
+    background:Canvas !important; box-shadow:none !important;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .ocean-workbench[data-page="explore"] .mpr-geographic-control-group,
+  .ocean-workbench[data-page="explore"] .mpr-geographic-tool-links button {
+    scroll-behavior:auto !important; transition:none !important;
+  }
+}
