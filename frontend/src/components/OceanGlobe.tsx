@@ -156,6 +156,33 @@ export function OceanGlobe({
   const viewerRef = useRef<Viewer | null>(null);
   const enterWaterColumnRef = useRef(onEnterWaterColumn);
   const stopJourneyRef = useRef<() => void>(() => {});
+  const geographicToolbarRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const toolbar = geographicToolbarRef.current;
+    if (!toolbar) return;
+    const forwardWheel = (event: WheelEvent) => {
+      // Keep Ctrl/Command-wheel (browser pinch/zoom) unmodified. A wheel over
+      // the actual Cesium canvas keeps its own native geographic zoom.
+      if (event.ctrlKey || event.metaKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+      const workspace = toolbar.closest<HTMLElement>(".station-workspace");
+      if (!workspace) return;
+      const factor = event.deltaMode === 1 ? 16
+        : event.deltaMode === 2 ? toolbar.clientHeight : 1;
+      const delta = event.deltaY * factor;
+      if (!delta) return;
+      const canScrollLocal = delta > 0
+        ? toolbar.scrollTop + toolbar.clientHeight < toolbar.scrollHeight - 1
+        : toolbar.scrollTop > 1;
+      const destination = canScrollLocal ? toolbar : workspace;
+      if (destination.scrollHeight <= destination.clientHeight + 1) return;
+      event.preventDefault();
+      event.stopPropagation();
+      destination.scrollTop += delta;
+    };
+    toolbar.addEventListener("wheel", forwardWheel, { passive: false });
+    return () => toolbar.removeEventListener("wheel", forwardWheel);
+  }, []);
+
   const journeyRef = useRef<(skip?: boolean) => void>(() => {});
   const entryAvailableRef = useRef(canEnterWaterColumn);
   useEffect(() => { entryAvailableRef.current = canEnterWaterColumn; }, [canEnterWaterColumn]);
@@ -1467,7 +1494,7 @@ export function OceanGlobe({
       </section>,
       blockDockSlot
       )}
-      <div className="renderer-tools" aria-label="Ocean view tools">
+      <div ref={geographicToolbarRef} className="renderer-tools" aria-label="Ocean view tools" data-testid="geographic-renderer-toolbar" tabIndex={0}>
       {selectedProfile && profileCalloutOpen && (
         <div
           ref={calloutRef}

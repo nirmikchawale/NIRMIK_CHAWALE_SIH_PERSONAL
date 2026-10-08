@@ -1,0 +1,229 @@
+/* Post-MPR usability: the genuine OceanGlobe toolbar is a separate,
+   keyboard-focusable control scrollport, not five absolutely positioned HUDs.
+   All sixteen theme tokens inherit from the active glass appearance. */
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .globe-shell > .renderer-tools[data-testid="geographic-renderer-toolbar"] {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, .9fr);
+  align-items: start;
+  align-content: start;
+  justify-content: stretch;
+  gap: 9px 12px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-height: clamp(155px, 31dvh, 250px) !important;
+  padding: 12px 14px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto !important;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scroll-padding: 12px;
+  touch-action: pan-y;
+  position: relative !important;
+  z-index: 60 !important;
+  color: var(--mpr-text);
+  border-top: 1px solid var(--mpr-border);
+  background: var(--mpr-surface);
+}
+
+/* One intentional reading order: journey + depth, camera direction,
+   zoom/fit/observations, then basemap. No arbitrary flex-row collisions. */
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools > .ocean-journey {
+  order: 1;
+  grid-column: 1;
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+  gap: 8px;
+  padding: 0 !important;
+  border: 0;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools > .depth-indicator {
+  order: 2;
+  grid-column: 2;
+  align-self: center;
+  justify-self: stretch;
+  min-width: 0;
+  width: 100% !important;
+  min-height: 40px;
+  box-sizing: border-box;
+  justify-content: center;
+  border: 1px solid var(--mpr-border) !important;
+  color: var(--mpr-text) !important;
+  background: var(--mpr-surface-raised) !important;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools > .camera-orientation-hud {
+  order: 3;
+  grid-column: 1 / -1;
+  display: flex !important;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100% !important;
+  min-width: 0;
+  padding: 10px 0 !important;
+  border-top: 1px solid var(--mpr-border) !important;
+  border-bottom: 1px solid var(--mpr-border) !important;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools .camera-orientation-hud .compass-rosette {
+  position: relative !important;
+  inset: auto !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  height: 44px !important;
+  flex: 0 0 44px !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools .camera-orientation-hud .compass-north {
+  position: static !important;
+  inset: auto !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  height: 44px !important;
+  transform: none !important;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools .camera-science-presets {
+  display: flex !important;
+  flex: 1 1 440px;
+  min-width: 0;
+  align-items: stretch;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools .camera-science-presets button {
+  flex: 1 1 115px;
+  min-width: 95px;
+  max-width: none;
+  min-height: 44px;
+  padding: 8px 12px !important;
+  overflow-wrap: anywhere;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools > .cesium-smooth-zoom.camera-control-stack {
+  order: 4;
+  grid-column: 1 / -1;
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: stretch;
+  min-width: 0;
+  width: 100% !important;
+  gap: 8px 12px;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools .camera-zoom-row,
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools .camera-preset-row {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: stretch;
+  min-width: 0;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools .camera-preset-row {
+  flex: 1 1 290px;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools .camera-preset-row button {
+  flex: 1 1 130px;
+  min-width: 110px;
+  white-space: normal;
+  text-align: left;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools .camera-observation-button {
+  flex: 1 1 185px;
+  min-width: 0;
+  text-align: left;
+  white-space: normal;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools > .imagery-control {
+  order: 5;
+  grid-column: 1 / -1;
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100% !important;
+  min-width: 0;
+  gap: 9px;
+  border-top: 1px solid var(--mpr-border) !important;
+  padding: 10px 0 0 !important;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools .imagery-control-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools > .imported-observation-chips {
+  order: 6;
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools :is(button, select, input) {
+  position: relative;
+  pointer-events: auto !important;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools > .ocean-journey button,
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools .imagery-control button {
+  min-height: 40px;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools .journey-stops {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+}
+.ocean-workbench[data-page="explore"] .station-workspace
+.globe-visualization-layer.active .renderer-tools:focus-visible {
+  outline: 2px solid var(--mpr-focus);
+  outline-offset: -3px;
+}
+
+@media (max-width: 760px) {
+  .ocean-workbench[data-page="explore"] .station-workspace
+  .globe-visualization-layer.active .globe-shell > .renderer-tools[data-testid="geographic-renderer-toolbar"] {
+    grid-template-columns: minmax(0, 1fr);
+    max-height: min(39dvh, 250px) !important;
+    padding: 10px !important;
+    scrollbar-gutter: auto;
+  }
+  .ocean-workbench[data-page="explore"] .station-workspace
+  .globe-visualization-layer.active .renderer-tools > :is(
+    .ocean-journey, .depth-indicator, .camera-orientation-hud,
+    .cesium-smooth-zoom.camera-control-stack, .imagery-control,
+    .imported-observation-chips
+  ) {
+    grid-column: 1 / -1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ocean-workbench[data-page="explore"] .station-workspace
+  .globe-visualization-layer.active .renderer-tools { scroll-behavior: auto !important; }
+}
