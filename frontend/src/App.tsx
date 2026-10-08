@@ -1215,9 +1215,9 @@ export default function App() {
                   aria-hidden={visualizationMode !== "globe"}
                 >
                   <OceanGlobe
-                    field={visualizationMode === "globe" ? field : null}
-                    volume={visualizationMode === "globe" ? volume : null}
-                    currents={visualizationMode === "globe" ? currents : null}
+                    field={field}
+                    volume={viewMode === "volume" ? volume : null}
+                    currents={currents}
                     profiles={activeComparisonProfiles}
                     selectedProfileId={sourceMode === "glorys" ? selectedProfileId : ""}
                     importedProfiles={importedProfiles}
@@ -1238,34 +1238,79 @@ export default function App() {
                     canEnterWaterColumn={sourceMode !== "chlorophyll" && (sourceMode === "glorys" || variable !== "currents")}
                   />
                 </div>
-                <div
-                  className={`visualization-layer water-column-visualization-layer ${visualizationMode === "water-column" ? "active" : ""}`}
-                  aria-hidden={visualizationMode !== "water-column"}
-                >
-                  <WaterColumn3D
-                    volume={visualizationMode === "water-column" ? volume : null}
-                    currentsVolume={visualizationMode === "water-column" ? currentsVolume : null}
-                    selectedDepthM={activeExploreCatalog.coordinates.depth[depthIndex] ?? 0}
-                    verticalExaggeration={verticalExaggeration}
-                    opacity={waterColumnOpacity / 100}
-                    colorPalette={colorPalette}
-                    colorScale={colorScale}
-                    colorMinimum={colorMinimum}
-                    colorMaximum={colorMaximum}
-                    isoSurfaceEnabled={isoSurfaceEnabled}
-                    isoValue={isoValue}
-                    theme={theme}
-                  />
-                </div>
                 <button type="button"
                   className="mpr-stage-view-switch"
                   aria-label={visualizationMode === "globe" ? "Switch to Water Column 3D" : "Switch to Geographic 3D"}
                   title={visualizationMode === "globe" ? "Switch to eligible Water Column 3D" : "Return to Geographic 3D"}
                   disabled={visualizationMode === "globe" && (sourceMode === "chlorophyll" || (sourceMode !== "glorys" && variable === "currents"))}
-                  onClick={() => setVisualizationMode(current => current === "globe" ? "water-column" : "globe")}>
+                  onClick={() => handleViewNavigation(visualizationMode === "globe" ? "water-column" : "globe")}>
                   {visualizationMode === "globe" ? "Water Column 3D ↗" : "Geographic 3D ↗"}
                 </button>
               </div>
+
+              <section id="mpr-water-column-section"
+                className="mpr-water-column-section"
+                data-testid="mpr-12-water-column-section"
+                data-scientific-source={sourceMode}
+                data-native-time={activeExploreCatalog.coordinates.time[timeIndex] ?? "Unavailable"}
+                data-native-depth={activeExploreCatalog.coordinates.depth[depthIndex] ?? 0}
+                data-eligible={sourceMode !== "chlorophyll" && (sourceMode === "glorys" || variable !== "currents") ? "true" : "false"}
+                aria-label="Independent source-backed Water Column 3D section">
+                <header className="mpr-water-column-heading">
+                  <span>WATER COLUMN 3D · NATIVE MODEL GEOMETRY</span>
+                  <h2>Explore the ocean below the surface</h2>
+                  <p>{selectedVariable?.label ?? variable} · {activeExploreCatalog.dataset.region} · {activeExploreCatalog.coordinates.time[timeIndex] ?? "Native time unavailable"}</p>
+                </header>
+                <div className="mpr-water-column-visualization"
+                  data-renderer-mounted="true">
+                  <div className="visualization-layer water-column-visualization-layer active"
+                    aria-hidden={false}>
+                    {sourceMode !== "chlorophyll" && (sourceMode === "glorys" || variable !== "currents") ? (
+                      <WaterColumn3D
+                        volume={variable === "currents" ? null : volume}
+                        currentsVolume={variable === "currents" ? currentsVolume : null}
+                        selectedDepthM={activeExploreCatalog.coordinates.depth[depthIndex] ?? 0}
+                        verticalExaggeration={verticalExaggeration}
+                        opacity={waterColumnOpacity / 100}
+                        colorPalette={colorPalette}
+                        colorScale={colorScale}
+                        colorMinimum={colorMinimum}
+                        colorMaximum={colorMaximum}
+                        isoSurfaceEnabled={isoSurfaceEnabled}
+                        isoValue={isoValue}
+                        theme={theme}
+                      />
+                    ) : (
+                      <div className="mpr-water-column-unavailable" role="status">
+                        <strong>Water-column data unavailable for this scientific source</strong>
+                        <p>{sourceMode === "chlorophyll"
+                          ? "INCOIS satellite chlorophyll is surface-only; it has no measured or modelled subsurface depth axis."
+                          : "The current INCOIS physical snapshot does not provide a verified full-depth currents volume."}</p>
+                        <p>No copied, extrapolated or synthetic ocean values are displayed.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <aside className="mpr-water-column-dock" data-testid="mpr-12-water-column-dock"
+                  aria-label="Water Column 3D scientific tools">
+                  <div className="mpr-water-column-dock-heading">
+                    <span>LINKED WATER COLUMN</span>
+                    <strong>Native source, depth &amp; time</strong>
+                    <small>Scientific values are shared with the Geographic 3D selection.</small>
+                  </div>
+                  <dl className="mpr-water-column-native-context">
+                    <div><dt>Source</dt><dd>{activeExploreCatalog.dataset.product}</dd></div>
+                    <div><dt>Variable</dt><dd>{selectedVariable?.label ?? variable}</dd></div>
+                    <div><dt>Native time</dt><dd>{activeExploreCatalog.coordinates.time[timeIndex] ?? "Unavailable"}</dd></div>
+                    <div><dt>Depth</dt><dd>{activeExploreCatalog.capabilities.surface_only
+                      ? "Surface-only; no depth coordinate"
+                      : (activeExploreCatalog.coordinates.depth[depthIndex] ?? 0).toFixed(2) + " m, positive down"}</dd></div>
+                  </dl>
+                  <button type="button" className="mpr-water-column-return"
+                    aria-label="Return to Geographic 3D"
+                    onClick={() => handleViewNavigation("globe")}>Geographic 3D ↗</button>
+                </aside>
+              </section>
 
               {selectedVariable && (
                 <ScientificColorbarHud
