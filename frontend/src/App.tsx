@@ -589,11 +589,10 @@ export default function App() {
         if (variable === "currents" || variable === "chlorophyll") {
           throw new Error("Selected variable is unavailable in the INCOIS physical snapshot.");
         }
-        if (visualizationMode === "water-column" || viewMode === "volume") {
-          setVolume(buildIncoisVolume(operationalSnapshot, variable, timeIndex));
-        } else {
-          setField(buildIncoisField(operationalSnapshot, variable, timeIndex, depthIndex));
-        }
+        // Two independently mounted genuine views use the SAME native source/time.
+        // The field remains depth-indexed; the water column retains source depth values.
+        setField(buildIncoisField(operationalSnapshot, variable, timeIndex, depthIndex));
+        setVolume(buildIncoisVolume(operationalSnapshot, variable, timeIndex));
       } catch (reason) {
         setError(reason instanceof Error ? reason.message : String(reason));
       } finally {
@@ -623,35 +622,40 @@ export default function App() {
       return;
     }
 
-    const request =
-      variable === "currents"
-        ? visualizationMode === "water-column"
-          ? api.currentsVolume(timeIndex).then((payload) => {
-              if (!cancelled) setCurrentsVolume(payload);
-            })
-          : api.currents(timeIndex, depthIndex).then((payload) => {
-              if (!cancelled) setCurrents(payload);
-            })
-        : visualizationMode === "water-column" || viewMode === "volume"
-          ? api.volume(variable, timeIndex).then((payload) => {
-              if (!cancelled) setVolume(payload);
-            })
-          : api.field(variable, timeIndex, depthIndex).then((payload) => {
-              if (!cancelled) setField(payload);
-            });
+    // Retain both original source-backed APIs, request them concurrently, never
+    // turn a depth slice into a synthetic volume or fabricate missing data.
+    const requests = variable === "currents"
+      ? [
+          api.currents(timeIndex, depthIndex).then(payload => {
+            if (!cancelled) setCurrents(payload);
+          }),
+          api.currentsVolume(timeIndex).then(payload => {
+            if (!cancelled) setCurrentsVolume(payload);
+          })
+        ]
+      : [
+          api.field(variable, timeIndex, depthIndex).then(payload => {
+            if (!cancelled) setField(payload);
+          }),
+          api.volume(variable, timeIndex).then(payload => {
+            if (!cancelled) setVolume(payload);
+          })
+        ];
 
-    request
-      .catch((reason: Error) => {
-        if (!cancelled) setError(reason.message);
-      })
-      .finally(() => {
-        if (!cancelled) setScienceLoading(false);
-      });
+    Promise.allSettled(requests).then(outcomes => {
+      if (cancelled) return;
+      const failures = outcomes.filter(outcome => outcome.status === "rejected");
+      if (failures.length) {
+        const reason = (failures[0] as PromiseRejectedResult).reason;
+        setError(reason instanceof Error ? reason.message : String(reason));
+      }
+      setScienceLoading(false);
+    });
 
     return () => {
       cancelled = true;
     };
-  }, [exploreCatalog, sourceMode, operationalSnapshot, chlorophyllSnapshot, variable, viewMode, visualizationMode, depthIndex, timeIndex]);
+  }, [exploreCatalog, sourceMode, operationalSnapshot, chlorophyllSnapshot, variable, depthIndex, timeIndex]);
 
   const handleProfileSelection = useCallback((profileId: string) => {
     setSelectedImportedProfileId("");
@@ -774,10 +778,22 @@ export default function App() {
     }
   }, [operationalCatalog, chlorophyllCatalog, catalog, variable, colorPalette]);
 
-  const handleEnterWaterColumn = useCallback(() => {
-    if (sourceMode === "chlorophyll" || (sourceMode === "incois" && variable === "currents")) return;
-    setVisualizationMode("water-column");
+  const handleViewNavigation = useCallback((target: VisualizationMode) => {
+    if (target === "water-column" &&
+      (sourceMode === "chlorophyll" || (sourceMode === "incois" && variable === "currents"))) return;
+    setVisualizationMode(target);
+    window.requestAnimationFrame(() => {
+      const id = target === "globe" ? "mpr-3d-stage" : "mpr-water-column-section";
+      const element = document.getElementById(id);
+      if (!element) return;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      element.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" });
+    });
   }, [sourceMode, variable]);
+
+  const handleEnterWaterColumn = useCallback(() => {
+    handleViewNavigation("water-column");
+  }, [handleViewNavigation]);
 
   const handleWorkspaceModeChange = useCallback((nextMode: WorkspaceMode) => {
     setWorkspaceMode(nextMode);
@@ -1185,7 +1201,7 @@ export default function App() {
                         ? "Unavailable"
                         : "Not selected"
                 }
-                onChange={setVisualizationMode}
+                onChange={handleViewNavigation}
               />
 
               <div
