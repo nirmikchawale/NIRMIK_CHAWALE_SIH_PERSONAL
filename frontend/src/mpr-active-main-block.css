@@ -1,0 +1,141 @@
+/* RUI-MPR-07: main block disclosure below the three genuine source cards.
+   Cosmetic only; all values come from scientific-context-runtime. */
+.ocean-workbench[data-page="explore"] .explorer-landing-islands > .mpr-ocean-intelligence {
+  grid-template-areas:"source-heading" "source-cards" "active-block" "source-actions" !important;
+  grid-template-rows:auto auto auto auto !important;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-disclosure {
+  grid-area:active-block;
+  box-sizing:border-box; display:block;
+  width:100%; min-width:0; max-width:100%;
+  margin:0; overflow:hidden;
+  border:1px solid var(--mpr-border-active);
+  border-radius:var(--mpr-radius-control);
+  background:var(--mpr-surface-raised);
+  color:var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-disclosure > summary {
+  cursor:pointer; display:grid;
+  grid-template-columns:minmax(150px,1.15fr) auto minmax(125px,1fr) auto;
+  gap:clamp(9px,1.2vw,18px); align-items:center;
+  min-height:65px; padding:12px clamp(12px,1.3vw,20px);
+  list-style:none; color:var(--mpr-text); border-radius:inherit;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-disclosure > summary::-webkit-details-marker {
+  display:none;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-disclosure > summary:focus-visible,
+.ocean-workbench[data-page="explore"] .mpr-active-block-controls :is(button,select):focus-visible {
+  outline:2px solid var(--mpr-focus); outline-offset:-3px;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-heading {
+  display:flex; min-width:0; flex-direction:column; gap:5px;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-kicker {
+  display:inline-flex; align-items:center; gap:7px;
+  color:var(--mpr-accent); font-size:10px; font-weight:800; letter-spacing:.12em;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-heading strong {
+  overflow-wrap:anywhere; color:var(--mpr-text); font-size:clamp(13px,1.25vw,17px);
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-status {
+  border-radius:999px; padding:7px 11px;
+  border:1px solid var(--mpr-border); background:var(--mpr-surface);
+  color:var(--mpr-text); font-size:10px; font-weight:800; white-space:nowrap;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-status.planned {
+  border-style:dashed; color:var(--mpr-text-muted);
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-hint {
+  font-size:11px; color:var(--mpr-text-muted); line-height:1.4;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-disclosure[open] > summary {
+  border-bottom:1px solid var(--mpr-border); border-radius:0;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-content {
+  display:grid; grid-template-columns:minmax(0,1fr);
+  gap:16px; min-width:0; padding:16px;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-metadata {
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px; min-width:0; margin:0;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-metadata > div {
+  min-width:0; padding:11px 12px;
+  border:1px solid var(--mpr-border); border-radius:var(--mpr-radius-control);
+  background:var(--mpr-surface);
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-metadata dt {
+  font-size:10px; font-weight:700; color:var(--mpr-text-muted);
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-metadata dd {
+  margin:6px 0 0; overflow-wrap:anywhere;
+  font-size:12px; font-weight:700; color:var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-controls {
+  display:flex; flex-wrap:wrap; gap:10px; align-items:end; min-width:0;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-controls label {
+  display:flex; flex-direction:column; flex:1 1 245px; gap:6px;
+  min-width:0; font-size:11px; font-weight:750; color:var(--mpr-text-muted);
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-controls select,
+.ocean-workbench[data-page="explore"] .mpr-active-block-controls button {
+  box-sizing:border-box; min-height:44px; padding:10px 12px;
+  border:1px solid var(--mpr-border); border-radius:var(--mpr-radius-control);
+  background:var(--mpr-surface); color:var(--mpr-text);
+  font-size:12px; font-weight:680;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-controls select {
+  max-width:100%; width:100%;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-stepper {
+  display:flex; gap:7px; flex-wrap:wrap;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-controls button {
+  display:inline-flex; align-items:center; gap:7px; cursor:pointer;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-controls button:disabled {
+  opacity:.48; cursor:not-allowed;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-copy-status {
+  color:var(--mpr-text-muted); font-size:11px;
+}
+.ocean-workbench[data-page="explore"] .mpr-active-block-truth {
+  margin:0; padding:11px 13px;
+  border-left:3px solid var(--mpr-border-active);
+  border-radius:var(--mpr-radius-control);
+  background:var(--mpr-surface); color:var(--mpr-text-muted);
+  font-size:11px; line-height:1.6;
+}
+@media (max-width:900px) {
+  .ocean-workbench[data-page="explore"] .mpr-active-block-disclosure > summary {
+    grid-template-columns:minmax(0,1fr) auto auto;
+  }
+  .ocean-workbench[data-page="explore"] .mpr-active-block-hint { display:none; }
+  .ocean-workbench[data-page="explore"] .mpr-active-block-metadata {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media (max-width:480px) {
+  .ocean-workbench[data-page="explore"] .mpr-active-block-disclosure > summary {
+    grid-template-columns:minmax(0,1fr) auto; min-height:65px; padding:11px;
+  }
+  .ocean-workbench[data-page="explore"] .mpr-active-block-disclosure > summary > .mpr-active-block-status {
+    grid-row:2; grid-column:1 / -1; justify-self:start;
+  }
+  .ocean-workbench[data-page="explore"] .mpr-active-block-content { padding:11px; }
+  .ocean-workbench[data-page="explore"] .mpr-active-block-metadata { gap:7px; }
+  .ocean-workbench[data-page="explore"] .mpr-active-block-metadata > div { padding:9px; }
+}
+@media (forced-colors:active) {
+  .ocean-workbench[data-page="explore"] .mpr-active-block-disclosure,
+  .ocean-workbench[data-page="explore"] .mpr-active-block-disclosure :is(button,select) {
+    border-color:CanvasText; color:CanvasText; background:Canvas; box-shadow:none;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  .ocean-workbench[data-page="explore"] .mpr-active-block-disclosure * {
+    scroll-behavior:auto !important; transition:none !important;
+  }
+}
