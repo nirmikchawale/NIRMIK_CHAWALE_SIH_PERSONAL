@@ -59,15 +59,33 @@
   .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"])[data-control-dock="closed"] .station-workspace {
     grid-template-areas:
       "directory directory" "block block" "dock dock"
-      "geo-title geo-title" "scene controls" "range controls"
+      "geo-title geo-title" "scene controls" "range range"
       "water water" "inspect inspect" "inspector inspector" "evidence evidence" !important;
-    grid-template-rows:auto auto auto auto minmax(560px,80dvh) auto auto auto auto auto !important;
+    grid-template-rows:auto auto auto auto minmax(560px,80dvh) auto minmax(calc(80dvh + 155px),auto) auto auto auto !important;
   }
   .ocean-workbench[data-page="explore"]:not(.focus-mode)[data-control-dock="closed"] .station-workspace {
     grid-template-columns:minmax(0,1fr) !important;
     grid-template-areas:
       "directory" "block" "dock" "geo-title" "scene" "range"
       "water" "inspect" "inspector" "evidence" !important;
+  }
+  /* Reserve a full-width scientific colourbar AFTER the two-column scene.
+     The renderer's own column keeps its scrollable native control dock. */
+  .ocean-workbench[data-page="explore"] .station-workspace > .scientific-colorbar-hud {
+    grid-area:range; position:relative; align-self:start; min-width:0;
+  }
+  .ocean-workbench[data-page="explore"] .station-workspace > .control-panel {
+    grid-area:controls; min-height:0; max-height:80dvh !important;
+    overflow-y:auto !important;
+  }
+  /* Keep each real water-column + inspector row in normal grid flow rather
+     than allowing a 3D canvas's height to visually overrun the next row. */
+  .ocean-workbench[data-page="explore"] .station-workspace > .mpr-water-column-section {
+    grid-area:water; align-self:start; height:auto !important;
+    min-height:calc(80dvh + 155px); min-width:0;
+  }
+  .ocean-workbench[data-page="explore"] .station-workspace > .mpr-inspector-access {
+    grid-area:inspect; position:relative; align-self:start;
   }
   .ocean-workbench[data-page="explore"] .station-workspace > .evidence-rail[data-open="true"],
   .ocean-workbench[data-page="explore"] .station-workspace > .profile-panel[data-context-open="true"] {
