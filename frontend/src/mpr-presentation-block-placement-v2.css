@@ -356,3 +356,36 @@
     grid-template-columns: repeat(2,minmax(0,1fr)) !important;
   }
 }
+
+/* MPR mobile Explorer: the legacy station shell globally hides the quick
+   tray with !important. Restore the real, keyboard-accessible controls in
+   Explorer only; Presentation intentionally remains distraction-free. */
+@media (max-width: 760px) {
+  .ocean-workbench[data-page="explore"]:not([data-workspace-mode="presentation"])
+    .station-workspace > .mobile-explore-tray {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: fixed !important;
+    left: env(safe-area-inset-left) !important;
+    right: env(safe-area-inset-right) !important;
+    bottom: calc(28px + env(safe-area-inset-bottom)) !important;
+    z-index: 57 !important;
+    width: auto !important;
+    min-height: 70px !important;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(92px, 1fr);
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+  }
+  .ocean-workbench[data-page="explore"]:not([data-workspace-mode="presentation"])
+    .station-workspace > .mobile-explore-tray > button {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    flex-direction: column;
+    min-height: 54px;
+  }
+}
