@@ -8,7 +8,9 @@ test("3DB-15 stage switch never obstructs genuine globe basemap controls", async
   await expect(page.locator(".ocean-workbench")).toBeVisible({ timeout: 30_000 });
   const shell = page.locator(".app-shell");
   if ((await shell.getAttribute("data-control-dock")) === "open") {
-    await page.getByRole("button", { name: "Hide explorer controls" }).click();
+    // MPR navigation can expose the dock without the retired legacy toggle.
+    const hide = page.getByRole("button", { name: "Hide explorer controls" });
+    if (await hide.isVisible().catch(() => false)) await hide.click();
   }
   const stage = page.getByRole("button", { name: "Switch to Water Column 3D" });
   await expect(stage).toBeVisible();
