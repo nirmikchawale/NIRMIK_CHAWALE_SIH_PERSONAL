@@ -56,14 +56,14 @@ for (const width of [390, 1024, 1327, 1440]) {
     expect(overflow.scrollable, "Toolbar must be vertically scrollable when controls exceed it").toBe(true);
     // Test wheel over the toolbar itself: first scroll the local controls,
     // then hand further wheel input to the real Explorer page scrollport.
-    await page.locator(".station-workspace").evaluate(el => { el.scrollTop = 0; });
+    await page.locator(".ocean-workbench[data-page=\"explore\"]").evaluate(el => { el.scrollTop = 0; });
     await toolbar.evaluate(el => { el.scrollTop = 0; });
     await toolbar.hover({ position: { x: 25, y: 20 } });
     await page.mouse.wheel(0, 180);
     await expect.poll(() => toolbar.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
     await page.mouse.wheel(0, 1800);
     await page.mouse.wheel(0, 900);
-    await expect.poll(() => page.locator(".station-workspace").evaluate(el => el.scrollTop)).toBeGreaterThan(0);
+    await expect.poll(() => page.locator(".ocean-workbench[data-page=\"explore\"]").evaluate(el => el.scrollTop)).toBeGreaterThan(0);
     // Same toolbar maintains real actions when not scrolling.
     await toolbar.evaluate(el => { el.scrollTop = el.scrollHeight; });
     const offline = basemap.getByRole("button", { name: "Offline", exact: true });
