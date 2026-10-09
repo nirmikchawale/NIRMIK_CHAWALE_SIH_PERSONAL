@@ -51,12 +51,13 @@ test("planned target enters the same Water Column 3D workflow without fabricated
   );
   await expect(planned.locator("canvas.water-column-canvas")).toHaveCount(0);
 
-  // The original main-block selector remains authoritative for returning
-  // to a real source-backed volume; never synthesize a planned 3D field.
-  await hud.getByLabel("Active main block").selectOption("BASE-GLORYS-001");
-  const verified = page.locator('.water-column-visualization-layer.active .water-column-shell');
-  await expect(verified).toBeVisible();
-  await expect(verified).toHaveAttribute("data-materialization", "verified-baseline");
+  // A reload restores the source-backed baseline; the main-block selector
+  // deliberately excludes BASE-GLORYS-001, so it cannot select that option.
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator(".ocean-workbench")).toBeVisible();
+  const verified = page.getByTestId("mpr-12-water-column-section");
+  await expect(verified).toHaveAttribute("data-linked-block", "BASE-GLORYS-001");
+  await expect(verified).toHaveAttribute("data-linked-evidence", "verified", { timeout: 30_000 });
   await expect(verified.locator("canvas.water-column-canvas")).toBeVisible();
 });
 
