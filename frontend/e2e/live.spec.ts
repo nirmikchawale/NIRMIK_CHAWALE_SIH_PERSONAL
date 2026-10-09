@@ -105,7 +105,8 @@ test("live Ocean Canvas judge flow renders and core interactions work", async ({
   await expect(page.locator(".app-shell")).toHaveAttribute("data-control-dock", "open");
 
   const documentRoot = page.locator("html");
-  await expect(documentRoot).toHaveAttribute("data-theme", "dark");
+  await expect(documentRoot).toHaveAttribute("data-theme", "light");
+  await expect(documentRoot).toHaveAttribute("data-glass-theme", "arctic-mist");
   await selectLightGlassTheme(page);
   await expect(documentRoot).toHaveAttribute("data-theme", "light");
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("oceantwin-glass-theme-v2"))).toBe("lavender-haze");
@@ -359,7 +360,8 @@ test("live Ocean Canvas explorer and evidence flow works", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Ocean Canvas/i })).toBeVisible();
 
   const documentRoot = page.locator("html");
-  await expect(documentRoot).toHaveAttribute("data-theme", "dark");
+  await expect(documentRoot).toHaveAttribute("data-theme", "light");
+  await expect(documentRoot).toHaveAttribute("data-glass-theme", "arctic-mist");
   await selectLightGlassTheme(page);
   await expect(documentRoot).toHaveAttribute("data-theme", "light");
   await expect(page.locator(".app-shell")).toHaveAttribute("data-page", "explore");
@@ -589,7 +591,8 @@ test("live Ocean Canvas explorer and evidence flow works", async ({ page }) => {
   await expect(page.locator(".app-shell")).not.toHaveClass(/focus-mode/);
 
   await selectDarkGlassTheme(page);
-  await expect(documentRoot).toHaveAttribute("data-theme", "dark");
+  await expect(documentRoot).toHaveAttribute("data-theme", "light");
+  await expect(documentRoot).toHaveAttribute("data-glass-theme", "arctic-mist");
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("oceantwin-glass-theme-v2"))).toBe("aurora-borealis");
 
   expect(pageErrors).toEqual([]);
