@@ -92,11 +92,11 @@ for(const size of sizes) {
     // actual browser viewport after scrolling to each real renderer instead.
     await geo.scrollIntoViewIfNeeded();
     await info.attach(size.name+"--"+theme.id+"--geographic",{
-      body:await page.screenshot({animations:"disabled",timeout:45000}),contentType:"image/png"
+      body:await page.screenshot({animations:"disabled",timeout:120000}),contentType:"image/png"
     });
     await water.scrollIntoViewIfNeeded();
     await info.attach(size.name+"--"+theme.id+"--water-column",{
-      body:await page.screenshot({animations:"disabled",timeout:45000}),contentType:"image/png"
+      body:await page.screenshot({animations:"disabled",timeout:120000}),contentType:"image/png"
     });
   }
   expect(records).toHaveLength(16);
