@@ -51,8 +51,10 @@ test("planned target enters the same Water Column 3D workflow without fabricated
   );
   await expect(planned.locator("canvas.water-column-canvas")).toHaveCount(0);
 
-  // A reload restores the source-backed baseline; the main-block selector
-  // deliberately excludes BASE-GLORYS-001, so it cannot select that option.
+  // The active planned target is persisted across reloads by design.
+  // Explicitly clear only this test's persisted selection before checking the
+  // immutable source-backed baseline; do not fabricate a scientific volume.
+  await page.evaluate(() => localStorage.removeItem("oceancanvas-active-main-block-v1"));
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.locator(".ocean-workbench")).toBeVisible();
   const verified = page.getByTestId("mpr-12-water-column-section");
