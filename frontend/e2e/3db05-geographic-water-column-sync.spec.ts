@@ -107,12 +107,15 @@ test("3DB-05 keeps a planned geographic block synchronized as an empty Water Col
   await expect(openWaterColumn).toBeEnabled({ timeout: 30_000 });
   await openWaterColumn.click();
 
-  const shell = page.locator(".planned-main-block-shell");
-  await expect(shell).toBeVisible({ timeout: 30_000 });
-  await expect(shell).toHaveAttribute("data-main-block-id", "IO-003");
-  await expect(shell).toHaveAttribute("data-materialization", "planned");
-  await expect(shell).toHaveAttribute("data-scientific-values", "0");
-  await expect(shell).toContainText("PLANNED TARGET · NO MATERIALIZED VOLUME");
-  await expect(shell).toContainText("0 bundled for this target; none copied from the baseline");
-  await expect(page.locator(".water-column-shell:not(.planned-main-block-shell)")).toHaveCount(0);
+  // MPR-12 renders BOTH scientific sections; a planned selection must use
+  // the actual withheld-evidence state, not the removed legacy shell.
+  const water = page.getByTestId("mpr-12-water-column-section");
+  await expect(water).toBeVisible({ timeout: 30_000 });
+  await expect(water).toHaveAttribute("data-linked-block", "IO-003");
+  await expect(water).toHaveAttribute("data-linked-evidence", "planned");
+  const withheld = water.locator(".mpr-water-column-unavailable");
+  await expect(withheld).toBeVisible();
+  await expect(withheld).toContainText("Planned block · water-column evidence withheld");
+  await expect(withheld).toContainText("No copied, extrapolated or synthetic ocean values");
+  await expect(water.locator("canvas.water-column-canvas")).toHaveCount(0);
 });
