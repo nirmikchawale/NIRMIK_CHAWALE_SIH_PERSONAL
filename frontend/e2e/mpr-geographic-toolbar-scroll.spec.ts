@@ -74,6 +74,12 @@ for (const width of [390, 1024, 1327, 1440]) {
     }));
     expect(scrollState.maximum, "Explorer must have real overflow").toBeGreaterThan(0);
     const canScrollDown = scrollState.before < scrollState.maximum - 2;
+    // For downward forwarding the toolbar must already be at its bottom;
+    // for upward forwarding it must already be at its top. Otherwise the
+    // toolbar (correctly) consumes the wheel and Explorer does not move.
+    await toolbar.evaluate((el, down) => {
+      el.scrollTop = down ? el.scrollHeight : 0;
+    }, canScrollDown);
     await page.mouse.wheel(0, canScrollDown ? 900 : -900);
     if (canScrollDown) {
       await expect.poll(() => explorer.evaluate(el => el.scrollTop)).toBeGreaterThan(scrollState.before);
