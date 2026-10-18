@@ -161,7 +161,7 @@ def live_snapshot(token: str) -> dict[str, Any]:
     pr_refs = {}
     check_runs = {}
     paths_by_pr: dict[str, set[str]] = {}
-    for pr in (200, 204, 205, 208, 209, 210):
+    for pr in (200, 204, 205, 208, 209, 210, 211):
         data = _github_read(f"pulls/{pr}", token)
         head = data["head"]["sha"]
         pr_refs[str(pr)] = {
@@ -183,11 +183,23 @@ def live_snapshot(token: str) -> dict[str, Any]:
                           (204, 210), (209, 204), (205, 208)):
         label = f"{first}-{second}"
         collisions[label] = sorted(paths_by_pr[str(first)] & paths_by_pr[str(second)])
+    # Exact-current-sha lookup for evidence review. Heads are facts, never
+    # certificates. ITM-02 is security PR #209; ITM-03/04 recovery PR #210;
+    # prebuilt ITM-05..09 comes from draft #211. Controlled/production and
+    # Stage B phases eventually use exact main only AFTER authorized merges.
+    main_head = main["commit"]["sha"]
+    phase_current_heads = {
+        **{"ITM-02": pr_refs["209"]["head_sha"]},
+        **{f"ITM-{i:02d}": pr_refs["210"]["head_sha"] for i in (3, 4)},
+        **{f"ITM-{i:02d}": pr_refs["211"]["head_sha"] for i in range(5, 10)},
+        **{f"ITM-{i:02d}": main_head for i in range(10, 16)},
+    }
     return {
         "provenance": "live-read-only-github-api",
-        "main_sha": main["commit"]["sha"],
+        "main_sha": main_head,
         "prs": pr_refs, "checks": check_runs,
         "collisions": collisions,
+        "phase_current_heads": phase_current_heads,
         "ready_for_release": False,  # human approval and public evidence are separate
     }
 
