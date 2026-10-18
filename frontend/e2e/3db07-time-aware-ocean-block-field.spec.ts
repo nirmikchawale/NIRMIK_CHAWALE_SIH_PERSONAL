@@ -14,6 +14,12 @@ test("3DB-07 keeps only ocean-intersecting blocks and switches genuine pilot tim
   const globe = page.locator(".globe-visualization-layer.active .globe-shell");
   await expect(globe).toHaveAttribute("data-main-block-count", "112", { timeout: 30_000 });
 
+  // The original scientific HUD now lives in the progressive Block & Region
+  // group; open the actual user-facing navigation entry, not a hidden dock.
+  const details = page.getByTestId("mpr-block-details-workspace");
+  await expect(details).toBeVisible();
+  await details.getByRole("button", { name: "Block & Region controls" }).click();
+  await expect(page.getByTestId("mpr-block-region-group")).toHaveAttribute("open", "");
   const hud = page.getByTestId("integrated-main-block-hud");
   await expect(hud).toBeVisible();
   const selector = hud.getByLabel("Active main block");

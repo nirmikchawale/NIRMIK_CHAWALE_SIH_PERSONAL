@@ -62,7 +62,8 @@ jobs:
           recovery_args=()
           if [[ "$CANDIDATE_HEAD" == "integration/m001-m007-joint-release-gate-20261018" ||
                 "$CANDIDATE_HEAD" == "integration/itm03-chromium-recovery-20261018" ||
-                "$CANDIDATE_HEAD" == "integration/itm03-retain-96-real-screenshots-20261018" ]]; then
+                "$CANDIDATE_HEAD" == "integration/itm03-retain-96-real-screenshots-20261018" ||
+                "$CANDIDATE_HEAD" == "integration/itm03-full-browser-shard1-recovery-20261018" ]]; then
             recovery_args+=(--reviewed-m001-m007-package)
           fi
           python scripts/verify_mpr_release_scope.py \

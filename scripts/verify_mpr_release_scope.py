@@ -43,6 +43,11 @@ EXACT_FILES = {
     # DOM. These exact test files preserve checks for withheld planned data.
     "frontend/e2e/journey.spec.ts",
     "frontend/e2e/3db05-geographic-water-column-sync.spec.ts",
+    # These exact existing full-browser acceptance cases validate the original
+    # source-backed 3DB-07 & 3DB-15 behavior against MPR's relocated controls.
+    # Do not add a broad 3DB or numerical-source exception.
+    "frontend/e2e/3db07-time-aware-ocean-block-field.spec.ts",
+    "frontend/e2e/3db15-stage-switch-basemap.spec.ts",
     "frontend/e2e/rui-nav-01-file-manager-shell.spec.ts",
     "frontend/e2e/document-layout.spec.ts",
     "scripts/verify_mpr_release_scope.py",

@@ -6,10 +6,11 @@ test("3DB-15 stage switch never obstructs genuine globe basemap controls", async
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(url, { waitUntil: "domcontentloaded" });
   await expect(page.locator(".ocean-workbench")).toBeVisible({ timeout: 30_000 });
-  const shell = page.locator(".app-shell");
-  if ((await shell.getAttribute("data-control-dock")) === "open") {
-    await page.getByRole("button", { name: "Hide explorer controls" }).click();
-  }
+  // MPR relocated Explorer controls to a genuine dock rather than an
+  // overlapping legacy hide/show overlay. Verify the active dock is mounted
+  // and retain all pixel-overlap + accessible imagery checks below.
+  const dock = page.locator(".station-workspace > .control-panel");
+  await expect(dock).toHaveAttribute("data-mpr-geographic-dock", "true");
   const stage = page.getByRole("button", { name: "Switch to Water Column 3D" });
   await expect(stage).toBeVisible();
   const globe = page.locator(".globe-shell").first();

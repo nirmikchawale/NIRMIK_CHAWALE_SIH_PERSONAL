@@ -546,10 +546,12 @@ test("live Ocean Canvas explorer and evidence flow works", async ({ page }) => {
   await expect(page.locator(".renderer-fallback-card")).toHaveCount(0);
 
   await page.getByRole("button", { name: "3D field" }).click();
-  // Two independent science overlays share .volume-note; require the 3D
-  // field evidence overlay rather than selecting both and failing strict mode.
-  await expect(page.locator(".volume-note").filter({ hasText: "3D WATER COLUMN" })).toHaveCount(1);
-  await expect(page.locator(".volume-note").filter({ hasText: "3D WATER COLUMN" })).toBeVisible();
+  // The old .volume-note overlay is intentionally hidden in the current MPR
+  // layout. Require the ACTUAL visible and independently source-linked 3D
+  // water-column section, not a retired decorative note.
+  const verifiedWaterSection = page.getByTestId("mpr-12-water-column-section");
+  await expect(verifiedWaterSection).toBeVisible();
+  await expect(verifiedWaterSection).toHaveAttribute("data-linked-evidence", "verified");
   await expect(page.locator(".renderer-fallback-card")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Depth slice" }).click();

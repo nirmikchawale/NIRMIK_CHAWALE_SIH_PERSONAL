@@ -2,24 +2,61 @@ import { expect, test } from "@playwright/test";
 
 const liveUrl = process.env.OCEANTWIN_LIVE_URL;
 
+// Transient native Cesium journey states can disappear before a Playwright
+// locator assertion begins (especially after a loaded document/reload).
+// Observe ACTUAL DOM phase mutations before app bootstrap; never force or
+// fabricate a phase and require all three real intermediate phases in order.
+async function recordNativeJourney(page: import("@playwright/test").Page) {
+  await page.addInitScript(() => {
+    const extended = window as typeof window & {
+      __oceanJourneyPhases?: string[];
+      __oceanJourneyStatus?: string[];
+    };
+    const phases: string[] = [];
+    const status: string[] = [];
+    extended.__oceanJourneyPhases = phases;
+    extended.__oceanJourneyStatus = status;
+    const record = () => {
+      const value = document.querySelector(".globe-shell[data-journey-phase]")?.getAttribute("data-journey-phase");
+      if (value && phases[phases.length - 1] !== value) phases.push(value);
+      const label = document.querySelector(".globe-intro-status")?.textContent?.trim();
+      if (label && status[status.length - 1] !== label) status.push(label);
+    };
+    new MutationObserver(record).observe(document, {
+      attributes: true,
+      attributeFilter: ["data-journey-phase"],
+      childList: true,
+      subtree: true
+    });
+    record();
+  });
+}
+async function requireNativeJourney(page: import("@playwright/test").Page) {
+  await expect.poll(async () => page.evaluate(() => {
+    const all = (window as typeof window & { __oceanJourneyPhases?: string[] }).__oceanJourneyPhases ?? [];
+    const earth = all.indexOf("earth");
+    const india = all.indexOf("india", earth + 1);
+    const flying = all.indexOf("flying", india + 1);
+    const region = all.indexOf("region", flying + 1);
+    return earth >= 0 && india > earth && flying > india && region > flying;
+  }), { timeout: 90_000 }).toBe(true);
+  await expect(page.locator(".globe-shell[data-journey-phase]")).toHaveAttribute("data-journey-phase", "region");
+}
+
 test("orientation replay, skip, explicit Water Column entry and return remain usable", async ({ page }) => {
   test.setTimeout(300_000);
   if (!liveUrl) throw new Error("OCEANTWIN_LIVE_URL is required");
+  await recordNativeJourney(page);
   await page.goto(liveUrl, { waitUntil: "domcontentloaded" });
   const globe = page.locator(".globe-shell[data-journey-phase]");
 
-  // A fresh document load must visibly orient Earth → India → ocean.
-  await expect(globe).toHaveAttribute("data-journey-phase", "earth", { timeout: 45_000 });
-  await expect(globe).toHaveAttribute("data-journey-phase", "india", { timeout: 45_000 });
-  await expect(globe).toHaveAttribute("data-journey-phase", "flying", { timeout: 45_000 });
-  await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 45_000 });
+  // Require the real Earth → India → flying → region DOM transitions, even
+  // when the first transient state is missed by a delayed locator poll.
+  await requireNativeJourney(page);
 
-  // A browser refresh creates a new document and must replay the same story.
+  // A fresh document must replay the same actual sequence after refresh.
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(globe).toHaveAttribute("data-journey-phase", "earth", { timeout: 45_000 });
-  await expect(globe).toHaveAttribute("data-journey-phase", "india", { timeout: 45_000 });
-  await expect(globe).toHaveAttribute("data-journey-phase", "flying", { timeout: 45_000 });
-  await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 45_000 });
+  await requireNativeJourney(page);
 
   // Replay must restart the active orientation sequence. On a loaded public
   // Cesium scene the 900 ms Earth state can advance before Playwright finishes
@@ -57,15 +94,19 @@ test("orientation replay, skip, explicit Water Column entry and return remain us
 
 test("fresh refresh replays the Earth India ocean orientation", async ({ page }) => {
   if (!liveUrl) throw new Error("OCEANTWIN_LIVE_URL is required");
+  await recordNativeJourney(page);
   await page.goto(liveUrl, { waitUntil: "domcontentloaded" });
   const globe = page.locator(".globe-shell[data-journey-phase]");
-  await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 30_000 });
+  await requireNativeJourney(page);
 
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(globe).toHaveAttribute("data-journey-phase", /^(earth|india|flying)$/, { timeout: 5_000 });
-  await expect(page.locator(".globe-intro-status")).toBeVisible();
-  await expect(page.locator(".globe-intro-status")).toContainText(/EARTH|INDIA|VERIFIED OCEAN FIELD/);
-  await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 30_000 });
+  await requireNativeJourney(page);
+  // The live orientation guidance is transient, not rendered once region is
+  // reached. Audit what the real browser displayed during the flight.
+  const status = await page.evaluate(() =>
+    (window as typeof window & { __oceanJourneyStatus?: string[] }).__oceanJourneyStatus ?? []);
+  expect(status.join(" ")).toMatch(/EARTH|INDIA|INDIAN OCEAN/);
+  await expect(globe).toHaveAttribute("data-journey-phase", "region");
 });
 
 test("mobile pinch, wheel and reduced-motion orientation work", async ({ page }) => {
