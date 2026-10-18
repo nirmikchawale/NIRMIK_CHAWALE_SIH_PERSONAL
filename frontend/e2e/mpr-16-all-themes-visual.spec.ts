@@ -145,7 +145,7 @@ test.afterAll(async () => {
   entries.push({filename,bytes:bytes.length,dimensions:[expected[0],expected[1]],sha256});
  }
  await writeFile(resolve(directory,"..","ITM03_96_REAL_PNG_MANIFEST.json"),
-  JSON.stringify({origin:"Playwright real page.screenshot",synthetic:false,count:entries.length,files:entries},null,2)+"\\n");
+  JSON.stringify({origin:"Playwright real page.screenshot",synthetic:false,count:entries.length,files:entries},null,2)+"\n");
 });
 
 test("MPR-16 saved appearance survives hard navigation and cannot alter source palette",async({page})=>{
