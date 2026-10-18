@@ -46,7 +46,7 @@ def test_m041_native_2024_request_no_2004_or_2024_reference_relabel():
 def test_m042_missing_remote_source_is_explicit_blocker(tmp_path):
     path = tmp_path / "not-downloaded.nc"
     assert request_status(path)["status"] == "BLOCKED_SOURCE_NOT_ACQUIRED"
-    with pytest.raises(RuntimeError, match="copernicusmarine|Source",):
+    with pytest.raises(ValueError, match="absent or unsafe"):
         # These tests must not make a network request. Test only missing
         # dependency/source-check path by inspecting instead of calling _acquire.
         inspect_native_netcdf(path)
@@ -90,7 +90,7 @@ def test_m043_044_model_checksum_native_axes_time_depth_and_masks(tmp_path):
     assert report["variable_evidence"]["thetao"]["masked_or_missing_cells"] == 1
     assert report["ui_materialization"] == "PLANNED"
     assert report["new_model_observation_residuals_computed"] is False
-    with pytest.raises(ValueError, match="size"):
+    with pytest.raises(ValueError, match="absent or unsafe"):
         raw_sha256(tmp_path / "absent.nc")
 
 
