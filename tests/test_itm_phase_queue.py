@@ -56,6 +56,14 @@ def test_skipping_itm04_to_start_itm05_is_rejected():
         q.validate_manifest(m)
 
 
+def test_no_later_phase_can_skip_its_immediate_predecessor():
+    for phase_index in range(1, 14):
+        m = manifest()
+        m["phases"][phase_index]["dependencies"].clear()
+        with pytest.raises(q.InvalidQueue):
+            q.validate_manifest(m)
+
+
 def test_default_queue_never_claims_green():
     rows = q.evaluate_queue(manifest())
     assert len(rows) == 14
