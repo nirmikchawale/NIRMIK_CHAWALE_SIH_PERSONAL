@@ -133,10 +133,24 @@ def capture_live(token: str) -> dict[str, Any]:
     if not token:
         raise InvalidQueue("GITHUB_TOKEN required; empty fixtures cannot certify production")
     main = _github_read("branches/main", token)["commit"]["sha"]
-    recent = _github_read("actions/runs?branch=main&per_page=100", token)
-    all_runs = recent.get("workflow_runs", [])
-    matched = [r for r in all_runs if r.get("name") in {PAGES_NAME, FINAL_NAME} and
-               r.get("head_sha") == main]
+    # A busy repo has dozens of conductor no-op runs per hour. The first
+    # actions/runs page can omit the most recent actual Pages/final-mvp runs,
+    # so failing to paginate creates a false claim that those runs never ran.
+    matched: list[dict[str, Any]] = []
+    counts = {PAGES_NAME: 0, FINAL_NAME: 0}
+    for page in range(1, 21):
+        recent = _github_read(f"actions/runs?branch=main&per_page=100&page={page}", token)
+        batch = recent.get("workflow_runs")
+        if not isinstance(batch, list):
+            raise InvalidQueue("GitHub returned malformed run pagination data")
+        for run in batch:
+            if run.get("name") in counts and run.get("head_sha") == main:
+                matched.append(run)
+                counts[run["name"]] += 1
+        if all(value >= 2 for value in counts.values()) or len(batch) < 100:
+            break
+    else:
+        raise InvalidQueue("GitHub run pagination exceeded 20 pages; never infer missing release results")
     jobs = {}
     for run in matched:
         rsp = _github_read(f"actions/runs/{run['id']}/jobs?per_page=100", token)
@@ -144,6 +158,8 @@ def capture_live(token: str) -> dict[str, Any]:
         if len(items) >= 100:
             raise InvalidQueue(f"Possible truncation in workflow {run['id']}")
         jobs[str(run["id"])] = items
+    if _github_read("branches/main", token)["commit"]["sha"] != main:
+        raise InvalidQueue("main advanced during Pages and final-mvp evidence collection")
     return {"provenance": "exact-main-github-actions-rest-read-only",
             "main_sha": main, "runs": matched, "jobs": jobs,
             BASELINE_ROLLBACK_SHA_KEY: None}
