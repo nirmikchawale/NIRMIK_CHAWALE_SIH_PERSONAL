@@ -227,22 +227,56 @@ def fetch_aoml_glider_and_bgc() -> tuple[list[dict], dict]:
 
 
 def _candidate_ctd_profiles() -> list[dict[str, str]]:
-    # Prefer genuine Indian Ocean profiles; broaden only within the Indian Ocean sector.
-    fields = "profile_id,time,latitude,longitude"
-    query = (
-        f"{fields}&time>=2018-01-01T00:00:00Z&time<=2026-12-31T23:59:59Z"
-        "&longitude>=40&longitude<=120&latitude>=-40&latitude<=30&distinct()"
-    )
-    url = _erddap_url(CCHDO_BASE, query)
-    rows = []
-    for row in _csv_rows(url):
-        if _iso(row.get("time")) and _finite(row.get("latitude")) is not None and _finite(row.get("longitude")) is not None:
-            rows.append(row)
-    rows.sort(key=lambda row: str(row.get("time") or ""), reverse=True)
-    if not rows:
-        raise RuntimeError("CCHDO profile discovery returned no Indian Ocean profiles.")
-    return rows[:12]
+    """Discover actual Indian Ocean CTD source records without inventing a fallback.
 
+    The provider's ERDDAP tabledap responds HTTP 404 + `nRows = 0` when a
+    legitimate constrained request contains no records. This means NO DATA for
+    that time window, not that the provider's scientific dataset is fabricated
+    or that we may mark CTD as available. In October 2026, the 2018+ Indian
+    Ocean discovery window returned that no-match response. CCHDO publishes
+    genuine Indian Ocean I09N casts from 2016, so we inspect older real windows.
+    Invalid HTTP errors, unreachable providers and missing QC do NOT get
+    silently swallowed; all accepted measurements still come from source rows.
+    """
+    fields = "profile_id,time,latitude,longitude"
+    windows = (
+        ("2018-01-01T00:00:00Z", "2026-12-31T23:59:59Z"),
+        ("2015-01-01T00:00:00Z", "2017-12-31T23:59:59Z"),
+        ("2005-01-01T00:00:00Z", "2014-12-31T23:59:59Z"),
+    )
+    for start_time, end_time in windows:
+        query = (
+            f"{fields}&time>={start_time}&time<={end_time}"
+            "&longitude>=40&longitude<=120&latitude>=-40&latitude<=30&distinct()"
+        )
+        url = _erddap_url(CCHDO_BASE, query)
+        try:
+            source_rows = _csv_rows(url)
+        except RuntimeError as exc:
+            # NOAA ERDDAP uses a 404 response for a *valid empty search*.
+            # Only that exact provider diagnostic means "try an older window".
+            message = str(exc)
+            if (
+                message.startswith("HTTP 404 for ")
+                and "Your query produced no matching results" in message
+                and "nRows = 0" in message
+            ):
+                continue
+            raise
+        rows = [
+            row for row in source_rows
+            if _iso(row.get("time"))
+            and _finite(row.get("latitude")) is not None
+            and _finite(row.get("longitude")) is not None
+            and row.get("profile_id")
+        ]
+        rows.sort(key=lambda row: str(row.get("time") or ""), reverse=True)
+        if rows:
+            return rows[:12]
+    raise RuntimeError(
+        "CCHDO discovery returned no eligible source-backed Indian Ocean CTD "
+        "profiles for any inspected authentic provider time window (2005–2026)."
+    )
 
 def _fetch_ctd_profile(candidate: dict[str, str]) -> tuple[list[dict], str]:
     profile_id = str(candidate.get("profile_id") or "").strip()
