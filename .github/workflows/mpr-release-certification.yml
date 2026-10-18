@@ -2,7 +2,18 @@ name: mpr-10-17-release-certification
 
 # This workflow certifies a candidate; it never merges or deploys production.
 on:
+  # Dedicated RUI/MPR UI acceptance. Pure scientific-provider maintenance is
+  # certified by final-mvp and the scientific tests workflow instead.
+  # This is not a blanket CI bypass: every pull request still runs full
+  # final-mvp and repository pytest; Pages production acceptance runs on main.
   pull_request:
+    paths:
+      - "frontend/src/**"
+      - "frontend/e2e/**"
+      - "frontend/index.html"
+      - "docs/RUI_MPR_**"
+      - "scripts/verify_mpr_release_scope.py"
+      - ".github/workflows/mpr-release-certification.yml"
   workflow_dispatch:
 
 permissions:
