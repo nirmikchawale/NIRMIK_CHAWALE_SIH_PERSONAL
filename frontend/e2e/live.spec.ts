@@ -546,7 +546,10 @@ test("live Ocean Canvas explorer and evidence flow works", async ({ page }) => {
   await expect(page.locator(".renderer-fallback-card")).toHaveCount(0);
 
   await page.getByRole("button", { name: "3D field" }).click();
-  await expect(page.locator(".volume-note")).toContainText("3D WATER COLUMN");
+  // Two independent science overlays share .volume-note; require the 3D
+  // field evidence overlay rather than selecting both and failing strict mode.
+  await expect(page.locator(".volume-note").filter({ hasText: "3D WATER COLUMN" })).toHaveCount(1);
+  await expect(page.locator(".volume-note").filter({ hasText: "3D WATER COLUMN" })).toBeVisible();
   await expect(page.locator(".renderer-fallback-card")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Depth slice" }).click();
