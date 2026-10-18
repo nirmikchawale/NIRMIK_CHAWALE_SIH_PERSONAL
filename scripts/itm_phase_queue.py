@@ -68,12 +68,12 @@ def validate_manifest(manifest: dict[str, Any]) -> list[dict[str, Any]]:
         if phase.get("default_certification") != "NOT_CERTIFIED":
             raise InvalidQueue(f"{pid} cannot be certified by default")
         seen.add(pid)
-    for pid, prereq in [("ITM-03", "ITM-02"), ("ITM-04", "ITM-03"),
-                        ("ITM-05", "ITM-04"), ("ITM-14", "ITM-13"),
-                        ("ITM-15", "ITM-14")]:
-        phase = phases[expected.index(pid)]
-        if prereq not in phase["dependencies"]:
-            raise InvalidQueue(f"{pid} must depend on {prereq}")
+    # Strict phase lock is universal, not just a handful of sample gates.
+    # ITM-10 must not leapfrog ITM-09, just as ITM-05 cannot skip ITM-04.
+    for idx, phase in enumerate(phases[1:], start=1):
+        previous = expected[idx - 1]
+        if previous not in phase["dependencies"]:
+            raise InvalidQueue(f"{phase['id']} must depend on {previous}")
     if manifest.get("stage_a_exclusive_pr") != 204:
         raise InvalidQueue("Stage A exclusive PR #204 must be preserved")
     return phases
