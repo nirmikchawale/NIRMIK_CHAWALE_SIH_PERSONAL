@@ -141,21 +141,18 @@ async function runController({ github, core, context }) {
   log("Exact-main release gate: " +
     (mainStatus.ok ? "GREEN" : mainStatus.problems.join("; ")));
 
-  // If a GITHUB_TOKEN merge happened but dispatch could not run, repair
-  // missing post-merge workflows. This does not change source code or
-  // reinterpret a failed scientific or browser result.
+  // Release-controller merges explicitly dispatch all three workflows in
+  // the SAME successful merge transaction. Never redispatch absent checks
+  // from a poller: API latency or missing enumeration once caused an
+  // unbounded workflow_run -> dispatch -> workflow_run feedback loop.
+  // Fail closed instead; a repair agent may diagnose the missing run.
   const allMainRuns = await listRuns(github, owner, repo, mainSHA);
   const names = relevantRuns(allMainRuns, mainSHA, null);
-  const absent = CONFIG.requiredMainWorkflows
-    .filter(n => !names.has(n));
-  if (absent.length && !dryRun) {
-    for (const name of absent) {
-      const file = name === "tests" ? "tests.yml" :
-        (name === "final-mvp" ? "final-mvp.yml" : "deploy-pages.yml");
-      log("Restoring missing dispatch for " + name + " at main " + mainSHA);
-      await github.rest.actions.createWorkflowDispatch({ owner, repo, workflow_id: file, ref: main });
-    }
-    return;
+  log("Discovered exact-main runs: " + allMainRuns.length + " => " +
+    [...names.keys()].join(", "));
+  const absent = CONFIG.requiredMainWorkflows.filter(n => !names.has(n));
+  if (absent.length) {
+    log("Missing main checks (NO automatic redispatch): " + absent.join(", "));
   }
 
   const entries = await github.paginate(github.rest.pulls.list, {
