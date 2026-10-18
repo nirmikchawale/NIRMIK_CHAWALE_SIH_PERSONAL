@@ -160,7 +160,8 @@ def live_snapshot(token: str) -> dict[str, Any]:
     main = _github_read("branches/main", token)
     pr_refs = {}
     check_runs = {}
-    for pr in (204, 208, 209, 210):
+    paths_by_pr: dict[str, set[str]] = {}
+    for pr in (200, 204, 205, 208, 209, 210):
         data = _github_read(f"pulls/{pr}", token)
         head = data["head"]["sha"]
         pr_refs[str(pr)] = {
@@ -173,10 +174,20 @@ def live_snapshot(token: str) -> dict[str, Any]:
              "conclusion": c["conclusion"], "job_id": c["id"]}
             for c in checks.get("check_runs", [])
         ]
+        changed_files = _github_read(f"pulls/{pr}/files?per_page=100", token)
+        if not isinstance(changed_files, list) or len(changed_files) >= 100:
+            raise InvalidQueue(f"PR #{pr} file list may be truncated; refuse collision certification")
+        paths_by_pr[str(pr)] = {f["filename"] for f in changed_files}
+    collisions = {}
+    for first, second in ((200, 205), (200, 208), (204, 208),
+                          (204, 210), (209, 204), (205, 208)):
+        label = f"{first}-{second}"
+        collisions[label] = sorted(paths_by_pr[str(first)] & paths_by_pr[str(second)])
     return {
         "provenance": "live-read-only-github-api",
         "main_sha": main["commit"]["sha"],
         "prs": pr_refs, "checks": check_runs,
+        "collisions": collisions,
         "ready_for_release": False,  # human approval and public evidence are separate
     }
 
