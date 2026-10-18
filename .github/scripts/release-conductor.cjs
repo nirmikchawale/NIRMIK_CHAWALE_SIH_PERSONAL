@@ -6,14 +6,14 @@
  * Runs ONLY from trusted default-branch GitHub Actions, never checks out PR
  * code, cannot bypass branch protection, and merges at most one PR per pass.
  * Owner-authored phase PRs must opt in with OC-AUTO-RELEASE: approved in body.
- * #202 is the explicitly pre-enrolled science-recovery release.
+ * No historical PR is pre-enrolled. Stage A/Stage B remain quarantined until a separately authorized release PR opts in.
  */
 const CONFIG = Object.freeze({
   owner: "nirmikchawale",
   repo: "NIRMIK_CHAWALE_SIH_PERSONAL",
   main: "main",
-  seededPRs: Object.freeze([202]),
-  recoveryPRs: Object.freeze([202]),
+  seededPRs: Object.freeze([]),
+  recoveryPRs: Object.freeze([]),
   acceptedPrefixes: Object.freeze(["phase/", "release/"]),
   enrollmentMarker: "OC-AUTO-RELEASE: approved",
   requiredPRWorkflows: Object.freeze(["tests", "final-mvp"]),
@@ -200,6 +200,22 @@ async function runController({ github, core, context }) {
     log("PR #" + pr.number + " exact-SHA CI GREEN: " + pr.head.sha);
     if (dryRun) {
       log("DRY RUN: would squash-merge and dispatch post-merge certification.");
+      return;
+    }
+    // A second, immediately pre-merge compare-and-swap guard prevents one
+    // automation run from merging against a changed production base. Neither
+    // a previous green CI result nor the PR head SHA pins main in GitHub REST.
+    const freshMain = await github.rest.repos.getCommit({ owner, repo, ref: main });
+    if (freshMain.data.sha !== mainSHA) {
+      log("Stop: main advanced after candidate certification; recompute against the new base.");
+      return;
+    }
+    const freshPR = (await github.rest.pulls.get({
+      owner, repo, pull_number: pr.number
+    })).data;
+    if (!isEnrolled(freshPR) || freshPR.head.sha !== pr.head.sha ||
+        freshPR.base.sha !== mainSHA || freshPR.mergeable !== true) {
+      log("Stop: PR eligibility, head, base or mergeability changed before merge.");
       return;
     }
     // GitHub enforces repository branch/ruleset constraints. Never force-merge
