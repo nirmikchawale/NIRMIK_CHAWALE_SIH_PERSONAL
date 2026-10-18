@@ -1,0 +1,7 @@
+# CERT-04 REAL evidence persistence and exact 108 PNG gate
+
+At development SHA 9406c5ac8884713de564900a827955b42e245bf8, GitHub Actions `science-and-108-actual-browser-views` PASSED all 18 tests (including three 18-theme screenshot matrix tests: wide desktop/tablet/mobile) after genuine WebGL screenshot capture fix. However upload-artifact reported no files under `frontend/test-results` and `frontend/playwright-report` with the `list` reporter, leaving no downloadable screenshots. A Playwright pass alone is not a retained 108-image evidence package.
+
+Repair: explicitly write each true Chromium viewport PNG to `frontend/certification-evidence/cert04-108/screenshots/<viewport>--<theme>--<view>.png` after validating original PNG magic and nonempty bytes; original Playwright attachments remain. Before the screenshot, both geographic and water-column DOM scientific evidence flags must be `verified`, not planned, mismatch or unavailable. No mock ocean data, duplicate image files or abstract theme cards.
+
+New mandatory exact-commit CI audit: derive 18 actual ordered theme IDs from `src/theme.ts`, require exact unique 18 x 3 x 2 names, inspect every PNG signature, >1024 bytes, expected viewport dimensions, SHA256 hash each real file, produce machine-readable `CERT04_108_REAL_SCREENSHOTS_MANIFEST.json`, and publish complete images through GitHub Actions artifact. Workflow fails before success unless all 108 authentic PNG files exist. Maintain release isolation / no production deploy and exact-head tests.

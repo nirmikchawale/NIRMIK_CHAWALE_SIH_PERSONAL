@@ -93,12 +93,52 @@ jobs:
             e2e/m072-m079-native-time.spec.ts \
             e2e/m080-m087-neutral-glass.spec.ts \
             e2e/m088-m095-hardening.spec.ts
+      - name: CERT-04 audit exactly 108 genuine named Chromium PNG screenshots
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json, re, struct
+          root=Path("certification-evidence/cert04-108/screenshots")
+          source=Path("src/theme.ts").read_text(encoding="utf-8")
+          theme_block=source.split("GLASS_THEME_IDS = [",1)[1].split("] as const;",1)[0]
+          theme_ids=re.findall(r'"([a-z][a-z-]+)"',theme_block)
+          assert len(theme_ids)==len(set(theme_ids))==18,theme_ids
+          sizes={"wide-desktop":(1440,900),"tablet":(768,900),"mobile":(390,844)}
+          expected={
+              f"{size}--{theme}--{kind}.png"
+              for size in sizes for theme in theme_ids for kind in ("geographic","water-column")
+          }
+          actual={p.name for p in root.glob("*.png")} if root.is_dir() else set()
+          assert len(expected)==108
+          assert actual==expected,{"missing":sorted(expected-actual),"unexpected":sorted(actual-expected)}
+          records=[]
+          for name in sorted(actual):
+              path=root/name
+              raw=path.read_bytes()
+              assert len(raw)>1024,(name,len(raw))
+              assert raw[:8]==bytes([137,80,78,71,13,10,26,10]),name
+              width,height=struct.unpack(">II",raw[16:24])
+              size_name=name.split("--",1)[0]
+              assert (width,height)==sizes[size_name],(name,width,height)
+              records.append({"file":name,"bytes":len(raw),"sha256":hashlib.sha256(raw).hexdigest(),"width":width,"height":height})
+          evidence=root.parent
+          (evidence/"CERT04_108_REAL_SCREENSHOTS_MANIFEST.json").write_text(
+              json.dumps({"schema":"oceancanvas-cert04-real-chromium-108-v1",
+                "real_chromium_png_count":len(records),
+                "theme_count":18,"viewport_count":3,"scientific_view_count":2,
+                "files":records},indent=2)+"\n",encoding="utf-8")
+          print("CERT04 VERIFIED 108 genuine original-science browser view PNG files")
+          PY
       - name: Save test results and real screenshots as development artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: m095-stage-a-real-chromium-evidence
           path: |
+            frontend/certification-evidence/cert04-108/
             frontend/test-results/
             frontend/playwright-report/
           if-no-files-found: warn
