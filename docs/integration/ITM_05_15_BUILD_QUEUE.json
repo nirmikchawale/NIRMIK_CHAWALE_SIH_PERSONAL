@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "mode": "BUILD_AHEAD_CERTIFY_IN_DEPENDENCY_ORDER",
+  "production_automation_enabled": false,
+  "merge_or_deploy_automatically": false,
+  "main_baseline_sha": "75880aa1714b68d92fbd2a652a10ed1d8a85c0d8",
+  "source_baseline": "integration/itm03-chromium-recovery-20261018",
+  "stage_a_exclusive_pr": 204,
+  "stage_a_branch": "build/m008-m095-science-ui-train",
+  "coding_lane": "integration/itm05-15-build-queue-20261018",
+  "source_recovery_ancestor_pr": 208,
+  "authorization": "Code development and read-only checks preapproved; merge, deployment and Stage B require separate approval and green gates.",
+  "phases": [
+    {
+      "id": "ITM-02",
+      "title": "Release conductor safety",
+      "kind": "certification",
+      "dependencies": [],
+      "required_checks": [
+        "release-controller-unit-and-syntax",
+        "pytest",
+        "react-cesium",
+        "science-api-and-fallback",
+        "static-hosted-failsafe"
+      ],
+      "required_approvals": [],
+      "default_certification": "NOT_CERTIFIED"
+    },
+    {
+      "id": "ITM-03",
+      "title": "Joint source and Chromium integration",
+      "kind": "certification",
+      "dependencies": [
+        "ITM-02"
+      ],
+      "required_checks": [
+        "pytest",
+        "frontend-only-release-scope",
+        "existing-scientific-contracts",
+        "react-cesium",
+        "science-api-and-fallback",
+        "static-hosted-failsafe",
+        "browser-acceptance-and-96-real-theme-images"
+      ],
+      "required_approvals": [],
+      "default_certification": "NOT_CERTIFIED"
+    },
+    {
+      "id": "ITM-04",
+      "title": "Mobile/desktop controls integration",
+      "kind": "certification",
+      "dependencies": [
+        "ITM-03"
+      ],
+      "required_checks": [
+        "react-cesium",
+        "browser-acceptance-and-96-real-theme-images"
+      ],
+      "required_approvals": [],
+      "default_certification": "NOT_CERTIFIED"
+    },
+    {
+      "id": "ITM-05",
+      "title": "Verified Argo default and profile integrity",
+      "kind": "code_and_certification",
+      "dependencies": [
+        "ITM-04"
+      ],
+      "required_checks": [
+        "react-cesium",
+        "science-api-and-fallback",
+        "static-browser-acceptance"
+      ],
+      "required_approvals": [],
+      "default_certification": "NOT_CERTIFIED"
+    },
+    {
+      "id": "ITM-06",
+      "title": "Authentic M001-M007 scientific recovery",
+      "kind": "code_and_certification",
+      "dependencies": [
+        "ITM-05"
+      ],
+      "required_checks": [
+        "existing-scientific-contracts",
+        "science-api-and-fallback",
+        "static-hosted-failsafe"
+      ],
+      "required_approvals": [],
+      "default_certification": "NOT_CERTIFIED"
+    },
+    {
+      "id": "ITM-07",
+      "title": "Historical PR conflict and forward-port audit",
+      "kind": "audit",
+      "dependencies": [
+        "ITM-06"
+      ],
+      "required_checks": [
+        "legacy-collision-audit"
+      ],
+      "required_approvals": [],
+      "default_certification": "NOT_CERTIFIED"
+    },
+    {
+      "id": "ITM-08",
+      "title": "Exact-source composite release candidate",
+      "kind": "integration",
+      "dependencies": [
+        "ITM-07"
+      ],
+      "required_checks": [
+        "frontend-only-release-scope",
+        "pytest",
+        "react-cesium",
+        "science-api-and-fallback",
+        "static-hosted-failsafe",
+        "browser-acceptance-and-96-real-theme-images"
+      ],
+      "required_approvals": [],
+      "default_certification": "NOT_CERTIFIED"
+    },
+    {
+      "id": "ITM-09",
+      "title": "Independent prerelease readiness",
+      "kind": "certification",
+      "dependencies": [
+        "ITM-08"
+      ],
+      "required_checks": [
+        "full-exact-sha-ci",
+        "science-source-qc",
+        "chromium-all-shards"
+      ],
+      "required_approvals": [],
+      "default_certification": "NOT_CERTIFIED"
+    },
+    {
+      "id": "ITM-10",
+      "title": "Human-approved controlled merge",
+      "kind": "release",
+      "dependencies": [
+        "ITM-09"
+      ],
+      "required_checks": [
+        "premerge-sha-race-check",
+        "merge-result-attestation"
+      ],
+      "required_approvals": [
+        "RELEASE_APPROVED"
+      ],
+      "default_certification": "NOT_CERTIFIED"
+    },
+    {
+      "id": "ITM-11",
+      "title": "Published Pages and real public Chromium",
+      "kind": "production",
+      "dependencies": [
+        "ITM-10"
+      ],
+      "required_checks": [
+        "pages-build",
+        "pages-deploy",
+        "public-chromium-all-four"
+      ],
+      "required_approvals": [],
+      "default_certification": "NOT_CERTIFIED"
+    },
+    {
+      "id": "ITM-12",
+      "title": "Repeat public acceptance and rollback rehearsal",
+      "kind": "production",
+      "dependencies": [
+        "ITM-11"
+      ],
+      "required_checks": [
+        "repeat-production-browser",
+        "rollback-baseline-recorded"
+      ],
+      "required_approvals": [],
+      "default_certification": "NOT_CERTIFIED"
+    },
+    {
+      "id": "ITM-13",
+      "title": "Stage A immutable scientific handoff",
+      "kind": "handoff",
+      "dependencies": [
+        "ITM-12"
+      ],
+      "required_checks": [
+        "stage-a-exact-sha-certificate",
+        "no-conflict-handoff"
+      ],
+      "required_approvals": [
+        "STAGE_A_CERTIFIED"
+      ],
+      "default_certification": "NOT_CERTIFIED"
+    },
+    {
+      "id": "ITM-14",
+      "title": "Separately approved Stage B integration",
+      "kind": "release",
+      "dependencies": [
+        "ITM-13"
+      ],
+      "required_checks": [
+        "stage-b-composite-ci",
+        "stage-b-scientific-qc",
+        "stage-b-chromium"
+      ],
+      "required_approvals": [
+        "STAGE_B_APPROVED"
+      ],
+      "default_certification": "NOT_CERTIFIED"
+    },
+    {
+      "id": "ITM-15",
+      "title": "Final independent production evidence certificate",
+      "kind": "production",
+      "dependencies": [
+        "ITM-14"
+      ],
+      "required_checks": [
+        "final-main-sha-ci",
+        "final-pages-artifact",
+        "final-public-chromium",
+        "final-scientific-evidence"
+      ],
+      "required_approvals": [
+        "FINAL_RELEASE_APPROVED"
+      ],
+      "default_certification": "NOT_CERTIFIED"
+    }
+  ]
+}
