@@ -5,7 +5,7 @@ const { readFileSync } = require("node:fs");
 const { join } = require("node:path");
 const {
   CONFIG, isEnrolled, relevantRuns, evaluateRuns,
-  changedPathsNeedMPR, shouldBlockMerge, listRuns
+  changedPathsNeedMPR, shouldBlockMerge, listRuns, runController
 } = require("../.github/scripts/release-conductor.cjs");
 
 const makePR = (overrides = {}) => ({
@@ -118,4 +118,129 @@ test("production conductor workflow_run events originate only from main", () => 
   const workflow = readFileSync(
     join(__dirname, "../.github/workflows/release-conductor.yml"), "utf8");
   assert.match(workflow, /workflow_run:[\s\S]*?types: \[completed\][\s\S]*?branches: \[main\]/);
+});
+
+const MAIN_SHA = "a".repeat(40);
+const HEAD_SHA = "b".repeat(40);
+
+function mockController({pr, paths = ["docs/integration/test.md"], redMPR = false,
+                          red3DB = false, mainRed = false, advanceMain = false,
+                          changePR = false, omitPRFinalMVP = false} = {}) {
+  const candidate = pr || makePR({
+    number: 501, body: "OC-AUTO-RELEASE: approved",
+    base: {ref: "main", sha: MAIN_SHA},
+    head: {...makePR().head, ref: "release/ITM-02", sha: HEAD_SHA}
+  });
+  const mainRuns = ["tests", "final-mvp", "deploy-oceantwin-pages"].map(name => ({
+    ...makeRun(name, name === "final-mvp" && mainRed ? "failure" : "success"),
+    head_sha: MAIN_SHA, event: "workflow_dispatch"
+  }));
+  const prRuns = [
+    {...makeRun("tests"), head_sha: HEAD_SHA},
+    ...(!omitPRFinalMVP ? [{...makeRun("final-mvp"), head_sha: HEAD_SHA}] : []),
+    {...makeRun("mpr-10-17-release-certification", redMPR ? "failure" : "success"),
+      head_sha: HEAD_SHA},
+    ...(red3DB ? [{...makeRun("3db13-scientific-rendering-acceptance", "failure"),
+      head_sha: HEAD_SHA}] : [])
+  ];
+  let inspectedMain = 0;
+  let inspectedPR = 0;
+  const events = {merges:[],dispatches:[],logs:[]};
+  const list = async () => ({data:[candidate]});
+  const listFiles = async () => ({data:paths.map(filename => ({filename}))});
+  const github = {
+    rest: {
+      repos: {getCommit: async () => ({data:{sha: advanceMain && ++inspectedMain === 2
+        ? "c".repeat(40) : MAIN_SHA}})},
+      pulls: {
+        list, listFiles,
+        get: async () => {
+          inspectedPR += 1;
+          return {data:changePR && inspectedPR === 2
+            ? {...candidate, draft:true}
+            : {...candidate, mergeable:true}};
+        },
+        merge: async args => {
+          events.merges.push(args);
+          return {data:{merged:true,sha:"d".repeat(40)}};
+        }
+      },
+      actions: {
+        listWorkflowRunsForRepo: async ({head_sha}) => ({data:{
+          total_count:head_sha === MAIN_SHA ? mainRuns.length : prRuns.length,
+          workflow_runs:head_sha === MAIN_SHA ? mainRuns : prRuns
+        }}),
+        createWorkflowDispatch: async args => {events.dispatches.push(args);}
+      }
+    },
+    paginate: async method => {
+      if (method === list) return [candidate];
+      if (method === listFiles) return paths.map(filename => ({filename}));
+      throw new Error("Unexpected paginated GitHub query");
+    }
+  };
+  return {github,core:{info:message=>events.logs.push(message)},
+    context:{repo:{owner:"nirmikchawale",repo:"NIRMIK_CHAWALE_SIH_PERSONAL"}},
+    events};
+}
+
+test("controller harness prevents uncontrolled merging of historical #202", async () => {
+  const {github,core,context,events} = mockController({pr:makePR({
+    draft:false,
+    base:{ref:"main",sha:MAIN_SHA},
+    head:{...makePR().head,sha:HEAD_SHA}
+  })});
+  await runController({github,core,context});
+  assert.equal(events.merges.length,0);
+  assert.equal(events.dispatches.length,0);
+});
+
+test("independent security release ignores intentionally failed unrelated MPR scope", async () => {
+  const {github,core,context,events} = mockController({
+    redMPR:true,paths:[".github/scripts/release-conductor.cjs","scripts/test_release_conductor.cjs"]
+  });
+  await runController({github,core,context});
+  assert.equal(events.merges.length,1);
+  assert.equal(events.merges[0].sha,HEAD_SHA);
+  assert.deepEqual(events.dispatches.map(x=>x.workflow_id),
+    ["tests.yml","final-mvp.yml","deploy-pages.yml"]);
+});
+
+test("UI or E2E changed paths retain mandatory MPR failure block", async () => {
+  for(const path of ["frontend/src/App.tsx","frontend/e2e/live.spec.ts",
+                      ".github/workflows/mpr-release-certification.yml"]) {
+    const {github,core,context,events} = mockController({redMPR:true,paths:[path]});
+    await runController({github,core,context});
+    assert.equal(events.merges.length,0,path);
+    assert.ok(events.logs.some(x=>x.includes("mpr-10-17-release-certification")),path);
+  }
+});
+
+test("triggered scientific/3DB failures always block an independent release", async () => {
+  const {github,core,context,events} = mockController({red3DB:true});
+  await runController({github,core,context});
+  assert.equal(events.merges.length,0);
+});
+
+test("missing PR final-mvp and red main independently prohibit merge", async () => {
+  for (const args of [{omitPRFinalMVP:true}, {mainRed:true}]) {
+    const {github,core,context,events} = mockController(args);
+    await runController({github,core,context});
+    assert.equal(events.merges.length,0);
+    assert.equal(events.dispatches.length,0);
+  }
+});
+
+test("concurrent main advancement blocks release at last pre-merge check", async () => {
+  const {github,core,context,events} = mockController({advanceMain:true});
+  await runController({github,core,context});
+  assert.equal(events.merges.length,0);
+  assert.ok(events.logs.some(x=>x.includes("main advanced")),events.logs.join("\n"));
+});
+
+test("last-moment PR draft transition blocks release", async () => {
+  const {github,core,context,events} = mockController({changePR:true});
+  await runController({github,core,context});
+  assert.equal(events.merges.length,0);
+  assert.ok(events.logs.some(x=>x.includes("eligibility, head, base")),events.logs.join("\n"));
 });
