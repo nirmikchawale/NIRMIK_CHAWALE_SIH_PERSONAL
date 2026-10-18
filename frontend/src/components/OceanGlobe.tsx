@@ -164,8 +164,6 @@ export function OceanGlobe({
       // Keep Ctrl/Command-wheel (browser pinch/zoom) unmodified. A wheel over
       // the actual Cesium canvas keeps its own native geographic zoom.
       if (event.ctrlKey || event.metaKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
-      const workspace = toolbar.closest<HTMLElement>(".station-workspace");
-      if (!workspace) return;
       const factor = event.deltaMode === 1 ? 16
         : event.deltaMode === 2 ? toolbar.clientHeight : 1;
       const delta = event.deltaY * factor;
@@ -173,8 +171,18 @@ export function OceanGlobe({
       const canScrollLocal = delta > 0
         ? toolbar.scrollTop + toolbar.clientHeight < toolbar.scrollHeight - 1
         : toolbar.scrollTop > 1;
-      const destination = canScrollLocal ? toolbar : workspace;
-      if (destination.scrollHeight <= destination.clientHeight + 1) return;
+      // Normal Explorer scrolls its shell; Presentation scrolls the station.
+      // Follow the actual scrollable ancestor instead of a historical class.
+      let destination: HTMLElement | null = canScrollLocal ? toolbar : toolbar.parentElement;
+      while (destination && destination !== toolbar) {
+        const overflow = getComputedStyle(destination).overflowY;
+        const canScroll = /^(auto|scroll)$/.test(overflow) && (delta > 0
+          ? destination.scrollTop + destination.clientHeight < destination.scrollHeight - 1
+          : destination.scrollTop > 1);
+        if (canScroll) break;
+        destination = destination.parentElement;
+      }
+      if (!destination) return;
       event.preventDefault();
       event.stopPropagation();
       destination.scrollTop += delta;

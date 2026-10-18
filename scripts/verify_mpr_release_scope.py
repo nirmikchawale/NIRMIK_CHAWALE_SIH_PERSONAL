@@ -30,6 +30,8 @@ EXACT_FILES = {
     "frontend/index.html",
     "docs/MPR_DESKTOP_JOURNEY_ARCTIC_IMMERSIVE.md",
     "frontend/e2e/main-block-globe-integration.spec.ts",
+    # Mobile HUD acceptance follows its existing relocation into ControlPanel.
+    "frontend/e2e/main-block-engine.spec.ts",
     # Post-release RUI-02/MPR integration hardening: presentation + acceptance only.
     "frontend/src/components/ScientificContextHeader.tsx",
     "frontend/e2e/rui-context-header.spec.ts",
@@ -37,6 +39,10 @@ EXACT_FILES = {
     "frontend/src/linked-view-integrity.ts",
     # Existing app regression tests repaired using the 3DB-15 owner branch.
     "frontend/e2e/live.spec.ts",
+    # Non-scientific Playwright selector migrations for the current MPR-12
+    # DOM. These exact test files preserve checks for withheld planned data.
+    "frontend/e2e/journey.spec.ts",
+    "frontend/e2e/3db05-geographic-water-column-sync.spec.ts",
     "frontend/e2e/rui-nav-01-file-manager-shell.spec.ts",
     "frontend/e2e/document-layout.spec.ts",
     "scripts/verify_mpr_release_scope.py",

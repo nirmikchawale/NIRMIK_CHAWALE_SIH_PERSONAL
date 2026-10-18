@@ -41,9 +41,11 @@ import { PAGE_ITEMS, routeFromHash, type PageId } from "./navigation";
 import { readScientificWorkspaceContext } from "./scientific-context-runtime";
 import {
   readActiveMainBlockId,
+  publishActiveMainBlockId,
   resolveMainBlock,
   subscribeActiveMainBlock
 } from "./main-block-runtime";
+import { CURRENT_VERIFIED_BASELINE } from "./main-block-engine";
 import { deriveMainBlockObservationIntegration } from "./main-block-observations";
 import { deriveMainBlockProvenanceEvidence } from "./main-block-provenance";
 import {
@@ -1437,10 +1439,17 @@ export default function App() {
                           waterStatus === "loading" ? "Loading native water-column evidence…" :
                           waterStatus === "mismatch" ? "Native source/time/volume mismatch · evidence withheld" :
                             "Water-column data unavailable for this scientific source"}</strong>
-                        <p>{sourceMode === "chlorophyll"
+                        <p>{waterStatus === "planned"
+                          ? "This planned block has no materialized native water-column volume."
+                          : sourceMode === "chlorophyll"
                           ? "INCOIS satellite chlorophyll is surface-only; it has no measured or modelled subsurface depth axis."
                           : "The current INCOIS physical snapshot does not provide a verified full-depth currents volume."}</p>
                         <p>No copied, extrapolated or synthetic ocean values are displayed.</p>
+                        {waterStatus === "planned" && (
+                          <button type="button" onClick={() => publishActiveMainBlockId(CURRENT_VERIFIED_BASELINE.id)}>
+                            Return to verified baseline volume
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
