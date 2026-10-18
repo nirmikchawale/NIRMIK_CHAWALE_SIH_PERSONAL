@@ -179,8 +179,8 @@ def live_snapshot(token: str) -> dict[str, Any]:
             raise InvalidQueue(f"PR #{pr} file list may be truncated; refuse collision certification")
         paths_by_pr[str(pr)] = {f["filename"] for f in changed_files}
     collisions = {}
-    for first, second in ((200, 205), (200, 208), (204, 208),
-                          (204, 210), (209, 204), (205, 208)):
+    for first, second in ((200, 205), (200, 208), (200, 211), (204, 208),
+                          (204, 210), (204, 211), (209, 204), (205, 208)):
         label = f"{first}-{second}"
         collisions[label] = sorted(paths_by_pr[str(first)] & paths_by_pr[str(second)])
     # Exact-current-sha lookup for evidence review. Heads are facts, never
