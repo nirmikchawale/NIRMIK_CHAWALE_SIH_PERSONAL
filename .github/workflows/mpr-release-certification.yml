@@ -43,7 +43,7 @@ jobs:
           ui_changed=false
           while IFS= read -r name; do
             case "$name" in
-              frontend/src/*|frontend/e2e/*|frontend/index.html|docs/RUI_MPR_*)
+              frontend/src/*|frontend/index.html)
                 ui_changed=true ;;
             esac
           done < /tmp/mpr-changed-files.txt
@@ -62,6 +62,20 @@ jobs:
           import json
           from pathlib import Path
           changed=Path('/tmp/mpr-changed-files.txt').read_text().splitlines()
+          # Strictly bounded M001–M007 scientific provider maintenance.
+          # No production frontend or raw science data is allowed here.
+          approved={
+              'scripts/fetch_verified_observation_breadth.py',
+              'tests/test_m001_m007_scientific_baseline.py',
+              'docs/requirements/M001_M007_BASELINE_AUDIT.md',
+              'frontend/e2e/live.spec.ts',
+              '.github/workflows/mpr-release-certification.yml',
+          }
+          unexpected=sorted(set(changed)-approved)
+          if unexpected:
+              raise SystemExit(f'Non-UI release scope not approved for: {unexpected}')
+          if 'scripts/fetch_verified_observation_breadth.py' in changed and 'tests/test_m001_m007_scientific_baseline.py' not in changed:
+              raise SystemExit('Scientific provider edit lacks associated fail-closed regression tests')
           Path('mpr-release-scope.json').write_text(json.dumps({
               'classification':'source-or-documentation-maintenance',
               'changed_files':changed,
