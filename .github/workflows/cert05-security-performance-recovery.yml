@@ -22,9 +22,13 @@ jobs:
     timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - name: Pin exact unmerged original scientific source
         run: |
           echo "CERT05_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
           echo "Draft-only CI: no production merge or deployment."
       - uses: actions/setup-python@v5
         with:
