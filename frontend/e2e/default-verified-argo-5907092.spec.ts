@@ -26,12 +26,10 @@ test("An explicit valid Argo profile deep link overrides the Cycle 13 default", 
   await page.goto(url + "?block=BASE-GLORYS-001&profile=20240102_indian_ocean_prof%3A26", {
     waitUntil: "domcontentloaded"
   });
-  const selector = page.getByLabel("Verified Argo profile");
-  // The dedicated Model vs Observation selector can be on another workspace,
-  // so inspect the synchronized selected profile in the geographic callout.
-  await expect(page.locator('[aria-label="Connected geographic and water-column visualization stage"]'))
-    .toHaveAttribute("data-selected-argo-float", "5907092", { timeout: 60000 });
-  await expect(page.locator(".visualization-stage")).toContainText(/cycle 12|5907092/i);
+  const stage = page.locator('[aria-label="Connected geographic and water-column visualization stage"]');
+  await expect(stage).toHaveAttribute("data-selected-argo-profile", "20240102_indian_ocean_prof:26", { timeout: 60000 });
+  await expect(stage).toHaveAttribute("data-selected-argo-cycle", "12");
+  await expect(stage).toHaveAttribute("data-selected-argo-float", "5907092");
 });
 
 test("Selecting a genuine pilot does not mislabel baseline Argo as pilot validation", async ({ page }) => {
