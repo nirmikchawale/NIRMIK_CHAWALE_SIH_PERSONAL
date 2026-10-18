@@ -129,3 +129,17 @@
     scroll-behavior:auto !important; transition:none !important;
   }
 }
+
+/* The legacy Phase 5 gate hides the mobile tray after scroll-foundation.css.
+ * MPR retains the original bottom-sheet handlers, so restore their entry and
+ * dismiss surface only in normal mobile Explorer, never Presentation/Focus. */
+@media (max-width:760px) {
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace > .mobile-explore-tray {
+    display: grid !important;
+    pointer-events: auto !important;
+  }
+  .ocean-workbench[data-page="explore"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace > .mobile-sheet-backdrop {
+    display: block !important;
+    pointer-events: auto !important;
+  }
+}
