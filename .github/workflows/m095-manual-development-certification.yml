@@ -2,11 +2,22 @@ name: ocean-canvas-m095-manual-development-certification
 # Trigger only on cumulative build branch; no public Pages or main updates.
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - "frontend/src/**"
+      - "frontend/e2e/**"
+      - "frontend/public/main-blocks/manifest.json"
+      - "tests/**"
+      - "scripts/**"
+      - ".github/workflows/m095-manual-development-certification.yml"
 permissions:
   contents: read
+concurrency:
+  group: stage-a-m095-visual-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   science-and-108-actual-browser-views:
-    if: ${{ startsWith(github.ref_name, 'build/m008-m095-') }}
+    if: ${{ (github.event_name == 'workflow_dispatch' && startsWith(github.ref_name, 'build/m008-m095-')) || (github.event_name == 'pull_request' && github.event.pull_request.draft && startsWith(github.event.pull_request.head.ref, 'build/m008-m095-')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
