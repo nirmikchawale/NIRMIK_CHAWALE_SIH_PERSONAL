@@ -6,6 +6,7 @@ import {
 } from "./main-block-variables";
 import { resolveMainBlock } from "./main-block-runtime";
 import { assertPilotFrameSha256 } from "./main-block-frame-integrity";
+import { inspectSourceBackedRenderFrame } from "./m064-scientific-render-pipeline";
 
 export type PilotOceanRelevance = "ocean" | "coastal" | "land";
 
@@ -145,7 +146,8 @@ function nativeVariableIntegration(payload: PilotBlockPayload) {
 export async function fetchPilotMainBlock(
   blockId: string,
   date: string,
-  manifest?: PilotBlockManifest
+  manifest?: PilotBlockManifest,
+  signal?: AbortSignal
 ): Promise<PilotBlockPayload> {
   const inventory = manifest ?? await fetchPilotMainBlockManifest();
   const block = inventory.blocks.find((item) => item.id === blockId);
@@ -155,7 +157,7 @@ export async function fetchPilotMainBlock(
   const record = block.payloads.find((item) => item.date === date);
   if (!record) throw new Error(`${blockId} has no genuine source frame for ${date}.`);
   // Verify the original source bytes against the immutable committed manifest.
-  const response = await fetch(`${PILOT_BASE}/${record.path}`, { headers: { Accept: "application/json" } });
+  const response = await fetch(`${PILOT_BASE}/${record.path}`, { headers: { Accept: "application/json" }, signal });
   if (!response.ok) throw new Error(`Pilot main-block asset unavailable: ${response.status} ${response.statusText}`);
   const bytes = await response.arrayBuffer();
   await assertPilotFrameSha256(bytes, record.sha256, blockId, date);
@@ -191,6 +193,8 @@ export async function fetchPilotMainBlock(
   ) throw new Error(`3DB-13 scientific source identity/shape mismatch for ${blockId} ${date}.`);
   nativeDepthAxis(payload);
   nativeVariableIntegration(payload);
+  inspectSourceBackedRenderFrame(payload);
+  if (signal?.aborted) throw new DOMException("Source request superseded", "AbortError");
   return payload;
 }
 
