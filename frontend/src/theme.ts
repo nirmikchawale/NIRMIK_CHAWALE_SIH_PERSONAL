@@ -16,7 +16,9 @@ export const GLASS_THEME_IDS = [
   "rose-quartz",
   "lavender-haze",
   "sandglass",
-  "cloud-prism"
+  "cloud-prism",
+  "system-light",
+  "system-dark"
 ] as const;
 
 export type GlassThemeId = (typeof GLASS_THEME_IDS)[number];
@@ -47,7 +49,9 @@ export const GLASS_THEMES: readonly GlassThemeDefinition[] = [
   { id:"rose-quartz", label:"Rose Quartz", shortLabel:"Quartz", scheme:"light", family:"warm", description:"Soft mineral-white glass with rose and muted berry highlights.", swatches:["#fff6f7","#f0dde4","#a8647c"] },
   { id:"lavender-haze", label:"Lavender Haze", shortLabel:"Lavender", scheme:"light", family:"aurora", description:"Pale lavender glass with cool violet-blue diffraction.", swatches:["#f7f5ff","#e5e0f4","#7568b3"] },
   { id:"sandglass", label:"Sandglass", shortLabel:"Sand", scheme:"light", family:"warm", description:"Warm ivory glass with soft sandstone and ocean-bronze accents.", swatches:["#fbf7ef","#eee3d1","#9a7044"] },
-  { id:"cloud-prism", label:"Cloud Prism", shortLabel:"Prism", scheme:"light", family:"neutral", description:"Neutral cloud glass with restrained cyan-violet prismatic edges.", swatches:["#f7f9fb","#e7edf1","#607894"] }
+  { id:"cloud-prism", label:"Cloud Prism", shortLabel:"Prism", scheme:"light", family:"neutral", description:"Neutral cloud glass with restrained cyan-violet prismatic edges.", swatches:["#f7f9fb","#e7edf1","#607894"] },
+  { id:"system-light", label:"Neutral Light", shortLabel:"Light", scheme:"light", family:"neutral", description:"Bright neutral porcelain glass with accessible ink and blue instrument controls.", swatches:["#f5f6f8","#ffffff","#0b5cab"] },
+  { id:"system-dark", label:"Neutral Dark", shortLabel:"Dark", scheme:"dark", family:"neutral", description:"Pure graphite-toned neutral glass with crisp blue instrument controls.", swatches:["#111418","#252a31","#8ebeff"] }
 ] as const;
 
 export const DEFAULT_GLASS_THEME: GlassThemeId = "arctic-mist";

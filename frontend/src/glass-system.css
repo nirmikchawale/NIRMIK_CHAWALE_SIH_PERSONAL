@@ -116,6 +116,31 @@
   --glass-shadow:0 20px 55px rgba(71,86,99,.13), inset 0 1px 0 rgba(255,255,255,.86);
 }
 
+
+/* M087: TWO NEW neutral glass atmospheres. Original 16 untouched. */
+:root[data-glass-theme="system-light"] {
+  --glass-canvas:#f5f6f8; --glass-canvas-deep:#ebeff3;
+  --glass-panel:rgba(255,255,255,.78); --glass-panel-strong:rgba(255,255,255,.94);
+  --glass-panel-soft:rgba(255,255,255,.64);
+  --glass-border:rgba(58,79,99,.23); --glass-border-strong:rgba(41,66,95,.46);
+  --glass-text:#17212b; --glass-muted:#53616c; --glass-accent:#0b5cab;
+  --glass-accent-2:#3772ad; --glass-accent-ink:#ffffff;
+  --glass-orb-1:rgba(128,165,208,.16); --glass-orb-2:rgba(140,160,180,.12);
+  --glass-orb-3:rgba(215,224,236,.10);
+  --glass-shadow:0 20px 56px rgba(39,52,65,.13), inset 0 1px 0 rgba(255,255,255,.95);
+}
+:root[data-glass-theme="system-dark"] {
+  --glass-canvas:#111418; --glass-canvas-deep:#0b0e12;
+  --glass-panel:rgba(37,42,49,.78); --glass-panel-strong:rgba(45,51,60,.94);
+  --glass-panel-soft:rgba(255,255,255,.075);
+  --glass-border:rgba(173,190,207,.26); --glass-border-strong:rgba(184,201,218,.48);
+  --glass-text:#f5f7fa; --glass-muted:#adb8c5; --glass-accent:#8ebeff;
+  --glass-accent-2:#a1d2ef; --glass-accent-ink:#111418;
+  --glass-orb-1:rgba(118,160,211,.14); --glass-orb-2:rgba(160,178,199,.12);
+  --glass-orb-3:rgba(88,114,150,.10);
+  --glass-shadow:0 20px 56px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.065);
+}
+
 /* ---------- application atmosphere ---------- */
 .ocean-workbench {
   --station-bg: var(--glass-canvas);
@@ -387,6 +412,9 @@
 [data-preview-theme="sandglass"] { --p1:#9a7044; --p2:#6e8c95; --pc:#faf6ee; }
 [data-preview-theme="cloud-prism"] { --p1:#607894; --p2:#7d72ad; --pc:#f5f8fa; }
 
+[data-preview-theme="system-light"] { --p1:#0b5cab; --p2:#9bacc0; --pc:#f5f6f8; }
+[data-preview-theme="system-dark"] { --p1:#8ebeff; --p2:#8696aa; --pc:#111418; }
+
 /* System/selection feedback follows the active atmosphere while preserving semantics. */
 .ocean-workbench .system-pill { border-color:color-mix(in srgb,var(--glass-accent) 42%,var(--glass-border)) !important; color:var(--glass-accent) !important; background:color-mix(in srgb,var(--glass-accent) 9%,var(--glass-panel)) !important; }
 .ocean-workbench .system-pill.degraded { border-color:rgba(235,178,78,.48) !important; color:#e3b65f !important; background:color-mix(in srgb,#a16b12 12%,var(--glass-panel)) !important; }
@@ -435,4 +463,19 @@
 @media (prefers-contrast: more) {
   :root { --glass-border:color-mix(in srgb,var(--glass-text) 42%,transparent); --glass-border-strong:color-mix(in srgb,var(--glass-text) 68%,transparent); }
   .ocean-workbench :is(.control-panel,.evidence-rail,.profile-panel,.analysis-split-panel,.scientific-colorbar-hud,.provenance-drawer,.presentation-guide) { background:color-mix(in srgb,var(--glass-panel-strong) 95%,var(--glass-canvas)) !important; }
+}
+
+/* M080–M086 scoped glass accessibility/scroll: never alter 3D palettes. */
+.theme-gallery-layer .theme-gallery { overscroll-behavior: contain; }
+.theme-gallery-layer .theme-gallery :where(button) { min-height: 44px; touch-action: manipulation; }
+.theme-gallery-layer .theme-option:focus-visible,
+.theme-gallery-layer .theme-gallery-close:focus-visible,
+.theme-picker-trigger:focus-visible {
+  outline: 3px solid var(--glass-accent);
+  outline-offset: 2px;
+}
+.theme-gallery-layer .theme-gallery-grid { overscroll-behavior: contain; }
+@media (prefers-reduced-motion: reduce) {
+  .theme-gallery-layer .theme-option, .theme-picker-trigger { transition: none !important; }
+  .theme-gallery-layer .theme-option:hover { transform: none; }
 }

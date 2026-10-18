@@ -35,7 +35,7 @@ const sizes=[
 ] as const;
 
 for(const size of sizes) {
- test("MPR-16 verified screenshots & science-safe 16-theme matrix: "+size.name,async({page},info)=>{
+ test("MPR-16 verified screenshots & science-safe 18-theme matrix: "+size.name,async({page},info)=>{
   test.setTimeout(15*60*1000);
   await page.setViewportSize(size);
   await page.emulateMedia({reducedMotion:"reduce"});
@@ -99,8 +99,8 @@ for(const size of sizes) {
       body:await page.screenshot({animations:"disabled",timeout:45000}),contentType:"image/png"
     });
   }
-  expect(records).toHaveLength(16);
-  expect(new Set(records.map(x=>x.theme)).size).toBe(16);
+  expect(records).toHaveLength(18);
+  expect(new Set(records.map(x=>x.theme)).size).toBe(18);
   await info.attach(size.name+"--theme-acceptance.json",{
     body:Buffer.from(JSON.stringify({viewport:size,records,scientificGradient,source:baselineSource},null,2)),
     contentType:"application/json"
