@@ -1372,6 +1372,8 @@ export default function App() {
                     ? VERIFIED_ARGO_FLOAT_ID
                     : ""
                 }
+                data-selected-argo-profile={activeMainBlockId === "BASE-GLORYS-001" ? activeSelectedProfile?.profile_id ?? "" : ""}
+                data-selected-argo-cycle={activeMainBlockId === "BASE-GLORYS-001" ? activeSelectedProfile?.cycle ?? "" : ""}
                 data-linked-time={linkedExpectation.time}
                 data-linked-variable={variable}
                 aria-label="Connected geographic and water-column visualization stage"
