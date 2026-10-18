@@ -116,7 +116,10 @@ export interface PilotBlockPayload {
   };
 }
 
-const PILOT_BASE = `${import.meta.env.BASE_URL}main-blocks`.replace(/\/$/, "");
+// Vite provides BASE_URL in the browser; importing pure source converters in
+// the Node/Playwright certification process has no Vite env. Keep the same
+// real asset URL in production while allowing source-native conversion tests.
+const PILOT_BASE = `${import.meta.env?.BASE_URL ?? "./"}main-blocks`.replace(/\/$/, "");
 
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url, { headers: { Accept: "application/json" } });
