@@ -332,9 +332,128 @@ def _fetch_ctd_profile(candidate: dict[str, str]) -> tuple[list[dict], str]:
     return records, url
 
 
+# Published I09N 2016 CF-netCDF oceanographic profile source, not demo data.
+# CCHDO cruise: https://cchdo.ucsd.edu/cruise/33RR20160321
+# File: https://cchdo.ucsd.edu/data/39637/33RR20160321_ctd.nc
+CCHDO_I09N_CTD_NETCDF = "https://cchdo.ucsd.edu/data/39637/33RR20160321_ctd.nc"
+
+
+def _fetch_official_cchdo_cf_netcdf() -> tuple[list[dict], dict]:
+    """Read genuine QC-accepted Indian Ocean CTD from CCHDO's cruise archive.
+
+    A narrow archival cruise is used only if PMEL ERDDAP search reports no
+    matching Indian Ocean rows. We retain actual observed coordinates, time,
+    pressure, QC and numeric values and a SHA-256 of the original downloaded
+    bytes, rather than inventing any CTD observation.
+    """
+    import hashlib
+    import numpy as np
+    from netCDF4 import Dataset, num2date
+
+    url = CCHDO_I09N_CTD_NETCDF
+    request = Request(url, headers={"User-Agent": USER_AGENT})
+    with urlopen(request, timeout=120) as response:
+        if response.status != 200:
+            raise RuntimeError(f"CCHDO cruise NetCDF HTTP {response.status}")
+        raw = response.read(20_000_001)
+    if not 100_000 < len(raw) <= 20_000_000:
+        raise RuntimeError("CCHDO official file missing, empty or unexpectedly large")
+    raw_sha256 = hashlib.sha256(raw).hexdigest()
+    records = []
+    cruise_id = "33RR20160321"
+    with Dataset("source-cchdo-ctd.nc", "r", memory=raw) as nc:
+        required = (
+            "time", "latitude", "longitude", "pressure", "ctd_temperature",
+            "ctd_temperature_qc", "ctd_salinity", "ctd_salinity_qc",
+        )
+        if not all(key in nc.variables for key in required):
+            raise RuntimeError("Official CCHDO CF-netCDF lacks required native CTD fields")
+        latitudes = nc.variables["latitude"][:]
+        longitudes = nc.variables["longitude"][:]
+        times = nc.variables["time"]
+        count = len(latitudes)
+        for idx in range(count):
+            lat, lon = _finite(latitudes[idx]), _finite(longitudes[idx])
+            if lat is None or lon is None or not (-40 <= lat <= 30 and 40 <= lon <= 120):
+                continue
+            raw_timestamp = times[idx]
+            if np.ma.is_masked(raw_timestamp):
+                continue
+            dt = num2date(float(raw_timestamp), times.units, calendar=getattr(times, "calendar", "standard"))
+            timestamp = _iso(dt.strftime("%Y-%m-%dT%H:%M:%SZ"))
+            if timestamp is None or not timestamp.startswith("2016-"):
+                continue
+            def as_float(name):
+                return np.ma.filled(np.ma.asarray(nc.variables[name][idx]), np.nan).astype(float).ravel()
+            pressure = as_float("pressure")
+            temp = as_float("ctd_temperature")
+            temp_qc = as_float("ctd_temperature_qc")
+            sal = as_float("ctd_salinity")
+            sal_qc = as_float("ctd_salinity_qc")
+            if not (len(pressure) == len(temp) == len(temp_qc) == len(sal) == len(sal_qc)):
+                raise RuntimeError("Provider's CTD profile dimensions do not align")
+            station = str(idx)
+            if "station" in nc.variables:
+                station = str(nc.variables["station"][idx]).strip()
+            cast = "1"
+            if "cast" in nc.variables:
+                cast = str(nc.variables["cast"][idx]).strip()
+            platform = f"GO-SHIP {cruise_id} · station {station} cast {cast}"
+            accepted_temp = accepted_sal = 0
+            for p, t, tq, s, sq in zip(pressure, temp, temp_qc, sal, sal_qc):
+                if not np.isfinite(p) or p < 0:
+                    continue
+                depth = _pressure_to_depth_m(float(p), lat)
+                if np.isfinite(t) and tq == 2 and -5 <= t <= 45:
+                    records.append(_record(
+                        longitude=lon, latitude=lat, depth_m=depth, timestamp=timestamp,
+                        variable="temperature", value=float(t), units="degree_C",
+                        source="CCHDO GO-SHIP I09N 2016 CF-netCDF", platform_id=platform,
+                        sensor_type="ctd", dataset_id=CCHDO_DATASET, qc_flag="2",
+                    ))
+                    accepted_temp += 1
+                if np.isfinite(s) and sq == 2 and 0 < s < 50:
+                    records.append(_record(
+                        longitude=lon, latitude=lat, depth_m=depth, timestamp=timestamp,
+                        variable="salinity", value=float(s), units="1",
+                        source="CCHDO GO-SHIP I09N 2016 CF-netCDF", platform_id=platform,
+                        sensor_type="ctd", dataset_id=CCHDO_DATASET, qc_flag="2",
+                    ))
+                    accepted_sal += 1
+            if accepted_temp >= 8 and accepted_sal >= 8:
+                # Retain a single complete authentic source cast, as originally
+                # required by the deterministic observation breadth demo.
+                return records, {
+                    "id": "cchdo-go-ship-ctd",
+                    "provider": "CCHDO / GO-SHIP",
+                    "dataset_id": CCHDO_DATASET,
+                    "title": "GO-SHIP I09N 2016 shipboard CTD profile",
+                    "service": "Official CCHDO CF-netCDF publication",
+                    "query_url": url,
+                    "official_metadata": "https://cchdo.ucsd.edu/cruise/33RR20160321",
+                    "original_source_sha256": raw_sha256,
+                    "roles": ["ctd"], "profile_id": platform,
+                    "transformations": [
+                        "original provider temperature/salinity values unchanged",
+                        "WOCE CTD quality code 2 only",
+                        "pressure converted to depth metres via UNESCO 1983",
+                    ],
+                }
+            records.clear()
+    raise RuntimeError("No authentic QC-eligible Indian Ocean CTD cast in official CCHDO I09N NetCDF")
+
+
 def fetch_cchdo_ctd() -> tuple[list[dict], dict]:
     failures: list[str] = []
-    for candidate in _candidate_ctd_profiles():
+    try:
+        candidates = _candidate_ctd_profiles()
+    except RuntimeError as exc:
+        if "no eligible source-backed Indian Ocean CTD profiles" in str(exc):
+            # ERDDAP search is empty. Consult separately published CCHDO
+            # canonical NetCDF; never replace records with fabricated values.
+            return _fetch_official_cchdo_cf_netcdf()
+        raise
+    for candidate in candidates:
         profile_id = str(candidate.get("profile_id") or "").strip()
         if not profile_id:
             continue
