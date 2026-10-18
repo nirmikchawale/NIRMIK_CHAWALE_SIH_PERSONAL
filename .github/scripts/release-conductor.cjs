@@ -44,7 +44,7 @@ function isEnrolled(pr, config = CONFIG) {
   if (config.seededPRs.includes(pr.number)) return true;
   // Enrollment must be a standalone affirmative directive, not an
   // incidental quote in a checklist, explanatory paragraph or code snippet.
-  const marker = String(pr.body || "").split(/\\r?\\n/).some(line =>
+  const marker = String(pr.body || "").split(/\r?\n/).some(line =>
     line === config.enrollmentMarker
   );
   return config.acceptedPrefixes.some(prefix => pr.head.ref.startsWith(prefix))
