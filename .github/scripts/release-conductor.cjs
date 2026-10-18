@@ -42,8 +42,13 @@ function isEnrolled(pr, config = CONFIG) {
       (config.owner + "/" + config.repo).toLowerCase()) return false;
   if (pr.user?.login?.toLowerCase() !== config.owner.toLowerCase()) return false;
   if (config.seededPRs.includes(pr.number)) return true;
+  // Enrollment must be a standalone affirmative directive, not an
+  // incidental quote in a checklist, explanatory paragraph or code snippet.
+  const marker = String(pr.body || "").split(/\\r?\\n/).some(line =>
+    line === config.enrollmentMarker
+  );
   return config.acceptedPrefixes.some(prefix => pr.head.ref.startsWith(prefix))
-    && String(pr.body || "").includes(config.enrollmentMarker);
+    && marker;
 }
 
 function relevantRuns(runs, sha, event) {
@@ -81,7 +86,8 @@ function changedPathsNeedMPR(paths) {
     p.startsWith("frontend/e2e/") ||
     p === "frontend/index.html" ||
     p.startsWith("docs/RUI_MPR_") ||
-    p === ".github/workflows/mpr-release-certification.yml");
+    p === ".github/workflows/mpr-release-certification.yml" ||
+    p === "scripts/verify_mpr_release_scope.py");
 }
 
 function shouldBlockMerge(mainStatus, prNumber, config = CONFIG) {
