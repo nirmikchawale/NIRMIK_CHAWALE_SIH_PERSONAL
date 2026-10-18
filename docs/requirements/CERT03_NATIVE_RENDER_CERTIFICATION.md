@@ -9,7 +9,7 @@ The corrected workflow now builds the real frontend in **static-science mode** w
 
 ## Browser acceptance
 - CERT-03 two additional real browser tests load Explorer with the actual static data server.
-- IO-001 original native GLORYS pilot: both geographic and water-column DOMs must have matching block IDs, native 2004 date, true accepted evidence, and all 31 original depth selection levels. Only one genuine baseline source time is selectable.
+- IO-001 original native GLORYS pilot: both geographic and water-column DOMs must have matching block IDs, native 2004 date, true accepted evidence, and all 31 original depth selection levels. IO-001 has **two authentic native dates** (2004-03-15 and 2004-07-28); Playwright verifies exactly two time options and linked geographic/water-column state after switching to July, with no invented 2024 timestamp.
 - Planned IO-003: no water-column volume, and truthful source-withheld explanation.
 - Existing 3DB13 tests independently challenge altered HTTP source bytes and SHA-256 failures, plus real source-backed rendering.
 - M064–M079 unit browser specs separately preserve native mask, UTC time, horizontal-only current metadata, source sampling and no independent validation assertions.

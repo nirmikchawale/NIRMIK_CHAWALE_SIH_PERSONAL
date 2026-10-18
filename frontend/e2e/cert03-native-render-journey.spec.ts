@@ -39,8 +39,17 @@ test("CERT-03 real source-backed IO-001 links geographic and depth-resolved wate
   await expect(water.locator(".water-column-shell")).toBeVisible();
   await expect(water.locator(".water-column-shell")).toContainText("IO-001");
   await expect(water.getByLabel("Water Column native depth level")).toHaveCount(1);
-  await expect(water.getByLabel("Water Column native timestamp")).toBeDisabled();
+  // IO-001 has exactly TWO authentic source dates: March and July 2004.
+  // Do not collapse them to a single baseline date or invent 2024 playback.
+  const timePicker=water.getByLabel("Water Column native timestamp");
+  await expect(timePicker).toBeEnabled();
+  await expect(timePicker.locator("option")).toHaveCount(2);
   await expect(water.getByLabel("Water Column native depth level").locator("option")).toHaveCount(31);
+  await timePicker.selectOption("1");
+  await expect(water).toHaveAttribute("data-native-time",/^2004-07-28T/,{timeout:45_000});
+  await expect(geo).toHaveAttribute("data-linked-time",/^2004-07-28T/,{timeout:45_000});
+  await expect(geo).toHaveAttribute("data-linked-evidence","verified",{timeout:45_000});
+  await expect(water).toHaveAttribute("data-linked-evidence","verified",{timeout:45_000});
   await expect(page.getByTestId("mpr-15-inspector-access")).toBeVisible();
   await info.attach("cert03-original-native-pilot-evidence.json",{
     body:Buffer.from(JSON.stringify({
@@ -48,6 +57,8 @@ test("CERT-03 real source-backed IO-001 links geographic and depth-resolved wate
       geographicEvidence:await geo.getAttribute("data-linked-evidence"),
       waterEvidence:await water.getAttribute("data-linked-evidence"),
       nativeDepthOptions:await water.getByLabel("Water Column native depth level").locator("option").count(),
+      nativeDatesVerified:["2004-03-15","2004-07-28"],
+      finalNativeTime:await water.getAttribute("data-native-time"),
       independentArgoValidationClaimed:false,
       syntheticMeasurementsIntroduced:false
     },null,2)),contentType:"application/json"
