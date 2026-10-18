@@ -217,7 +217,7 @@ function scalarMetadata(payload: PilotBlockPayload, variable: "thetao" | "so") {
   };
 }
 
-export function pilotBlockVolume(payload: PilotBlockPayload, variable: "thetao" | "so"): VolumeResponse {
+export function pilotBlockVolume(payload: PilotBlockPayload, variable: "thetao" | "so", timeIndex = 0): VolumeResponse {
   const meta = scalarMetadata(payload, variable);
   const points: VolumeResponse["points"] = [];
   const { longitude, latitude } = payload.coordinates;
@@ -236,7 +236,7 @@ export function pilotBlockVolume(payload: PilotBlockPayload, variable: "thetao" 
     variable,
     label: meta.label,
     units: meta.source.units,
-    time_index: 0,
+    time_index: timeIndex,
     time: payload.time,
     points,
     minimum: meta.minimum,
@@ -249,7 +249,8 @@ export function pilotBlockVolume(payload: PilotBlockPayload, variable: "thetao" 
 export function pilotBlockField(
   payload: PilotBlockPayload,
   variable: "thetao" | "so",
-  depthIndex: number
+  depthIndex: number,
+  timeIndex = 0
 ): FieldResponse {
   const selectedDepth = resolveNativeDepthSelection(
     payload.block_id,
@@ -271,7 +272,7 @@ export function pilotBlockField(
     variable,
     label: meta.label,
     units: meta.source.units,
-    time_index: 0,
+    time_index: timeIndex,
     time: payload.time,
     depth_index: selectedDepth.depthIndex,
     depth_m: selectedDepth.depthM,
@@ -289,7 +290,7 @@ export function pilotBlockField(
   };
 }
 
-export function pilotBlockCurrentsVolume(payload: PilotBlockPayload): CurrentsVolumeResponse {
+export function pilotBlockCurrentsVolume(payload: PilotBlockPayload, timeIndex = 0): CurrentsVolumeResponse {
   assertMainBlockVariableSelection(nativeVariableIntegration(payload), "currents");
   const vectors: CurrentsVolumeResponse["vectors"] = [];
   const { longitude, latitude } = payload.coordinates;
@@ -311,7 +312,7 @@ export function pilotBlockCurrentsVolume(payload: PilotBlockPayload): CurrentsVo
   return {
     variable: "currents",
     units: payload.variables.uo.units,
-    time_index: 0,
+    time_index: timeIndex,
     time: payload.time,
     vectors,
     minimum: speeds.length ? Math.min(...speeds) : 0,
@@ -324,7 +325,7 @@ export function pilotBlockCurrentsVolume(payload: PilotBlockPayload): CurrentsVo
   };
 }
 
-export function pilotBlockCurrents(payload: PilotBlockPayload, depthIndex: number): CurrentsResponse {
+export function pilotBlockCurrents(payload: PilotBlockPayload, depthIndex: number, timeIndex = 0): CurrentsResponse {
   assertMainBlockVariableSelection(nativeVariableIntegration(payload), "currents");
   const selectedDepth = resolveNativeDepthSelection(
     payload.block_id,
@@ -349,7 +350,7 @@ export function pilotBlockCurrents(payload: PilotBlockPayload, depthIndex: numbe
   return {
     variable: "currents",
     units: payload.variables.uo.units,
-    time_index: 0,
+    time_index: timeIndex,
     time: payload.time,
     depth_index: selectedDepth.depthIndex,
     depth_m: selectedDepth.depthM,

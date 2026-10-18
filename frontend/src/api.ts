@@ -530,7 +530,7 @@ export const api = {
   },
   field: async (variable: "thetao" | "so", timeIndex: number, depthIndex: number): Promise<FieldResponse> => {
     const id = activePilotId();
-    if (id) return pilotBlockField(await pilotPayload(id, timeIndex), variable, depthIndex);
+    if (id) return pilotBlockField(await pilotPayload(id, timeIndex), variable, depthIndex, timeIndex);
     return getJson<FieldResponse>(
       `/api/field?variable=${variable}&time_index=${timeIndex}&depth_index=${depthIndex}&stride=1`,
       `/fields/${variable}/t${timeIndex}_d${depthIndex}.json`
@@ -538,7 +538,7 @@ export const api = {
   },
   volume: async (variable: "thetao" | "so", timeIndex: number): Promise<VolumeResponse> => {
     const id = activePilotId();
-    if (id) return pilotBlockVolume(await pilotPayload(id, timeIndex), variable);
+    if (id) return pilotBlockVolume(await pilotPayload(id, timeIndex), variable, timeIndex);
     return getJson<VolumeResponse>(
       `/api/volume?variable=${variable}&time_index=${timeIndex}&horizontal_stride=2&depth_stride=1`,
       `/volumes/${variable}/t${timeIndex}.json`
@@ -562,7 +562,7 @@ export const api = {
   },
   currents: async (timeIndex: number, depthIndex: number): Promise<CurrentsResponse> => {
     const id = activePilotId();
-    if (id) return pilotBlockCurrents(await pilotPayload(id, timeIndex), depthIndex);
+    if (id) return pilotBlockCurrents(await pilotPayload(id, timeIndex), depthIndex, timeIndex);
     return getJson<CurrentsResponse>(
       `/api/currents?time_index=${timeIndex}&depth_index=${depthIndex}&stride=2`,
       `/currents/t${timeIndex}_d${depthIndex}.json`
@@ -570,7 +570,7 @@ export const api = {
   },
   currentsVolume: async (timeIndex: number): Promise<CurrentsVolumeResponse> => {
     const id = activePilotId();
-    if (id) return pilotBlockCurrentsVolume(await pilotPayload(id, timeIndex));
+    if (id) return pilotBlockCurrentsVolume(await pilotPayload(id, timeIndex), timeIndex);
     return getJson<CurrentsVolumeResponse>(
       `/api/currents-volume?time_index=${timeIndex}&horizontal_stride=4&depth_stride=1`,
       `/currents-volume/t${timeIndex}.json`
