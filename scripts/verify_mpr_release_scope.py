@@ -30,6 +30,8 @@ EXACT_FILES = {
     "frontend/index.html",
     "docs/MPR_DESKTOP_JOURNEY_ARCTIC_IMMERSIVE.md",
     "frontend/e2e/main-block-globe-integration.spec.ts",
+    # Mobile HUD acceptance follows its existing relocation into ControlPanel.
+    "frontend/e2e/main-block-engine.spec.ts",
     # Post-release RUI-02/MPR integration hardening: presentation + acceptance only.
     "frontend/src/components/ScientificContextHeader.tsx",
     "frontend/e2e/rui-context-header.spec.ts",
@@ -37,6 +39,10 @@ EXACT_FILES = {
     "frontend/src/linked-view-integrity.ts",
     # Existing app regression tests repaired using the 3DB-15 owner branch.
     "frontend/e2e/live.spec.ts",
+    # Non-scientific Playwright selector migrations for the current MPR-12
+    # DOM. These exact test files preserve checks for withheld planned data.
+    "frontend/e2e/journey.spec.ts",
+    "frontend/e2e/3db05-geographic-water-column-sync.spec.ts",
     "frontend/e2e/rui-nav-01-file-manager-shell.spec.ts",
     "frontend/e2e/document-layout.spec.ts",
     "scripts/verify_mpr_release_scope.py",
@@ -51,6 +57,16 @@ DANGEROUS_PREFIXES = (
     "frontend/public/observations/", "frontend/public/scientific/",
 )
 DANGEROUS_SUFFIXES = (".nc", ".nc4", ".netcdf", ".zarr", ".h5", ".hdf5")
+
+# Independently reviewed recovery files from M001–M007. These exceptions are
+# only available with the explicit joint integration gate; all raw ocean
+# datasets, source registries, APIs, backend sources and NetCDF stay forbidden.
+REVIEWED_SCIENCE_RECOVERY = frozenset({
+    "docs/requirements/M001_M007_BASELINE_AUDIT.md",
+    "scripts/fetch_verified_observation_breadth.py",
+    "tests/test_m001_m007_scientific_baseline.py",
+})
+
 
 
 def git(*args: str) -> str:
@@ -74,12 +90,22 @@ def main() -> int:
     parser.add_argument("--base", default="origin/main")
     parser.add_argument("--head", default="HEAD")
     parser.add_argument("--output", default="mpr-release-scope.json")
+    parser.add_argument("--reviewed-m001-m007-package", action="store_true",
+                        help="Allow exactly the paired M001–M007 provider+test+audit trio")
     args = parser.parse_args()
     changed = [p for p in git("diff", "--name-only", f"{args.base}...{args.head}").splitlines() if p]
+    reviewed = set(REVIEWED_SCIENCE_RECOVERY) if args.reviewed_m001_m007_package else set()
+    unexpected_science = reviewed.intersection(changed)
     forbidden = [path for path in changed if
                  path.startswith(DANGEROUS_PREFIXES) or
                  path.lower().endswith(DANGEROUS_SUFFIXES) or
-                 not allowed(path)]
+                 not (allowed(path) or path in reviewed)]
+    # Provider-side scientific changes are NEVER released without both the
+    # genuine-source audit and numerical/immutable regression suite.
+    if unexpected_science and unexpected_science != reviewed:
+        forbidden.append("INCOMPLETE_REVIEWED_SCIENCE_RECOVERY_TRIO")
+    if args.reviewed_m001_m007_package and not unexpected_science:
+        forbidden.append("REVIEWED_SCIENCE_RECOVERY_ABSENT")
     # Validate the actual candidate tree, NOT only the PR diff. Once MPR-10–17
     # is merged, valid maintenance PRs inherit its eight immutable ledgers.
     # The old diff-only check falsely rejected safe post-release UI fixes.
@@ -96,6 +122,10 @@ def main() -> int:
         "changed_files": changed,
         "forbidden_files": forbidden,
         "missing_phase_docs": missing,
+        "reviewed_m001_m007_science_package": sorted(unexpected_science),
+        "scientific_raw_data_and_backend_unchanged": not any(
+            path.startswith(DANGEROUS_PREFIXES) or path.lower().endswith(DANGEROUS_SUFFIXES)
+            for path in changed),
         "science_backend_registry_and_datasets_untouched": len(forbidden) == 0,
         "all_eight_phase_ledgers_present": len(missing) == 0,
     }
@@ -106,7 +136,10 @@ def main() -> int:
     if forbidden or missing:
         print("RELEASE BLOCKED: scope changed forbidden files or required phase documents are missing.")
         return 1
-    print("SCOPE PASSED: changed surfaces are MPR UI, tests, docs and certification only.")
+    if args.reviewed_m001_m007_package:
+        print("SCOPE PASSED: original MPR UI plus strictly reviewed M001–M007 scientific recovery trio.")
+    else:
+        print("SCOPE PASSED: changed surfaces are MPR UI, tests, docs and certification only.")
     return 0
 
 

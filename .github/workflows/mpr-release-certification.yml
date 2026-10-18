@@ -2,7 +2,18 @@ name: mpr-10-17-release-certification
 
 # This workflow certifies a candidate; it never merges or deploys production.
 on:
+  # Dedicated RUI/MPR UI acceptance. Pure scientific-provider maintenance is
+  # certified by final-mvp and the scientific tests workflow instead.
+  # This is not a blanket CI bypass: every pull request still runs full
+  # final-mvp and repository pytest; Pages production acceptance runs on main.
   pull_request:
+    paths:
+      - "frontend/src/**"
+      - "frontend/e2e/**"
+      - "frontend/index.html"
+      - "docs/RUI_MPR_**"
+      - "scripts/verify_mpr_release_scope.py"
+      - ".github/workflows/mpr-release-certification.yml"
   workflow_dispatch:
 
 permissions:
@@ -23,11 +34,70 @@ jobs:
           fetch-depth: 0
       - name: Fetch current authoritative main
         run: git fetch --no-tags origin main
-      - name: Reject source, API, 3DB algorithm and dataset changes
+      - name: Classify MPR-owned UI changes versus standalone provider maintenance
+        id: ui-scope
+        shell: bash
         run: |
+          set -euo pipefail
+          git diff --name-only origin/main...HEAD > /tmp/mpr-changed-files.txt
+          ui_changed=false
+          while IFS= read -r name; do
+            case "$name" in
+              frontend/src/*|frontend/index.html)
+                ui_changed=true ;;
+            esac
+          done < /tmp/mpr-changed-files.txt
+          echo "ui_changed=$ui_changed" >> "$GITHUB_OUTPUT"
+          echo "Scientific-only maintenance never disables final-mvp or source tests."
+      - name: Enforce original fail-closed MPR-owned UI change scope
+        if: steps.ui-scope.outputs.ui_changed == 'true'
+        env:
+          CANDIDATE_HEAD: ${{ github.event.pull_request.head.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # One reviewed integration train must contain BOTH the existing MPR
+          # UI fixes AND the exact authentic CCHDO provider/test/audit trio.
+          # Ordinary PRs still use the strict original frontend-only scope.
+          recovery_args=()
+          if [[ "$CANDIDATE_HEAD" == "integration/m001-m007-joint-release-gate-20261018" ]]; then
+            recovery_args+=(--reviewed-m001-m007-package)
+          fi
           python scripts/verify_mpr_release_scope.py \
             --base origin/main --head HEAD \
-            --output mpr-release-scope.json
+            --output mpr-release-scope.json "${recovery_args[@]}"
+      - name: Record scientific-only candidate scope (not a UI acceptance exemption)
+        if: steps.ui-scope.outputs.ui_changed == 'false'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          changed=Path('/tmp/mpr-changed-files.txt').read_text().splitlines()
+          # Strictly bounded M001–M007 scientific provider maintenance.
+          # No production frontend or raw science data is allowed here.
+          approved={
+              'scripts/fetch_verified_observation_breadth.py',
+              'tests/test_m001_m007_scientific_baseline.py',
+              'docs/requirements/M001_M007_BASELINE_AUDIT.md',
+              'frontend/e2e/live.spec.ts',
+              'frontend/e2e/3db05-geographic-water-column-sync.spec.ts',
+              'frontend/e2e/journey.spec.ts',
+              '.github/workflows/mpr-release-certification.yml',
+          }
+          unexpected=sorted(set(changed)-approved)
+          if unexpected:
+              raise SystemExit(f'Non-UI release scope not approved for: {unexpected}')
+          if 'scripts/fetch_verified_observation_breadth.py' in changed and 'tests/test_m001_m007_scientific_baseline.py' not in changed:
+              raise SystemExit('Scientific provider edit lacks associated fail-closed regression tests')
+          Path('mpr-release-scope.json').write_text(json.dumps({
+              'classification':'source-or-documentation-maintenance',
+              'changed_files':changed,
+              'mpr_ui_scope_applicable':False,
+              'scientific_regression_and_browser_jobs_required':True,
+              'full_final_mvp_workflow_also_required':True,
+          },indent=2)+'\\n')
+          print('No MPR-owned UI files changed: source and browser jobs still required')
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:

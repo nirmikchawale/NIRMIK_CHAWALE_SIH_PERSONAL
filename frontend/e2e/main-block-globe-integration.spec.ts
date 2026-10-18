@@ -42,12 +42,13 @@ test("planned target enters the same Water Column 3D workflow without fabricated
   await hud.getByLabel("Active main block").selectOption("IO-047");
   await hud.getByRole("button", { name: "Open in Water Column 3D" }).click();
 
-  const planned = page.locator('.planned-main-block-shell[data-main-block-id="IO-047"]');
+  const planned = page.getByTestId("mpr-12-water-column-section");
   await expect(planned).toBeVisible();
-  await expect(planned).toHaveAttribute("data-materialization", "planned");
-  await expect(planned).toHaveAttribute("data-scientific-values", "0");
-  await expect(planned.getByText("PLANNED TARGET · NO MATERIALIZED VOLUME", { exact: true })).toBeVisible();
-  await expect(planned.getByText(/none copied from the baseline/i)).toBeVisible();
+  await expect(planned).toHaveAttribute("data-linked-block", "IO-047");
+  await expect(planned).toHaveAttribute("data-linked-evidence", "planned");
+  await expect(planned.locator(".mpr-water-column-unavailable")).toContainText("Planned block · water-column evidence withheld");
+  await expect(planned).toContainText("No copied, extrapolated or synthetic ocean values");
+  await expect(planned.locator("canvas.water-column-canvas")).toHaveCount(0);
 
   await planned.getByRole("button", { name: "Return to verified baseline volume" }).click();
   const verified = page.locator('.water-column-visualization-layer.active .water-column-shell[data-main-block-id="BASE-GLORYS-001"]');
