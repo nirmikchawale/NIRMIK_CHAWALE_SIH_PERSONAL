@@ -25,14 +25,14 @@ export function selectInitialVerifiedArgo(
   requestedProfileId: string | null,
   blockId: string
 ): InitialArgoSelection {
+  if (blockId !== CURRENT_VERIFIED_BASELINE.id) {
+    return { profileId: "", autoSelectedDemo: false };
+  }
   const requested = requestedProfileId
     ? profiles.find((profile) => profile.profile_id === requestedProfileId)
     : null;
   if (requested) {
     return { profileId: requested.profile_id, autoSelectedDemo: false };
-  }
-  if (blockId !== CURRENT_VERIFIED_BASELINE.id) {
-    return { profileId: "", autoSelectedDemo: false };
   }
   const verified = profiles.find((profile) =>
     profile.profile_id === VERIFIED_ARGO_DEMO_ID &&
