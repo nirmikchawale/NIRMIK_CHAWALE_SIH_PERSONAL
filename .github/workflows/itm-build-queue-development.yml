@@ -9,7 +9,9 @@ on:
       - 'frontend/src/components/OceanGlobe.tsx'
       - 'frontend/e2e/mpr-default-verified-argo-5907092.spec.ts'
       - 'scripts/itm_phase_queue.py'
+      - 'scripts/itm_production_evidence.py'
       - 'tests/test_itm_phase_queue.py'
+      - 'tests/test_itm_production_evidence.py'
       - 'docs/integration/ITM_05_15_BUILD_QUEUE.json'
       - '.github/workflows/itm-build-queue-development.yml'
   workflow_dispatch:
@@ -35,10 +37,11 @@ jobs:
           python-version: '3.11'
       - name: Validate fail-closed sequential phase graph
         run: python scripts/itm_phase_queue.py validate
-      - name: Run phase-gating security regression tests
+      - name: Run phase-gating and exact-main evidence regression tests
         run: |
           python -m pip install pytest
-          python -m pytest -q tests/test_itm_phase_queue.py
+          python -m compileall -q scripts/itm_phase_queue.py scripts/itm_production_evidence.py
+          python -m pytest -q tests/test_itm_phase_queue.py tests/test_itm_production_evidence.py
       - name: Generate unapplied phase queue plan
         run: python scripts/itm_phase_queue.py plan --output itm-build-ahead-plan.json
       - name: Publish preflight report without claiming certification
@@ -102,9 +105,41 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  itm-main-public-readout:
+    name: itm11-15-current-public-evidence-readonly
+    needs: itm-queue-contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Collect real exact-main production and live browser outcomes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/itm_production_evidence.py --report-only --output itm-public-evidence-report.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('itm-public-evidence-report.json').read_text())
+          print('Current main:', r['exact_main_sha'])
+          print('Actual four-shard published verification:', r['itm11_publication_certified'])
+          print('ITM-12 repeat/rollback:', r['itm12_repeat_certified'])
+          print('Stage B authorization:', r['itm14_stage_b'])
+          PY
+      - name: Archive production readout without authorizing anything
+        uses: actions/upload-artifact@v4
+        with:
+          name: itm-exact-main-public-readout-${{ github.sha }}
+          path: itm-public-evidence-report.json
+          if-no-files-found: error
+          retention-days: 30
+
   itm-handoff:
     name: itm08-15-build-artifacts-staged-no-release
-    needs: [itm-queue-contract, itm-argo-compile, itm-pr-collision-snapshot]
+    needs: [itm-queue-contract, itm-argo-compile, itm-pr-collision-snapshot, itm-main-public-readout]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
