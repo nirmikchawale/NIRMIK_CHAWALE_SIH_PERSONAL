@@ -19,6 +19,10 @@ test("Fresh Geographic View defaults to BASE-GLORYS-001 and genuine Argo 5907092
   );
   // Source health and a selected observation are separate contracts: never
   // assert a healthy badge merely because a real float was selected.
+  const hud = page.getByTestId("integrated-main-block-hud");
+  await expect(hud).toContainText("BASE-GLORYS-001 · Argo 5907092 C13", { timeout: 60000 });
+  await expect(hud).toContainText("31 native depths");
+  await expect(hud).toContainText("50 QC-matched levels");
   await expect(page.locator(".system-pill")).toContainText(/VERIFIED SNAPSHOT|DEGRADED MODE/);
 });
 
