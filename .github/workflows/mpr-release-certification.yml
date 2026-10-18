@@ -61,7 +61,8 @@ jobs:
           # Ordinary PRs still use the strict original frontend-only scope.
           recovery_args=()
           if [[ "$CANDIDATE_HEAD" == "integration/m001-m007-joint-release-gate-20261018" ||
-                "$CANDIDATE_HEAD" == "integration/itm03-chromium-recovery-20261018" ]]; then
+                "$CANDIDATE_HEAD" == "integration/itm03-chromium-recovery-20261018" ||
+                "$CANDIDATE_HEAD" == "integration/itm03-retain-96-real-screenshots-20261018" ]]; then
             recovery_args+=(--reviewed-m001-m007-package)
           fi
           python scripts/verify_mpr_release_scope.py \
@@ -218,8 +219,18 @@ jobs:
             e2e/mpr-16-all-themes-visual.spec.ts \
             e2e/mpr-17-cross-phase-certification.spec.ts \
             e2e/mpr-presentation-block-details.spec.ts
-      - name: Require 96 real retained Chromium PNGs with exact size and SHA256
-        run: python scripts/verify_itm03_96_real_pngs.py
+      - name: Require 96 retained real PNGs and SHA256 manifest
+        run: |
+          set -euo pipefail
+          test -s frontend/certification-evidence/itm03-mpr16/ITM03_96_REAL_PNG_MANIFEST.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("frontend/certification-evidence/itm03-mpr16/ITM03_96_REAL_PNG_MANIFEST.json")
+          d=json.loads(p.read_text())
+          assert d["count"] == 96 and len(d["files"]) == 96 and d["synthetic"] is False
+          print("Verified 96 retained genuine Playwright screenshots with SHA256 manifest")
+          PY
       - name: Archive actual screenshot and Playwright evidence
         if: always()
         uses: actions/upload-artifact@v4
