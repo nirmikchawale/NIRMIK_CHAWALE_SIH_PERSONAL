@@ -88,6 +88,7 @@ jobs:
           npx playwright test -c playwright.live.config.ts \
             e2e/mpr-16-all-themes-visual.spec.ts \
             e2e/cert03-native-render-journey.spec.ts \
+            e2e/cert03-native-timestep-index.spec.ts \
             e2e/m064-m071-native-render.spec.ts \
             e2e/m072-m079-native-time.spec.ts \
             e2e/m080-m087-neutral-glass.spec.ts \

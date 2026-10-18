@@ -90,13 +90,14 @@ for(const size of sizes) {
     // Cesium and WaterColumn3D repaint continuously. Element screenshots wait
     // for an impossible 'stable' renderer box on SwiftShader CI. Capture the
     // actual browser viewport after scrolling to each real renderer instead.
+    // Allow native Cesium/WebGL animation: blocking animations stalled CDP.
     await geo.scrollIntoViewIfNeeded();
     await info.attach(size.name+"--"+theme.id+"--geographic",{
-      body:await page.screenshot({animations:"disabled",timeout:45000}),contentType:"image/png"
+      body:await page.screenshot({animations:"allow",timeout:90000,caret:"hide"}),contentType:"image/png"
     });
     await water.scrollIntoViewIfNeeded();
     await info.attach(size.name+"--"+theme.id+"--water-column",{
-      body:await page.screenshot({animations:"disabled",timeout:45000}),contentType:"image/png"
+      body:await page.screenshot({animations:"allow",timeout:90000,caret:"hide"}),contentType:"image/png"
     });
   }
   expect(records).toHaveLength(18);

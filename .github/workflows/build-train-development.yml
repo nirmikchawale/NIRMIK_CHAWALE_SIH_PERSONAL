@@ -77,7 +77,7 @@ jobs:
             sleep 1
           done
           if [ "$ready" -ne 1 ]; then cat /tmp/m008-build-preview.log; exit 1; fi
-          npx playwright test -c playwright.live.config.ts e2e/m008-browser-recovery-regression.spec.ts e2e/cert03-native-render-journey.spec.ts e2e/m064-m071-native-render.spec.ts e2e/m072-m079-native-time.spec.ts e2e/m080-m087-neutral-glass.spec.ts e2e/m088-m095-hardening.spec.ts
+          npx playwright test -c playwright.live.config.ts e2e/m008-browser-recovery-regression.spec.ts e2e/cert03-native-render-journey.spec.ts e2e/cert03-native-timestep-index.spec.ts e2e/m064-m071-native-render.spec.ts e2e/m072-m079-native-time.spec.ts e2e/m080-m087-neutral-glass.spec.ts e2e/m088-m095-hardening.spec.ts
       - name: Retain genuine unmerged browser evidence
         if: always()
         uses: actions/upload-artifact@v4
