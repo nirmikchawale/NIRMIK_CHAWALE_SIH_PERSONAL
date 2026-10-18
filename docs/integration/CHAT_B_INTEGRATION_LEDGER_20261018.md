@@ -92,3 +92,19 @@ rollback_sha: NOT_APPLICABLE
 stage_a_branch_touched: NO
 blockers_and_next: Review conductor safety, verify exact-commit tests, preserve Stage A quarantine and full PR #208 browser gating
 ```
+
+
+## 7. Strict single-phase lock — authoritative user update (18 Oct 2026)
+
+**Authoritative operational rule:** [ITM Strict Phase-Lock Protocol](ITM_STRICT_PHASE_LOCK_PROTOCOL.md).
+This user instruction overrides any earlier practice of treating a created PR, passing subset of tests or pending CI queue as complete. **Do not begin ITM-04 while ITM-02/03 certification remains unresolved**. Pending CI, red public-browser shards, and mandatory human approval are real blocks; they cannot be explained away as mere implementation milestones.
+
+**Reconciled, newly verified facts:**
+- `main` remains `75880aa1714b68d92fbd2a652a10ed1d8a85c0d8`; the `main` Pages run `39128416408` **built and deployed** successfully but failed 3/4 real public-browser verification shards, so **no public acceptance certificate**.
+- ITM-02 / PR #209 at checkpoint `b9787985cc58595fa83c4f06906694c4a680a657`: exact-head release-controller unit/syntax **20/20 pass**, Python pass, React/Cesium pass. Source/API and static-hosted **FAIL** on genuine CCHDO 2018–2026 query HTTP 404 inherited from main. MPR UI-only strict scope **FAIL / not applicable for this conductor-only change**, not a waived mandatory UI gate. Draft, not merged or release certified.
+- ITM-03 / PR #210 began stacked on PR #208 `6e9c1c588e6016fdc362c91a87c8de9fc0cd29de` with authentic CCHDO recovery. Latest verified checkpoint when this rule was adopted: `9541eb3a91595ee9cfc62cb7770922925761971e`; recent exact-head MPR scope and Python checks green, scientific contract checks green, other science/static/React and real Chromium ongoing/queued. **Do not claim full certification before all finish green at a single SHA**.
+- **Collision:** #210 overlaps Stage A #204 in `.github/workflows/mpr-release-certification.yml` and `frontend/e2e/live.spec.ts`; neither Stage A's branch nor scientific design may be overwritten or released independently without collision review.
+- Audit outputs are distinguished as *implemented*, *safety-subsystem certified*, *full PR CI certified*, *merged with human approval*, *public deployed*, and *public Chromium certified*. All six are independent claims.
+- The new durable phase-lock protocol is committed only on a Chat B-owned **draft integration branch**. It is not in `main` until an authorized, test-green merge. In future chats, consult its PR/GitHub source even if still draft.
+
+**Next unfinished mandatory gate:** obtain and inspect #210 exact-head real MPR Chromium results; diagnose failures and commit fixes only on Chat B-owned isolated integration branch, rerun exact-head tests; separately resolve #209 inherited scientific check failures through the reviewed authentic science recovery dependency without modifying Stage A or bypassing production review.
