@@ -76,7 +76,7 @@ jobs:
           unset OCEANTWIN_LIVE_URL
           npm run e2e:live -- --list > /tmp/itm-argo-list.txt
           grep 'mpr-default-verified-argo-5907092.spec.ts' /tmp/itm-argo-list.txt
-          grep '4 tests' /tmp/itm-argo-list.txt || grep '4 test' /tmp/itm-argo-list.txt
+          test "$(grep -c 'mpr-default-verified-argo-5907092.spec.ts:' /tmp/itm-argo-list.txt)" -eq 4
       # Real Chromium execution is performed by existing MPR/final-mvp
       # candidate workflows; this discovery job does NOT certify rendered UI.
 
