@@ -53,8 +53,8 @@ test("future opt-in requires owner phase branch AND exact marker", () => {
   assert.equal(isEnrolled({...future,body:"OC-AUTO-RELEASE: approved"}),true);
   assert.equal(isEnrolled({...future,body:"Not approved: OC-AUTO-RELEASE: approved"}),false);
   assert.equal(isEnrolled({...future,body:"> OC-AUTO-RELEASE: approved"}),false);
-  assert.equal(isEnrolled({...future,body:"\\u0060OC-AUTO-RELEASE: approved\\u0060"}),false);
-  assert.equal(isEnrolled({...future,body:"Header\\nOC-AUTO-RELEASE: approved\\nFooter"}),true);
+  assert.equal(isEnrolled({...future,body:"\u0060OC-AUTO-RELEASE: approved\u0060"}),false);
+  assert.equal(isEnrolled({...future,body:"Header\nOC-AUTO-RELEASE: approved\nFooter"}),true);
   assert.equal(isEnrolled({...future,head:{...future.head,ref:"random/PH001"},body:"OC-AUTO-RELEASE: approved"}),false);
 });
 test("required checks must all exist and pass on the exact candidate SHA", () => {
