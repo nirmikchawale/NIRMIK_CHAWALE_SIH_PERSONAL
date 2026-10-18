@@ -16,7 +16,12 @@ import urllib.error
 from pathlib import Path
 from typing import Any
 
-from scripts.itm_phase_queue import InvalidQueue, SHA_PATTERN, _github_read
+# Support both `python -m scripts.itm_production_evidence` and the
+# standalone `python scripts/itm_production_evidence.py` CLI used by CI.
+try:
+    from scripts.itm_phase_queue import InvalidQueue, SHA_PATTERN, _github_read
+except ModuleNotFoundError:
+    from itm_phase_queue import InvalidQueue, SHA_PATTERN, _github_read
 
 PAGES_NAME = "deploy-oceantwin-pages"
 FINAL_NAME = "final-mvp"
