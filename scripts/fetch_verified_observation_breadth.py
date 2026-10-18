@@ -384,7 +384,7 @@ def _fetch_official_cchdo_cf_netcdf() -> tuple[list[dict], dict]:
             if timestamp is None or not timestamp.startswith("2016-"):
                 continue
             def as_float(name):
-                return np.ma.filled(np.ma.asarray(nc.variables[name][idx]), np.nan).astype(float).ravel()
+                return np.ma.filled(np.ma.asarray(nc.variables[name][idx], dtype=float), np.nan).ravel()
             pressure = as_float("pressure")
             temp = as_float("ctd_temperature")
             temp_qc = as_float("ctd_temperature_qc")
