@@ -30,7 +30,7 @@ const CONFIG = Object.freeze({
     "tests", "final-mvp", "deploy-oceantwin-pages"
   ]),
   productionDispatch: Object.freeze([
-    "final-mvp.yml", "deploy-pages.yml"
+    "tests.yml", "final-mvp.yml", "deploy-pages.yml"
   ])
 });
 
@@ -131,10 +131,11 @@ async function runController({ github, core, context }) {
   const allMainRuns = await listRuns(github, owner, repo, mainSHA);
   const names = relevantRuns(allMainRuns, mainSHA, null);
   const absent = CONFIG.requiredMainWorkflows
-    .filter(n => n !== "tests" && !names.has(n));
+    .filter(n => !names.has(n));
   if (absent.length && !dryRun) {
     for (const name of absent) {
-      const file = name === "final-mvp" ? "final-mvp.yml" : "deploy-pages.yml";
+      const file = name === "tests" ? "tests.yml" :
+        (name === "final-mvp" ? "final-mvp.yml" : "deploy-pages.yml");
       log("Restoring missing dispatch for " + name + " at main " + mainSHA);
       await github.rest.actions.createWorkflowDispatch({ owner, repo, workflow_id: file, ref: main });
     }
@@ -201,7 +202,7 @@ async function runController({ github, core, context }) {
     // workflow_dispatch events below are the supported way to run checks and
     // GitHub Pages on the merged exact-main tree.
     await dispatch(github, owner, repo, CONFIG.productionDispatch);
-    log("Dispatched final-mvp and Pages. Remaining queue locked until exact-main green.");
+    log("Dispatched tests, final-mvp and Pages. Remaining queue locked until exact-main green.");
     return;
   }
   log("No enrolled, test-green phase to advance.");
