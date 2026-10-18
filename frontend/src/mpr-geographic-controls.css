@@ -143,3 +143,25 @@
     pointer-events: auto !important;
   }
 }
+
+/* ITM-03: the mobile control sheet can be marked open while its dismiss
+ * header is hidden by an older presentation/desktop layout rule. Keep the
+ * real close action exposed inside the opened, responsive Explorer sheet.
+ * Never surface this action while the sheet is closed or in Presentation. */
+@media (max-width:760px) {
+  .ocean-workbench[data-page="explore"]:not([data-workspace-mode="presentation"]) .station-workspace > .control-panel[data-mobile-open="true"] > .mobile-sheet-header {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ocean-workbench[data-page="explore"]:not([data-workspace-mode="presentation"]) .station-workspace > .control-panel[data-mobile-open="true"] > .mobile-sheet-header button[aria-label="Close explorer controls"] {
+    display: inline-flex !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    min-height: 44px;
+    min-width: 44px;
+    flex: 0 0 auto;
+  }
+}
