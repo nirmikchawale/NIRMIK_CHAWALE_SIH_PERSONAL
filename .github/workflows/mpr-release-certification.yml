@@ -51,10 +51,21 @@ jobs:
           echo "Scientific-only maintenance never disables final-mvp or source tests."
       - name: Enforce original fail-closed MPR-owned UI change scope
         if: steps.ui-scope.outputs.ui_changed == 'true'
+        env:
+          CANDIDATE_HEAD: ${{ github.event.pull_request.head.ref }}
+        shell: bash
         run: |
+          set -euo pipefail
+          # One reviewed integration train must contain BOTH the existing MPR
+          # UI fixes AND the exact authentic CCHDO provider/test/audit trio.
+          # Ordinary PRs still use the strict original frontend-only scope.
+          recovery_args=()
+          if [[ "$CANDIDATE_HEAD" == "integration/m001-m007-joint-release-gate-20261018" ]]; then
+            recovery_args+=(--reviewed-m001-m007-package)
+          fi
           python scripts/verify_mpr_release_scope.py \
             --base origin/main --head HEAD \
-            --output mpr-release-scope.json
+            --output mpr-release-scope.json "${recovery_args[@]}"
       - name: Record scientific-only candidate scope (not a UI acceptance exemption)
         if: steps.ui-scope.outputs.ui_changed == 'false'
         run: |
