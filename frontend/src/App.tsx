@@ -45,7 +45,6 @@ import {
   subscribeActiveMainBlock
 } from "./main-block-runtime";
 import { deriveMainBlockObservationIntegration } from "./main-block-observations";
-import { selectInitialVerifiedArgo, VERIFIED_ARGO_FLOAT_ID } from "./verified-argo-demo";
 import { deriveMainBlockProvenanceEvidence } from "./main-block-provenance";
 import {
   fetchPilotMainBlockManifest,
@@ -89,6 +88,37 @@ type WorkspaceMode = "explorer" | "analysis" | "presentation";
 
 const THEME_STORAGE_KEY = "oceantwin-theme";
 const ARGO_COMPASS_LOGO_SRC = `data:image/png;base64,${argoLogo0}${argoLogo1}${argoLogo2}${argoLogo3a}${argoLogo3b}${argoLogo4a}${argoLogo4b}`;
+
+// The default observation is a QC-screened Argo CAST, never a GLORYS model
+// block. Keep this small UI default in the audited App shell; numerical source
+// selection and scientific-data contracts remain unchanged.
+const VERIFIED_ARGO_FLOAT_ID = "5907092";
+const VERIFIED_ARGO_DEMO_ID = "20240102_indian_ocean_prof:23";
+
+function selectInitialVerifiedArgo(
+  profiles: readonly ProfileSummary[],
+  requestedProfileId: string | null,
+  blockId: string
+): { profileId: string; autoSelectedDemo: boolean } {
+  // BASE-GLORYS-001 is the ONLY model source with these diagnostic matches.
+  // A geographic pilot must never borrow its observation for pseudo-validation.
+  if (blockId !== "BASE-GLORYS-001") {
+    return { profileId: "", autoSelectedDemo: false };
+  }
+  const requested = requestedProfileId
+    ? profiles.find((profile) => profile.profile_id === requestedProfileId)
+    : null;
+  if (requested) return { profileId: requested.profile_id, autoSelectedDemo: false };
+
+  const verified = profiles.find((profile) =>
+    profile.profile_id === VERIFIED_ARGO_DEMO_ID &&
+    profile.platform_id === VERIFIED_ARGO_FLOAT_ID &&
+    profile.cycle === 13 &&
+    profile.direction.toUpperCase() === "D" &&
+    profile.matched_level_count === 50
+  );
+  return { profileId: verified?.profile_id ?? "", autoSelectedDemo: Boolean(verified) };
+}
 
 function initialTheme(): ThemeMode {
   // The Appearance Lab's explicit 16-preset selection is authoritative.
