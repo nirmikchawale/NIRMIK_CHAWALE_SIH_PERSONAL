@@ -43,6 +43,11 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Typecheck and bundle real React/Cesium
         working-directory: frontend
+        # This is a static HTTP preview with genuine, locally exported source
+        # science. Without this flag the app incorrectly contacts /api/* and
+        # remains on the boot screen rather than loading the real Explorer.
+        env:
+          VITE_STATIC_SCIENCE: "true"
         run: |
           npm ci
           npm run typecheck
@@ -64,8 +69,25 @@ jobs:
             sleep 1
           done
           curl --fail http://127.0.0.1:4174/ >/dev/null
+          python3 - <<'PY'
+          import json
+          from urllib.request import urlopen
+          base = "http://127.0.0.1:4174"
+          with urlopen(base + "/science-static/health.json", timeout=20) as response:
+              health = json.load(response)
+          assert health["status"] == "ok"
+          assert not health["scientific_data_network_required"]
+          with urlopen(base + "/science-static/catalog.json", timeout=20) as response:
+              catalog = json.load(response)
+          assert catalog["capabilities"]["time_steps"] == 1
+          with urlopen(base + "/main-blocks/manifest.json", timeout=20) as response:
+              manifest = json.load(response)
+          assert manifest["integrity"]["pilot_block_count"] == 35
+          print("CERT-03 genuine static source boot preflight: verified")
+          PY
           npx playwright test -c playwright.live.config.ts \
             e2e/mpr-16-all-themes-visual.spec.ts \
+            e2e/cert03-native-render-journey.spec.ts \
             e2e/m064-m071-native-render.spec.ts \
             e2e/m072-m079-native-time.spec.ts \
             e2e/m080-m087-neutral-glass.spec.ts \
