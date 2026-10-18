@@ -138,7 +138,8 @@ def evaluate_queue(manifest: dict[str, Any], evidence: dict[str, Any] | None = N
             completed.add(pid)
         rows.append({"phase": pid, "title": phase["title"], "state": state,
                      "dependencies": phase["dependencies"], "blockers": reasons,
-                     "coding_can_proceed": pid >= "ITM-05" and pid <= "ITM-09"})
+                     "coding_can_proceed": pid >= "ITM-05",
+                     "production_action_locked": pid >= "ITM-10" and bool(reasons)})
     return rows
 
 
