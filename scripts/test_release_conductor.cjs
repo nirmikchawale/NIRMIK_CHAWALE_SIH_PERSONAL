@@ -3,7 +3,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const {
   CONFIG, isEnrolled, relevantRuns, evaluateRuns,
-  changedPathsNeedMPR, shouldBlockMerge
+  changedPathsNeedMPR, shouldBlockMerge, listRuns
 } = require("../.github/scripts/release-conductor.cjs");
 
 const makePR = (overrides = {}) => ({
@@ -86,4 +86,25 @@ test("emergency bypass is only pinned to the known recovery PR", () => {
   assert.deepEqual(CONFIG.recoveryPRs,[202]);
   assert.equal(CONFIG.seededPRs.includes(200),false);
   assert.deepEqual(CONFIG.productionDispatch,["tests.yml","final-mvp.yml","deploy-pages.yml"]);
+});
+
+test("GitHub Actions exact-SHA REST envelope is correctly read, never silently empty", async () => {
+  let requests = 0;
+  const client = {
+    rest: { actions: { listWorkflowRunsForRepo: async ({head_sha,page}) => {
+      requests += 1;
+      assert.equal(head_sha, "candidate");
+      assert.equal(page, 1);
+      return { data: { total_count: 3, workflow_runs: [
+        makeRun("tests"),
+        makeRun("final-mvp"),
+        makeRun("deploy-oceantwin-pages", "success", { head_sha: "another-commit" })
+      ] }};
+    }}}
+  };
+  const result = await listRuns(client, CONFIG.owner, CONFIG.repo, "candidate");
+  assert.equal(requests, 1);
+  assert.deepEqual(result.map(x => x.name), ["tests", "final-mvp"]);
+  assert.rejects(() => listRuns({rest:{actions:{listWorkflowRunsForRepo:async()=>({data:{total_count:1}})}}}, CONFIG.owner, CONFIG.repo, "candidate"),
+    /missing workflow_runs/);
 });
