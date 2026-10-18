@@ -107,11 +107,19 @@ def test_ctd_discovery_does_not_hide_provider_errors(monkeypatch):
         source._candidate_ctd_profiles()
 
 
-def test_frozen_theme_registry_remains_16_until_separately_released():
+def test_original_16_theme_ids_preserved_exactly_and_two_draft_neutrals_are_added():
+    """M001/M087: the legacy order/IDs are immutable; new presets are additive."""
     text = (ROOT / "frontend/src/theme.ts").read_text(encoding="utf-8")
     import re
     theme_block = text.split("GLASS_THEME_IDS = [", 1)[1].split("] as const;", 1)[0]
     ids = re.findall(r'"([a-z][a-z-]+)"', theme_block)
-    assert len(ids) == len(set(ids)) == 16
-    assert "arctic-mist" in ids
+    original_16 = [
+        "abyss-noir", "aurora-borealis", "midnight-indigo", "deep-sea-emerald",
+        "bioluminescent-cyan", "coral-dusk", "solar-amber", "graphite-clear",
+        "polar-frost", "arctic-mist", "pearl-lagoon", "glacier-mint",
+        "rose-quartz", "lavender-haze", "sandglass", "cloud-prism",
+    ]
+    assert ids[:16] == original_16, "The original 16 appearance IDs/order changed"
+    assert ids[16:] == ["system-light", "system-dark"], "Only two new neutral presets allowed"
+    assert len(ids) == len(set(ids)) == 18
     assert 'DEFAULT_GLASS_THEME: GlassThemeId = "arctic-mist"' in text

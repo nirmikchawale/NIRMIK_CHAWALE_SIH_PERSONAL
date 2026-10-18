@@ -88,10 +88,11 @@ def inspect_native_netcdf(path: Path) -> dict[str, Any]:
 
     Structural QC is not a provider-authenticity certificate by itself.
     """
+    # Fail closed on source absence before importing the optional NetCDF reader.
+    # The core scientific loader remains importable without a NetCDF dev extra.
+    raw_hash = raw_sha256(path)
     from netCDF4 import Dataset, num2date
     import numpy as np
-
-    raw_hash = raw_sha256(path)
     with Dataset(str(path), "r") as nc:
         expected_axes = ("time", "depth", "latitude", "longitude")
         absent = [name for name in expected_axes + MODEL_VARIABLES if name not in nc.variables]
