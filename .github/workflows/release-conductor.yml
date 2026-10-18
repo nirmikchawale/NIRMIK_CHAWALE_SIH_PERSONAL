@@ -37,7 +37,7 @@ jobs:
         uses: actions/github-script@v7
         env:
           # Set true to simulate all actions without merging.
-          OC_RELEASE_DRY_RUN: 'true'
+          OC_RELEASE_DRY_RUN: 'false'
         with:
           github-token: ${{ github.token }}
           script: |
