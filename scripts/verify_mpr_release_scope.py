@@ -30,6 +30,8 @@ EXACT_FILES = {
     "frontend/index.html",
     "docs/MPR_DESKTOP_JOURNEY_ARCTIC_IMMERSIVE.md",
     "frontend/e2e/main-block-globe-integration.spec.ts",
+    # Mobile HUD acceptance follows its existing relocation into ControlPanel.
+    "frontend/e2e/main-block-engine.spec.ts",
     # Post-release RUI-02/MPR integration hardening: presentation + acceptance only.
     "frontend/src/components/ScientificContextHeader.tsx",
     "frontend/e2e/rui-context-header.spec.ts",
