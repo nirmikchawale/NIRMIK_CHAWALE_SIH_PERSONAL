@@ -516,7 +516,13 @@ export default function App() {
     let cancelled = false;
     api.provenance()
       .then((payload) => {
-        if (!cancelled) setProvenance(payload);
+        if (!cancelled) {
+          setProvenance(payload);
+          // A recovered genuine response must clear an old transient warning.
+          setDegradedWarnings((current) => current.filter((warning) =>
+            warning !== "Provenance metadata unavailable"
+          ));
+        }
       })
       .catch(() => {
         if (!cancelled) {
@@ -560,6 +566,12 @@ export default function App() {
 
         if (healthResult.status === "rejected") {
           setDegradedWarnings((current) => current.includes("Health check unavailable") ? current : [...current, "Health check unavailable"]);
+        } else {
+          // Status reflects current endpoint availability, not a stale prior
+          // failure retained after a successful science-context refresh.
+          setDegradedWarnings((current) => current.filter((warning) =>
+            warning !== "Health check unavailable"
+          ));
         }
 
         if (profilesResult.status === "fulfilled") {
