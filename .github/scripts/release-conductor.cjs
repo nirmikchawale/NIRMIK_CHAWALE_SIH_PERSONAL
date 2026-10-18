@@ -188,10 +188,19 @@ async function runController({ github, core, context }) {
     const required = [...CONFIG.requiredPRWorkflows];
     if (changedPathsNeedMPR(paths)) required.push("mpr-10-17-release-certification");
 
+    // The MPR workflow runs on every PR, but deliberately rejects non-MPR
+    // changes (release-controller/security/docs PRs). Its UI-only gate is
+    // mandatory exactly when UI, E2E or MPR workflow files have changed;
+    // an unrelated PR must not become unreleaseable simply because the
+    // universal MPR workflow correctly rejected its out-of-scope files.
+    // Preserve all other triggered scientific/3DB optional failures as
+    // hard blockers. Never waive an applicable MPR gate.
+    const conditional = CONFIG.optionalPRWorkflows.filter(x =>
+      x !== "mpr-10-17-release-certification" && !required.includes(x)
+    );
     const checks = await getStatus(
       github, owner, repo, pr.head.sha, "pull_request",
-      required,
-      CONFIG.optionalPRWorkflows.filter(x => !required.includes(x))
+      required, conditional
     );
     if (!checks.ok) {
       log("PR #" + pr.number + " BLOCKED: " + checks.problems.join("; "));
