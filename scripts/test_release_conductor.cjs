@@ -117,5 +117,5 @@ test("GitHub Actions exact-SHA REST envelope is correctly read, never silently e
 test("production conductor workflow_run events originate only from main", () => {
   const workflow = readFileSync(
     join(__dirname, "../.github/workflows/release-conductor.yml"), "utf8");
-  assert.match(workflow, /workflow_run:[\\s\\S]*?types: \\[completed\\][\\s\\S]*?branches: \\[main\\]/);
+  assert.match(workflow, /workflow_run:[\s\S]*?types: \[completed\][\s\S]*?branches: \[main\]/);
 });
