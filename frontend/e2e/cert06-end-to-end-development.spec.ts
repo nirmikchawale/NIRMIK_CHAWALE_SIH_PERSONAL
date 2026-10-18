@@ -63,7 +63,13 @@ test("CERT-06 native geography -> original two-date 3D -> scalar/currents -> ins
   await expect(inspectors).toBeVisible();
   await inspectors.getByRole("button",{name:"Open scientific provenance drawer"}).click();
   await expect(inspectors.getByRole("button",{name:"Open scientific provenance drawer"})).toHaveAttribute("aria-expanded","true");
-  await inspectors.getByRole("button",{name:"Close scientific inspectors"}).click();
+  // The open provenance overlay intentionally owns the pointer surface.
+  // Close via its *visible native control*, not the obscured generic
+  // background inspector button (real Chromium catches interception).
+  const provenanceDrawer=page.locator(".provenance-drawer");
+  await expect(provenanceDrawer).toBeVisible();
+  await provenanceDrawer.getByRole("button",{name:"Close provenance drawer"}).click();
+  await expect(provenanceDrawer).toHaveCount(0);
   await expect(inspectors.getByRole("button",{name:"Open scientific provenance drawer"})).toHaveAttribute("aria-expanded","false");
   const evidence={schema:"oceancanvas-cert06-one-browser-native-integration-v1",block:"IO-001",
    nativeDates:["2004-03-15","2004-07-28"],nativeDepthLevels:31,

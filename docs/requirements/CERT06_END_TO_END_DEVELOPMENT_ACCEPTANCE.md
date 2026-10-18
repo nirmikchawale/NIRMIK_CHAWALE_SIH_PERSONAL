@@ -15,5 +15,10 @@ Owned Stage A PR #204 only (Draft). No merging, GitHub Pages publication, PR #20
 9. Separately require Stage A M095 Chromium 108 verified images run on the same HEAD before issuing final development CERT-06 completion certificate, but do not fabricate images or replace old successful artifacts with targets.
 10. Real public GitHub Pages/CI on production `main` belongs to independent Integration Testing & Merge and is not represented as passed by CERT-06 development results. Upstream INCOIS/CCHDO availability remains a truthful external source gate.
 
+## Exact-head CI failure triage (not waived)
+At exact commit aa58873adcd6b55b18486e8d459edc34eacb9586, GitHub Actions CERT-06 run 39150208349 passed full original-source FastAPI, OGC and Streamlit job; combined Chromium completed **15 of 16** tests (retry of one failure). The sole failure was not a science or API mismatch: its final `Close scientific inspectors` background-button click was intercepted by the opened `.provenance-drawer` overlay, as documented in actual Playwright locator call logs.
+
+The actual provenance overlay includes a visible, accessible button `Close provenance drawer` in `frontend/src/components/ProvenanceDrawer.tsx`. Correct the test to dismiss through that real user-facing button, assert that the drawer is removed, and confirm inspector `aria-expanded=false`. This does not force-click, bypass pointer interception, mock DOM state or relax scientific assertions. The obscured generic background button remains a UI ergonomics issue to address in the independently owned integration UI branch if needed; do not modify production CSS in this Stage A certification chat.
+
 ## Certification state
 Created as implementation and gate definitions only. **Not certified until actual exact-head GitHub Actions succeed.**
