@@ -27,8 +27,10 @@ const makeRun = (name, conclusion = "success", more = {}) => ({
   created_at: "2026-10-18T11:20:00Z", ...more
 });
 
-test("explicitly enrolled science recovery #202 is eligible", () => {
-  assert.equal(isEnrolled(makePR()), true);
+test("historical recovery #202 is never implicitly pre-approved", () => {
+  assert.equal(isEnrolled(makePR()), false);
+  assert.equal(isEnrolled(makePR({body: "OC-AUTO-RELEASE: approved"})), false);
+  assert.equal(isEnrolled(makePR({number:204, head:{...makePR().head, ref:"build/m008-m095-science-ui-train"}, body:"OC-AUTO-RELEASE: approved"})), false);
 });
 test("old unrelated PRs are never merged on age or green CI alone", () => {
   for (const number of [42,58,69,77,83,94,98,103,105,107,108,140,159,200]) {
@@ -77,14 +79,15 @@ test("MPR is mandatory for scientific UX renderer/test modifications", () => {
   assert.equal(changedPathsNeedMPR([".github/workflows/mpr-release-certification.yml"]),true);
   assert.equal(changedPathsNeedMPR(["docs/requirements/RELEASE_CONDUCTOR.md"]),false);
 });
-test("red public-main status blocks future normal phases", () => {
+test("red exact-main status blocks all PRs including historic recovery", () => {
   assert.equal(shouldBlockMerge({ok:false},501),true);
   assert.equal(shouldBlockMerge({ok:true},501),false);
-  assert.equal(shouldBlockMerge({ok:false},202),false);
+  assert.equal(shouldBlockMerge({ok:false},202),true);
+  assert.equal(shouldBlockMerge({ok:false},204),true);
 });
-test("emergency bypass is only pinned to the known recovery PR", () => {
-  assert.deepEqual(CONFIG.recoveryPRs,[202]);
-  assert.equal(CONFIG.seededPRs.includes(200),false);
+test("no emergency bypass or implicit seed survives Stage A quarantine", () => {
+  assert.deepEqual(CONFIG.recoveryPRs,[]);
+  assert.deepEqual(CONFIG.seededPRs,[]);
   assert.deepEqual(CONFIG.productionDispatch,["tests.yml","final-mvp.yml","deploy-pages.yml"]);
 });
 
