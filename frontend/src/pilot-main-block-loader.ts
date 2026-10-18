@@ -7,6 +7,7 @@ import {
 import { resolveMainBlock } from "./main-block-runtime";
 import { assertPilotFrameSha256 } from "./main-block-frame-integrity";
 import { inspectSourceBackedRenderFrame } from "./m064-scientific-render-pipeline";
+import { assertSourceNativeFrameTime } from "./m072-native-time-physics";
 
 export type PilotOceanRelevance = "ocean" | "coastal" | "land";
 
@@ -194,6 +195,7 @@ export async function fetchPilotMainBlock(
   nativeDepthAxis(payload);
   nativeVariableIntegration(payload);
   inspectSourceBackedRenderFrame(payload);
+  assertSourceNativeFrameTime(block.available_dates, record.date, payload.time);
   if (signal?.aborted) throw new DOMException("Source request superseded", "AbortError");
   return payload;
 }
