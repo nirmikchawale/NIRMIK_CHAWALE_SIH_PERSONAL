@@ -27,11 +27,11 @@ All heads, draft state and file sets were read from live GitHub. A divergent his
 | #202 | Authentic CTD discovery, source hashes, Argo tests | `9345be4` | ahead 17; 7 files | **DEPENDENCY / HOLD**: cumulative inside #204; public release ancestry and approvals unresolved; draft |
 | #200 | Default verified Argo Cycle 13 selection | `3d4ad4c` | ahead 13 / behind 7; 3 files | **COLLISION**: `App.tsx` and `OceanGlobe.tsx` shared with #205/#208. Reconcile sequentially, do not merge together |
 | #159 | Comparison pilot empty state, CSS and E2E | `9e8ad3a` | ahead 2 / behind 308; 5 files | **REQUIRES REBASE AND SEMANTIC AUDIT**: ComparisonPage modern dependencies |
-| #140 | File-manager shell visual-readiness document | `0cfd6a8` | ahead 1 / behind 459; 1 file | **INDEPENDENT DOC CANDIDATE, REQUIRES REVIEW/APPROVAL**: target doc absent on main; do not equate doc import with visual certification |
+| #140 | File-manager shell visual-readiness document | `0cfd6a8` | ahead 1 / behind 459; 1 file | **STALE HISTORIC READINESS — DO NOT IMPORT UNCHANGED**: original text asserts NAV-01 did not exist, while main already documents NAV-01 implementation; reconcile its outdated dependency claim |
 | #108 | Live T–Z locator test | `ac8d34a` | ahead 1 / behind 788; 1 file | **HISTORIC TEST, NEEDS DIFF RECONCILIATION** |
 | #107 | UX quick fixes with backend + React/UI | `9c55834` | ahead 2 / behind 788; 21 files | **BLOCKED**: highly overlapping old runtime/API; no bulk rebase |
 | #105 | T–Z analysis UI and tests | `b135d08` | ahead 8 / behind 789; 6 files | **REQUIRES REBASE/FEATURE AUDIT** |
-| #103 | Anchored Argo 3D billboard | `d77c703` | ahead 4 / behind 790; 4 files | **REQUIRES REBASE/ARG0 COLLISION REVIEW**: shared globe/App |
+| #103 | Anchored Argo 3D billboard | `d77c703` | ahead 4 / behind 790; 4 files | **REQUIRES REBASE/ARGO COLLISION REVIEW**: shared globe/App |
 | #98 | Mobile journey acceptance | `d78596b` | ahead 3 / behind 823; 2 files | **HISTORIC TEST/CSS, NEEDS RECONCILIATION** |
 | #94 | Persistent colorbar | `b8d5069` | ahead 7 / behind 847; 5 files | **REQUIRES REBASE/UI OWNERSHIP REVIEW** |
 | #83 | Split feature/judge E2E | `3a34d51` | ahead 1 / behind 861; 1 file | **HISTORIC TEST, NEEDS DIFF RECONCILIATION** |
@@ -71,7 +71,7 @@ The current main release conductor has `seededPRs:[202]` and `recoveryPRs:[202]`
 1. Review independent conductor hardening PR after its unit/CI checks. Do not merge while draft, including this safety PR.
 2. Await exact-head #208 live MPR and four-shard final-MVP Chromium; preserve genuine failure evidence. Even all green would NOT replace the user's separate Stage B approval if source recovery changes overlap #204's ancestry.
 3. Complete PR #205 mobile/desktop regression and PR #200 Argo collision audit on isolated composite preview; do not rewrite Chat A branch or invalidate original science.
-4. Rebase/selectively forward-port truly independent legacy PR functionality after current UI owner review. #140 document may be a small independent candidate after confirming relevance.
+4. Rebase/selectively forward-port truly independent legacy PR functionality after current UI owner review. #140 readiness text claims NAV-01 absent, contradicting current main\u2019s NAV-01 implementation document. Do not carry it over unedited; rewrite or retire after runtime verification.
 5. Before any authorized merge re-fetch main, source SHA and draft/permissions; after merge verify Pages artifact SHA and fresh public HTTPS Chromium (not merely HTTP 200), record rollback SHA.
 
 ```text
@@ -80,7 +80,7 @@ checked_utc: 2026-10-18T15:10:24.981Z
 main_before_sha: 75880aa1714b68d92fbd2a652a10ed1d8a85c0d8
 main_after_sha: 75880aa1714b68d92fbd2a652a10ed1d8a85c0d8
 integration_branch: integration/release-conductor-default-deny-20261018
-pr_head_sha: pending final commit
+pr_head_sha: SEE PR #209 LIVE HEAD (re-fetch before every certification)
 overlap_with_stage_a_pr204: .github/scripts/release-conductor.cjs and scripts/test_release_conductor.cjs are not changed in PR #204; main coupling still exists
 scientific_sha_qc_verified: NOT_RUN_ON_THIS_SECURITY_BRANCH
 required_ci_exact_sha: NOT_RUN_PENDING_PR
