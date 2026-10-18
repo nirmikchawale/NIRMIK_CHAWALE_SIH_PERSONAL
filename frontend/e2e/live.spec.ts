@@ -519,7 +519,9 @@ test("live Ocean Canvas explorer and evidence flow works", async ({ page }) => {
   if (!(await viewSettings.getAttribute("open"))) {
     await viewSettingsSummary.click();
   }
-  const opacitySlider = page.getByLabel("Point opacity");
+  // The inspector and Water Column dock expose distinct legitimate opacity sliders.
+  // Target the visible advanced control actually opened above; do not match both.
+  const opacitySlider = viewSettings.getByRole("slider", { name: /^Point opacity / });
   await expect(opacitySlider).toBeVisible();
   await opacitySlider.focus();
   await opacitySlider.press("End");
