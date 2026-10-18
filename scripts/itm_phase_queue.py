@@ -192,7 +192,8 @@ def live_snapshot(token: str) -> dict[str, Any]:
         **{"ITM-02": pr_refs["209"]["head_sha"]},
         **{f"ITM-{i:02d}": pr_refs["210"]["head_sha"] for i in (3, 4)},
         **{f"ITM-{i:02d}": pr_refs["211"]["head_sha"] for i in range(5, 10)},
-        **{f"ITM-{i:02d}": main_head for i in range(10, 16)},
+        **{f"ITM-{i:02d}": main_head for i in (10, 11, 12, 14, 15)},
+        "ITM-13": pr_refs["204"]["head_sha"],  # immutable Stage A owner, never production main
     }
     return {
         "provenance": "live-read-only-github-api",
