@@ -74,7 +74,11 @@ for (const viewport of [
     await expect(page.getByTestId("phase35-block-launcher")).toBeHidden();
     const globe = page.locator(".globe-shell[data-journey-phase]");
     await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 30_000 });
-    const hud = page.locator(".main-block-globe-hud");
+    const control = page.locator(".station-workspace > .control-panel");
+    await expect(control).toHaveAttribute("data-mobile-open", "false");
+    await page.locator(".mobile-explore-tray button").first().click();
+    await expect(control).toHaveAttribute("data-mobile-open", "true");
+    const hud = control.getByTestId("integrated-main-block-hud");
     await expect(hud).toBeVisible();
     await hud.scrollIntoViewIfNeeded();
     const box = await hud.boundingBox();
