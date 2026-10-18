@@ -31,6 +31,21 @@ CCHDO_INFO = f"https://data.pmel.noaa.gov/generic/erddap/info/{CCHDO_DATASET}/in
 
 
 def _request_text(url: str, attempts: int = 5, timeout: int = 60) -> str:
+    """M012 bounded genuine provider read; retry only transport/429/5xx.
+
+    Never cache responses or reinterpret ERDDAP 404/no-results as measurements.
+    The underlying source row/QC filters remain authoritative.
+    """
+    from urllib.parse import urlsplit
+    if not isinstance(attempts, int) or isinstance(attempts, bool) or not 1 <= attempts <= 8:
+        raise ValueError("attempts must be between 1 and 8")
+    if not 0 < timeout <= 120:
+        raise ValueError("timeout out of supported range")
+    parsed = urlsplit(url)
+    if parsed.scheme != "https" or parsed.hostname not in {
+        "erddap.aoml.noaa.gov", "data.pmel.noaa.gov"
+    } or parsed.username or parsed.password or parsed.port:
+        raise ValueError("Unapproved scientific provider URL")
     last_error: Exception | None = None
     for attempt in range(1, attempts + 1):
         request = Request(url, headers={"User-Agent": USER_AGENT, "Accept": "text/csv,*/*;q=0.8"})
@@ -38,19 +53,25 @@ def _request_text(url: str, attempts: int = 5, timeout: int = 60) -> str:
             with urlopen(request, timeout=timeout) as response:
                 if response.status != 200:
                     raise RuntimeError(f"HTTP {response.status} for {url}")
-                return response.read().decode("utf-8")
+                # Bounded read prevents accidental giant server responses or HTML
+                # error dumps from being treated as normal ERDDAP CSV payload.
+                payload = response.read(16_000_001)
+                if len(payload) > 16_000_000:
+                    raise ValueError("Scientific response exceeds 16 MB safety limit")
+                return payload.decode("utf-8")
         except HTTPError as exc:
-            # 4xx responses are deterministic query/data errors; retrying them only masks the cause.
-            if 400 <= exc.code < 500:
-                body = exc.read().decode("utf-8", errors="replace")
+            # A genuine 404 'nRows = 0' is handled by the CTD caller as no data.
+            # 400/401/403/404/etc must not be retried or replaced with invented rows.
+            if 400 <= exc.code < 500 and exc.code != 429:
+                body = exc.read(801).decode("utf-8", errors="replace")
                 raise RuntimeError(f"HTTP {exc.code} for {url}: {body[:800]}") from exc
             last_error = exc
-            if attempt < attempts:
-                time.sleep(min(2 * attempt, 8))
-        except Exception as exc:  # transient network/provider failures are retried then fail closed
+        except (ValueError, UnicodeError):
+            raise
+        except Exception as exc:
             last_error = exc
-            if attempt < attempts:
-                time.sleep(min(2 * attempt, 8))
+        if attempt < attempts:
+            time.sleep(min(2 * attempt, 8))
     raise RuntimeError(f"Failed to fetch verified observation source after {attempts} attempts: {url}: {last_error}")
 
 
