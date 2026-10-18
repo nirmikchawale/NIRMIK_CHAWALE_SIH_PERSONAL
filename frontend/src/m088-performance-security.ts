@@ -58,6 +58,15 @@ export class VerifiedFrameCache {
     const immutableCopy=Uint8Array.from(bytes);
     this.items.set(key,immutableCopy);this.currentBytes+=immutableCopy.length;
   }
+  /** Cryptographically verify native source bytes before inserting in a cache. */
+  async setVerifiedSha256(block:string,date:string,digest:string,bytes:Uint8Array) {
+    this.key(block,date,digest);
+    const copy=Uint8Array.from(bytes);
+    const hashed=await crypto.subtle.digest("SHA-256",copy as Uint8Array<ArrayBuffer>);
+    const actual=[...new Uint8Array(hashed)].map(b=>b.toString(16).padStart(2,"0")).join("");
+    if(actual!==digest) throw new Error("M089 source SHA-256 mismatch: cache write refused");
+    this.set(block,date,digest,copy,true);
+  }
   get(block:string,date:string,digest:string):Uint8Array|null{
     const bytes=this.items.get(this.key(block,date,digest));
     return bytes ? Uint8Array.from(bytes) : null;
@@ -75,7 +84,7 @@ export class FailClosedRequest {
     this.running=new AbortController();
     return {version:++this.version,signal:this.running.signal};
   }
-  allow(version:number) {return version===this.version && !this.running?.signal.aborted;}
+  allow(version:number) {return this.running!==null && version>0 && version===this.version && !this.running.signal.aborted;}
   stop(){this.running?.abort();this.version++;}
 }
 
@@ -101,6 +110,13 @@ export function validateLocalScientificUpload(
     byteSize>128*1024*1024 ||
     !["application/x-netcdf","text/csv","application/json"].includes(extensionType)){
     throw new Error("M091 upload rejected: size, extension or media type invalid");
+  }
+  const suffix=filename.slice(filename.lastIndexOf(".")+1).toLowerCase();
+  const mediaBySuffix:Record<string,string>={
+    nc:"application/x-netcdf",csv:"text/csv",json:"application/json"
+  };
+  if(mediaBySuffix[suffix]!==extensionType) {
+    throw new Error("M091 upload rejected: file extension and declared MIME disagree");
   }
   return {filename,bytes:byteSize,privacy:"never-auto-publish"};
 }
