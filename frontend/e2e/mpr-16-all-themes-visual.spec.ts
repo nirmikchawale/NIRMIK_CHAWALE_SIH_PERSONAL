@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+import { mkdir } from "node:fs/promises";
+import { resolve } from "node:path";
 import { GLASS_THEMES, GLASS_THEME_STORAGE_KEY } from "../src/theme";
 
 /**
@@ -54,6 +56,10 @@ for(const size of sizes) {
   const scientificGradient=await legend.evaluate(e=>getComputedStyle(e).backgroundImage);
   const initialKey=await water.getAttribute("data-native-time");
   const records: Array<{theme:string,scheme:string,textContrast:number,wide:number,scrollOverflow:number}> = [];
+  // Retain the actual Chromium screenshots on disk for artifact upload.
+  // testInfo.attach({ body }) alone did not produce a reviewable 96-PNG archive.
+  const evidenceDir = resolve(process.cwd(), "certification-evidence", "itm03-mpr16", "screenshots");
+  await mkdir(evidenceDir, {recursive:true});
   for(const theme of GLASS_THEMES) {
     await chooseTheme(page,theme.label);
     await expect(page.locator("html")).toHaveAttribute("data-glass-theme",theme.id);
@@ -91,13 +97,15 @@ for(const size of sizes) {
     // for an impossible 'stable' renderer box on SwiftShader CI. Capture the
     // actual browser viewport after scrolling to each real renderer instead.
     await geo.scrollIntoViewIfNeeded();
-    await info.attach(size.name+"--"+theme.id+"--geographic",{
-      body:await page.screenshot({animations:"disabled",timeout:45000}),contentType:"image/png"
-    });
+    const geographicName = size.name+"--"+theme.id+"--geographic";
+    const geographicPath = resolve(evidenceDir, geographicName+".png");
+    await page.screenshot({path: geographicPath,animations:"disabled",timeout:45000});
+    await info.attach(geographicName,{path:geographicPath,contentType:"image/png"});
     await water.scrollIntoViewIfNeeded();
-    await info.attach(size.name+"--"+theme.id+"--water-column",{
-      body:await page.screenshot({animations:"disabled",timeout:45000}),contentType:"image/png"
-    });
+    const columnName = size.name+"--"+theme.id+"--water-column";
+    const columnPath = resolve(evidenceDir,columnName+".png");
+    await page.screenshot({path:columnPath,animations:"disabled",timeout:45000});
+    await info.attach(columnName,{path:columnPath,contentType:"image/png"});
   }
   expect(records).toHaveLength(16);
   expect(new Set(records.map(x=>x.theme)).size).toBe(16);
