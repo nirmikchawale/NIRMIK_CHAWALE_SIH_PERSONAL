@@ -1,0 +1,45 @@
+name: ocean-canvas-release-conductor
+
+# Default-branch trusted automation; it never checks out or runs code from
+# untrusted PRs. Scheduled + event-driven (not a permanently running VM).
+on:
+  schedule:
+    - cron: '11,26,41,56 * * * *'
+  workflow_run:
+    workflows:
+      - tests
+      - final-mvp
+      - mpr-10-17-release-certification
+      - deploy-oceantwin-pages
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: ocean-canvas-release-controller
+  cancel-in-progress: false
+
+jobs:
+  gated-release:
+    name: auto-check-merge-deploy-certified-phases
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Certify and integrate at most one eligible phase
+        uses: actions/github-script@v7
+        env:
+          # Set true to simulate all actions without merging.
+          OC_RELEASE_DRY_RUN: 'false'
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const conductor = require('./.github/scripts/release-conductor.cjs');
+            await conductor.runController({ github, core, context });

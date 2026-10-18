@@ -1,0 +1,41 @@
+name: ocean-canvas-release-conductor-tests
+
+on:
+  pull_request:
+    paths:
+      - '.github/scripts/release-conductor.cjs'
+      - '.github/workflows/release-conductor.yml'
+      - '.github/workflows/release-conductor-tests.yml'
+      - '.github/workflows/tests.yml'
+      - '.github/workflows/final-mvp.yml'
+      - 'scripts/test_release_conductor.cjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/release-conductor.cjs'
+      - '.github/workflows/release-conductor.yml'
+      - '.github/workflows/release-conductor-tests.yml'
+      - '.github/workflows/tests.yml'
+      - '.github/workflows/final-mvp.yml'
+      - 'scripts/test_release_conductor.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-release-safety:
+    name: release-controller-unit-and-syntax
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check trusted release-controller JavaScript syntax
+        run: |
+          node --check .github/scripts/release-conductor.cjs
+          node --check scripts/test_release_conductor.cjs
+      - name: Verify non-bypass and GitHub queue invariants
+        run: node --test scripts/test_release_conductor.cjs
