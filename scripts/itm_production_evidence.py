@@ -149,6 +149,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--input", type=Path, help="Previously captured live read-only JSON")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--rollback-sha", help="Recorded independently verified rollback SHA")
+    parser.add_argument("--report-only", action="store_true",
+                        help="Write honest blocked evidence report without certifying release")
     args = parser.parse_args(argv)
     try:
         snap = json.loads(args.input.read_text()) if args.input else capture_live(os.getenv("GITHUB_TOKEN", ""))
@@ -162,7 +164,7 @@ def main(argv: list[str] | None = None) -> int:
         print(data, end="")
         # Running from an incomplete production tree is not a successful
         # release certificate even if HTTP assets exist.
-        return 0 if result["itm11_publication_certified"] and result["itm12_repeat_certified"] else 2
+        return 0 if args.report_only or (result["itm11_publication_certified"] and result["itm12_repeat_certified"]) else 2
     except (OSError, ValueError, InvalidQueue, KeyError, urllib.error.URLError) as e:
         print(f"Production certification BLOCKED: {e}", file=sys.stderr)
         return 1
