@@ -1426,8 +1426,16 @@ export function OceanGlobe({
         <div className="main-block-globe-heading">
           <div>
             <span>INDIAN OCEAN BLOCK FIELD</span>
-            <strong>{activeMaterialization === "verified-baseline" ? "Verified GLORYS reference · no block selected" : `${activeMainBlock.id} · ${activeMainBlockRegion(activeMainBlock)}`}</strong>
-            <small>{activeMaterialization === "verified-baseline" ? "Reference evidence retained outside the block grid" : blockBoundsLabel(activeMainBlock)}</small>
+            <strong>{activeMaterialization === "verified-baseline"
+              ? selectedProfile
+                ? `BASE-GLORYS-001 · Argo ${selectedProfile.platform_id} C${selectedProfile.cycle}`
+                : "BASE-GLORYS-001 · verified ocean model"
+              : `${activeMainBlock.id} · ${activeMainBlockRegion(activeMainBlock)}`}</strong>
+            <small>{activeMaterialization === "verified-baseline"
+              ? selectedProfile
+                ? `Model: 31 native depths · Observation: ${selectedProfile.matched_level_count} QC-matched levels`
+                : "Model: 31 native depths · no comparison profile selected"
+              : blockBoundsLabel(activeMainBlock)}</small>
           </div>
           <span className={`main-block-status-pill ${activeMaterialization !== "planned" ? "verified" : ""}`}>
             {activeStatusLabel}
