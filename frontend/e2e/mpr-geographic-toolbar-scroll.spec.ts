@@ -64,9 +64,28 @@ for (const width of [390, 1024, 1327, 1440]) {
     await expect.poll(() => toolbar.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
     await toolbar.evaluate(el => { el.scrollTop = el.scrollHeight; });
     await toolbar.hover({ position: { x: 25, y: 20 } });
-    const beforeForward = await explorer.evaluate(el => el.scrollTop);
-    await page.mouse.wheel(0, 900);
-    await expect.poll(() => explorer.evaluate(el => el.scrollTop)).toBeGreaterThan(beforeForward);
+    // Playwright hover intentionally scrolls a below-fold toolbar into view.
+    // On narrow screens this often puts Explorer at its *bottom*, so another
+    // downward wheel cannot scroll even though forwarding is working. Verify
+    // a real wheel event in whichever direction has remaining scroll range.
+    const scrollState = await explorer.evaluate(el => ({
+      before: el.scrollTop,
+      maximum: el.scrollHeight - el.clientHeight
+    }));
+    expect(scrollState.maximum, "Explorer must have real overflow").toBeGreaterThan(0);
+    const canScrollDown = scrollState.before < scrollState.maximum - 2;
+    // For downward forwarding the toolbar must already be at its bottom;
+    // for upward forwarding it must already be at its top. Otherwise the
+    // toolbar (correctly) consumes the wheel and Explorer does not move.
+    await toolbar.evaluate((el, down) => {
+      el.scrollTop = down ? el.scrollHeight : 0;
+    }, canScrollDown);
+    await page.mouse.wheel(0, canScrollDown ? 900 : -900);
+    if (canScrollDown) {
+      await expect.poll(() => explorer.evaluate(el => el.scrollTop)).toBeGreaterThan(scrollState.before);
+    } else {
+      await expect.poll(() => explorer.evaluate(el => el.scrollTop)).toBeLessThan(scrollState.before);
+    }
     // Same toolbar maintains real actions when not scrolling.
     await toolbar.evaluate(el => { el.scrollTop = el.scrollHeight; });
     const offline = basemap.getByRole("button", { name: "Offline", exact: true });

@@ -60,7 +60,8 @@ jobs:
           # UI fixes AND the exact authentic CCHDO provider/test/audit trio.
           # Ordinary PRs still use the strict original frontend-only scope.
           recovery_args=()
-          if [[ "$CANDIDATE_HEAD" == "integration/m001-m007-joint-release-gate-20261018" ]]; then
+          if [[ "$CANDIDATE_HEAD" == "integration/m001-m007-joint-release-gate-20261018" ||
+                "$CANDIDATE_HEAD" == "integration/itm03-chromium-recovery-20261018" ]]; then
             recovery_args+=(--reviewed-m001-m007-package)
           fi
           python scripts/verify_mpr_release_scope.py \
