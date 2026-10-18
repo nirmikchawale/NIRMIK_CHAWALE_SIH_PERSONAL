@@ -1,4 +1,7 @@
 import { expect, test } from "@playwright/test";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { resolve } from "node:path";
 import { GLASS_THEMES, GLASS_THEME_STORAGE_KEY } from "../src/theme";
 
 /**
@@ -54,6 +57,10 @@ for(const size of sizes) {
   const scientificGradient=await legend.evaluate(e=>getComputedStyle(e).backgroundImage);
   const initialKey=await water.getAttribute("data-native-time");
   const records: Array<{theme:string,scheme:string,textContrast:number,wide:number,scrollOverflow:number}> = [];
+  // Retain the actual Chromium screenshots on disk for artifact upload.
+  // testInfo.attach({ body }) alone did not produce a reviewable 96-PNG archive.
+  const evidenceDir = resolve(process.cwd(), "certification-evidence", "itm03-mpr16", "screenshots");
+  await mkdir(evidenceDir, {recursive:true});
   for(const theme of GLASS_THEMES) {
     await chooseTheme(page,theme.label);
     await expect(page.locator("html")).toHaveAttribute("data-glass-theme",theme.id);
@@ -91,13 +98,15 @@ for(const size of sizes) {
     // for an impossible 'stable' renderer box on SwiftShader CI. Capture the
     // actual browser viewport after scrolling to each real renderer instead.
     await geo.scrollIntoViewIfNeeded();
-    await info.attach(size.name+"--"+theme.id+"--geographic",{
-      body:await page.screenshot({animations:"disabled",timeout:45000}),contentType:"image/png"
-    });
+    const geographicName = size.name+"--"+theme.id+"--geographic";
+    const geographicPath = resolve(evidenceDir, geographicName+".png");
+    await page.screenshot({path: geographicPath,animations:"disabled",timeout:45000});
+    await info.attach(geographicName,{path:geographicPath,contentType:"image/png"});
     await water.scrollIntoViewIfNeeded();
-    await info.attach(size.name+"--"+theme.id+"--water-column",{
-      body:await page.screenshot({animations:"disabled",timeout:45000}),contentType:"image/png"
-    });
+    const columnName = size.name+"--"+theme.id+"--water-column";
+    const columnPath = resolve(evidenceDir,columnName+".png");
+    await page.screenshot({path:columnPath,animations:"disabled",timeout:45000});
+    await info.attach(columnName,{path:columnPath,contentType:"image/png"});
   }
   expect(records).toHaveLength(16);
   expect(new Set(records.map(x=>x.theme)).size).toBe(16);
@@ -107,6 +116,38 @@ for(const size of sizes) {
   });
  });
 }
+// This check operates solely on PNG bytes produced by the real page.screenshot
+// calls above. It never generates, replaces or alters a screenshot.
+test.afterAll(async () => {
+ const directory=resolve(process.cwd(),"certification-evidence","itm03-mpr16","screenshots");
+ const viewports={"wide-desktop":[1440,900],"tablet":[768,900],"mobile":[390,844]} as const;
+ const names=new Set(GLASS_THEMES.flatMap(t=>
+  Object.keys(viewports).flatMap(v=>["geographic","water-column"].map(view=>v+"--"+t.id+"--"+view+".png"))));
+ if(names.size!==96) throw new Error("Expected 16 distinct canonical themes x 3 viewports x 2 views");
+ const available=await readdir(directory);
+ const pngs=available.filter(name=>name.endsWith(".png"));
+ if(pngs.length!==96||pngs.some(name=>!names.has(name)))
+  throw new Error("MPR-16 missing or unexpected real PNG captures; found "+pngs.length);
+ const hashes=new Set<string>();
+ const entries=[] as Array<{filename:string;bytes:number;dimensions:number[];sha256:string}>;
+ const pngSignature=Buffer.from([137,80,78,71,13,10,26,10]);
+ for(const filename of [...names].sort()){
+  const bytes=await readFile(resolve(directory,filename));
+  if(bytes.length<1024||!bytes.subarray(0,8).equals(pngSignature))
+   throw new Error("Missing or truncated actual Chromium PNG: "+filename);
+  const viewport=filename.split("--")[0] as keyof typeof viewports;
+  const expected=viewports[viewport];
+  if(!expected||bytes.readUInt32BE(16)!==expected[0]||bytes.readUInt32BE(20)!==expected[1])
+   throw new Error("Unexpected real screenshot viewport pixels: "+filename);
+  const sha256=createHash("sha256").update(bytes).digest("hex");
+  if(hashes.has(sha256))throw new Error("Duplicate screenshot pixels: "+filename);
+  hashes.add(sha256);
+  entries.push({filename,bytes:bytes.length,dimensions:[expected[0],expected[1]],sha256});
+ }
+ await writeFile(resolve(directory,"..","ITM03_96_REAL_PNG_MANIFEST.json"),
+  JSON.stringify({origin:"Playwright real page.screenshot",synthetic:false,count:entries.length,files:entries},null,2)+"\n");
+});
+
 test("MPR-16 saved appearance survives hard navigation and cannot alter source palette",async({page})=>{
  await page.setViewportSize({width:320,height:760});
  await page.emulateMedia({reducedMotion:"reduce"});
