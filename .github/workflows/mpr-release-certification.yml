@@ -69,6 +69,8 @@ jobs:
               'tests/test_m001_m007_scientific_baseline.py',
               'docs/requirements/M001_M007_BASELINE_AUDIT.md',
               'frontend/e2e/live.spec.ts',
+              'frontend/e2e/3db05-geographic-water-column-sync.spec.ts',
+              'frontend/e2e/journey.spec.ts',
               '.github/workflows/mpr-release-certification.yml',
           }
           unexpected=sorted(set(changed)-approved)
