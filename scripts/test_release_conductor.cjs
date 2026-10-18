@@ -1,6 +1,8 @@
 "use strict";
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const { readFileSync } = require("node:fs");
+const { join } = require("node:path");
 const {
   CONFIG, isEnrolled, relevantRuns, evaluateRuns,
   changedPathsNeedMPR, shouldBlockMerge, listRuns
@@ -110,4 +112,10 @@ test("GitHub Actions exact-SHA REST envelope is correctly read, never silently e
   assert.deepEqual(result.map(x => x.name), ["tests", "final-mvp"]);
   assert.rejects(() => listRuns({rest:{actions:{listWorkflowRunsForRepo:async()=>({data:{total_count:1}})}}}, CONFIG.owner, CONFIG.repo, "candidate"),
     /missing workflow_runs/);
+});
+
+test("production conductor workflow_run events originate only from main", () => {
+  const workflow = readFileSync(
+    join(__dirname, "../.github/workflows/release-conductor.yml"), "utf8");
+  assert.match(workflow, /workflow_run:[\\s\\S]*?types: \\[completed\\][\\s\\S]*?branches: \\[main\\]/);
 });
