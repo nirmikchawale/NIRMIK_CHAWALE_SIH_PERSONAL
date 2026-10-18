@@ -89,10 +89,26 @@ function shouldBlockMerge(mainStatus, prNumber, config = CONFIG) {
 }
 
 async function listRuns(github, owner, repo, sha) {
-  const data = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
-    owner, repo, head_sha: sha, per_page: 100
-  }, response => response.data.workflow_runs || []);
-  return data.filter(item => item.head_sha === sha);
+  // Read the concrete GitHub REST envelope instead of relying on Octokit's
+  // special paginated-list normalization for { total_count, workflow_runs }.
+  // The latter produced [] for a main SHA with known completed workflows.
+  const matches = [];
+  for (let page = 1; page <= 5; page += 1) {
+    const response = await github.rest.actions.listWorkflowRunsForRepo({
+      owner, repo, head_sha: sha, per_page: 100, page
+    });
+    const envelope = response.data;
+    const entries = Array.isArray(envelope?.workflow_runs) ?
+      envelope.workflow_runs : [];
+    if (!Array.isArray(envelope?.workflow_runs)) {
+      throw new Error("GitHub Actions response missing workflow_runs; fail closed");
+    }
+    for (const run of entries) {
+      if (run.head_sha === sha) matches.push(run);
+    }
+    if (entries.length < 100) break;
+  }
+  return matches;
 }
 
 async function getStatus(github, owner, repo, sha, event, required, optional) {
@@ -210,5 +226,5 @@ async function runController({ github, core, context }) {
 
 module.exports = {
   CONFIG, isEnrolled, relevantRuns, evaluateRuns,
-  changedPathsNeedMPR, shouldBlockMerge, runController
+  changedPathsNeedMPR, shouldBlockMerge, listRuns, runController
 };
