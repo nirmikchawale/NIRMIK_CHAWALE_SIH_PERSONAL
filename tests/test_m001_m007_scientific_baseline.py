@@ -107,11 +107,21 @@ def test_ctd_discovery_does_not_hide_provider_errors(monkeypatch):
         source._candidate_ctd_profiles()
 
 
-def test_frozen_theme_registry_remains_16_until_separately_released():
+def test_frozen_16_theme_ids_are_preserved_with_two_explicit_new_themes():
+    """M080–M087 must add Light and Dark without replacing any original palette."""
     text = (ROOT / "frontend/src/theme.ts").read_text(encoding="utf-8")
     import re
     theme_block = text.split("GLASS_THEME_IDS = [", 1)[1].split("] as const;", 1)[0]
     ids = re.findall(r'"([a-z][a-z-]+)"', theme_block)
-    assert len(ids) == len(set(ids)) == 16
-    assert "arctic-mist" in ids
+    original = [
+        "abyss-noir", "aurora-borealis", "midnight-indigo",
+        "deep-sea-emerald", "bioluminescent-cyan", "coral-dusk",
+        "solar-amber", "graphite-clear", "polar-frost", "arctic-mist",
+        "pearl-lagoon", "glacier-mint", "rose-quartz",
+        "lavender-haze", "sandglass", "cloud-prism",
+    ]
+    assert ids[:16] == original, "Original 16 ordered theme IDs must not change"
+    assert ids[16:] == ["system-light", "system-dark"]
+    assert len(ids) == len(set(ids)) == 18
     assert 'DEFAULT_GLASS_THEME: GlassThemeId = "arctic-mist"' in text
+
