@@ -113,5 +113,5 @@ def test_frozen_theme_registry_remains_16_until_separately_released():
     theme_block = text.split("GLASS_THEME_IDS = [", 1)[1].split("] as const;", 1)[0]
     ids = re.findall(r'"([a-z][a-z-]+)"', theme_block)
     assert len(ids) == len(set(ids)) == 16
-    assert '"arctic-mist"' in ids
+    assert "arctic-mist" in ids
     assert 'DEFAULT_GLASS_THEME: GlassThemeId = "arctic-mist"' in text
