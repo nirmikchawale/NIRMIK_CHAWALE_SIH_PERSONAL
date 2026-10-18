@@ -1,0 +1,71 @@
+name: ocean-canvas-m095-manual-development-certification
+# Trigger only on cumulative build branch; no public Pages or main updates.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  science-and-108-actual-browser-views:
+    if: ${{ startsWith(github.ref_name, 'build/m008-m095-') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Capture exact unmerged source SHA
+        run: git rev-parse HEAD
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Install Python scientific dependencies
+        run: python -m pip install -r requirements.txt -r backend/requirements.txt
+      - name: Source-hash, theme, backend and 41-frame regressions
+        run: |
+          python scripts/certify_build_first.py
+          python -m pytest -q
+      - name: Export genuine existing baseline only into local draft preview
+        run: python scripts/export_static_science.py --output frontend/public/science-static
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Typecheck and bundle real React/Cesium
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+      - name: Install genuine Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Real 18 x 3 x 2 theme screenshots and source-negative tests
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > /tmp/m095-preview.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 45); do
+            if curl --fail --silent http://127.0.0.1:4174/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:4174/ >/dev/null
+          npx playwright test -c playwright.live.config.ts \
+            e2e/mpr-16-all-themes-visual.spec.ts \
+            e2e/m064-m071-native-render.spec.ts \
+            e2e/m072-m079-native-time.spec.ts \
+            e2e/m080-m087-neutral-glass.spec.ts \
+            e2e/m088-m095-hardening.spec.ts
+      - name: Save test results and real screenshots as development artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m095-stage-a-real-chromium-evidence
+          path: |
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 30

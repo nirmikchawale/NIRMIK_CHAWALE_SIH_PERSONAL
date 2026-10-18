@@ -250,7 +250,23 @@ def compare_profile(
                 any(not isinstance(line, list) or len(line) != nlon for line in layer)
                 for layer in cube)):
         raise ValueError("Model cube dimensions incompatible with native grid")
-    column = [layer[iy][ix] for layer in cube]
+    # M095: original source fill values may never masquerade as ocean samples.
+    def native_fills(metadata: Mapping[str, Any]) -> set[float]:
+        raw = metadata.get("fill_values", [])
+        if not isinstance(raw, (list, tuple)):
+            raise ValueError("Native source fill_values must be an array")
+        values = {-9999.0, 1e20, 9.96921e36}
+        for candidate in raw:
+            parsed = _number(candidate)
+            if parsed is None:
+                raise ValueError("Native source fill metadata is malformed")
+            values.add(parsed)
+        return values
+
+    model_fills = native_fills(model)
+    observation_fills = native_fills(obs)
+    column = [None if _number(layer[iy][ix]) in model_fills
+              else layer[iy][ix] for layer in cube]
     levels = obs.get("levels")
     if not isinstance(levels, list) or not levels:
         raise ValueError("No source-backed observation profile levels")
@@ -261,6 +277,8 @@ def compare_profile(
             raise ValueError("Malformed provider profile level")
         dep = _number(level.get("depth_m"))
         value = _number(level.get("value"))
+        if value in observation_fills:
+            value = None
         qc_ok = str(level.get("qc_flag") or "") in QC[sensor]
         mode_ok = (sensor != "argo" or level.get("parameter_data_mode") in {"A", "D"})
         if dep is None or dep < 0 or value is None or not qc_ok or not mode_ok:

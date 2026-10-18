@@ -181,3 +181,24 @@ def test_qc_cannot_turn_null_into_reliable_comparison():
     assert got["metrics"]["count"] == 0
     assert got["metrics"]["mean_bias"] is None
     assert got["metrics"]["rmse"] is None
+
+
+def test_m095_native_source_fill_sentinels_are_missing_not_readings():
+    fake = model()
+    fake["cube"][1][0][0] = -9999.0
+    got = compare_profile(fake, observation())
+    statuses = {p["depth_m"]: p["status"] for p in got["points"]}
+    assert statuses[50.0] == "MODEL_MASKED"
+    assert statuses[75.0] == "MODEL_MASKED"
+    bad_obs = observation()
+    bad_obs["levels"][0]["value"] = -9999.0
+    got = compare_profile(model(), bad_obs)
+    assert got["points"][0]["status"] == "QC_REJECTED"
+    assert got["points"][0]["residual_model_minus_observation"] is None
+
+
+def test_m095_invalid_native_fill_registry_is_rejected():
+    bad = model()
+    bad["fill_values"] = [None]
+    with pytest.raises(ValueError, match="fill metadata"):
+        compare_profile(bad, observation())
