@@ -39,6 +39,8 @@ jobs:
           done
       - name: Build exact candidate with one mobile CSS correction
         working-directory: frontend
+        env:
+          VITE_STATIC_SCIENCE: 'true'
         run: |
           npm run typecheck
           npm run build
