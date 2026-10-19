@@ -31,26 +31,37 @@ async function recordNativeJourney(page: import("@playwright/test").Page) {
     record();
   });
 }
-// In a software-rendered Cesium CI browser a committed reload can briefly
-// abort its own navigation (ERR_ABORTED), leaving Playwright waiting on the
-// superseded document. Retry one fresh document navigation *only* on that
-// recoverable transport error. Still require the genuine, ordered DOM phases.
+// Request a native same-URL full-document navigation with Chromium's actual
+// reload transition. Standard Page.reload and CDP Page.reload did not commit
+// under software-rendered Cesium; Page.navigate provides a new loaderId, so
+// same-document hash transitions cannot masquerade as a refreshed document.
+// A new performance.timeOrigin and all four real DOM journey phases remain
+// mandatory. No synthetic phases, state injection or skipped assertions.
 async function reloadAndVerifyNativeJourney(
-  page: import("@playwright/test").Page,
-  url: string
+  page: import("@playwright/test").Page
 ) {
   const previousDocumentTime = await page.evaluate(() => performance.timeOrigin);
-  try {
-    await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
-  } catch (error) {
-    const message = String(error);
-    if (!/net::ERR_ABORTED|frame was detached/i.test(message)) throw error;
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45_000 });
+  const cdp = await page.context().newCDPSession(page);
+  // Stop pending software-renderer network loading before initiating the
+  // native reload transition, without changing application or scientific data.
+  await cdp.send("Page.stopLoading");
+  const navigation = await cdp.send("Page.navigate", {
+    url: page.url(),
+    transitionType: "reload"
+  });
+  if (navigation.errorText || !navigation.loaderId) {
+    throw new Error("Chromium native reload did not start a new document: " + JSON.stringify(navigation));
   }
-  await expect.poll(
-    () => page.evaluate(() => performance.timeOrigin),
-    { timeout: 30_000 }
-  ).not.toBe(previousDocumentTime);
+  await expect.poll(async () => {
+    try {
+      return await page.evaluate(() => performance.timeOrigin);
+    } catch (error) {
+      if (/Execution context was destroyed|Cannot find context with specified id/i.test(String(error))) {
+        return previousDocumentTime;
+      }
+      throw error;
+    }
+  }, { timeout: 90_000 }).not.toBe(previousDocumentTime);
   await requireNativeJourney(page);
 }
 
@@ -78,7 +89,7 @@ test("orientation replay, skip, explicit Water Column entry and return remain us
   await requireNativeJourney(page);
 
   // A fresh document must replay the same actual sequence after refresh.
-  await reloadAndVerifyNativeJourney(page, liveUrl);
+  await reloadAndVerifyNativeJourney(page);
 
   // Replay must restart the active orientation sequence. On a loaded public
   // Cesium scene the 900 ms Earth state can advance before Playwright finishes
@@ -122,7 +133,7 @@ test("fresh refresh replays the Earth India ocean orientation", async ({ page })
   const globe = page.locator(".globe-shell[data-journey-phase]");
   await requireNativeJourney(page);
 
-  await reloadAndVerifyNativeJourney(page, liveUrl);
+  await reloadAndVerifyNativeJourney(page);
   // The live orientation guidance is transient, not rendered once region is
   // reached. Audit what the real browser displayed during the flight.
   const status = await page.evaluate(() =>

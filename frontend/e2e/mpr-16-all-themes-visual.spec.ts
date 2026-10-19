@@ -97,15 +97,22 @@ for(const size of sizes) {
     // Cesium and WaterColumn3D repaint continuously. Element screenshots wait
     // for an impossible 'stable' renderer box on SwiftShader CI. Capture the
     // actual browser viewport after scrolling to each real renderer instead.
+    // Native SwiftShader screenshot stalls can exceed 45 seconds at 1440px.
+    // Preserve both authentic browser captures; avoid altering CSS animations
+    // during the capture and allow a bounded 120-second Chromium deadline.
     await geo.scrollIntoViewIfNeeded();
     const geographicName = size.name+"--"+theme.id+"--geographic";
     const geographicPath = resolve(evidenceDir, geographicName+".png");
-    await page.screenshot({path: geographicPath,animations:"disabled",timeout:45000});
+    await page.screenshot({path: geographicPath,animations:"allow",timeout:120000});
     await info.attach(geographicName,{path:geographicPath,contentType:"image/png"});
-    await water.scrollIntoViewIfNeeded();
+    // Show the genuine 3D canvas itself, not merely the Water Column heading or controls.
+    // A screenshot without this visible surface does not certify the renderer.
+    const columnCanvas = water.getByRole("application", { name: "Interactive scientific water-column 3D" });
+    await expect(columnCanvas).toBeVisible();
+    await columnCanvas.scrollIntoViewIfNeeded();
     const columnName = size.name+"--"+theme.id+"--water-column";
     const columnPath = resolve(evidenceDir,columnName+".png");
-    await page.screenshot({path:columnPath,animations:"disabled",timeout:45000});
+    await page.screenshot({path:columnPath,animations:"allow",timeout:120000});
     await info.attach(columnName,{path:columnPath,contentType:"image/png"});
   }
   expect(records).toHaveLength(16);
