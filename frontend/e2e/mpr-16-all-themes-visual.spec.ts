@@ -5,7 +5,8 @@ import { GLASS_THEMES, GLASS_THEME_STORAGE_KEY } from "../src/theme";
  * MPR-16: evidence, not a mockup. A real browser cycles every canonical theme,
  * captures the Geographic and Water Column renderers, and checks UI contrast,
  * responsiveness, persistence, source identity and science-colour isolation.
- * Attachments are retained by the MPR-17 certification workflow.
+ * Explicit PNG outputPaths plus HTML reporter preserve all 96 actual images;
+ * an independent CI manifest verifies every theme/viewport/view combination.
  */
 const PUBLIC_BASE = process.env.OCEANTWIN_LIVE_URL;
 if (!PUBLIC_BASE) test.skip(true, "A genuine hosted frontend URL is required");
@@ -91,13 +92,13 @@ for(const size of sizes) {
     // for an impossible 'stable' renderer box on SwiftShader CI. Capture the
     // actual browser viewport after scrolling to each real renderer instead.
     await geo.scrollIntoViewIfNeeded();
-    await info.attach(size.name+"--"+theme.id+"--geographic",{
-      body:await page.screenshot({animations:"disabled",timeout:45000}),contentType:"image/png"
-    });
+    const geoPngPath = info.outputPath(size.name+"--"+theme.id+"--geographic.png");
+    await page.screenshot({path:geoPngPath,animations:"disabled",timeout:45000});
+    await info.attach(size.name+"--"+theme.id+"--geographic",{path:geoPngPath,contentType:"image/png"});
     await water.scrollIntoViewIfNeeded();
-    await info.attach(size.name+"--"+theme.id+"--water-column",{
-      body:await page.screenshot({animations:"disabled",timeout:45000}),contentType:"image/png"
-    });
+    const waterPngPath = info.outputPath(size.name+"--"+theme.id+"--water-column.png");
+    await page.screenshot({path:waterPngPath,animations:"disabled",timeout:45000});
+    await info.attach(size.name+"--"+theme.id+"--water-column",{path:waterPngPath,contentType:"image/png"});
   }
   expect(records).toHaveLength(16);
   expect(new Set(records.map(x=>x.theme)).size).toBe(16);
