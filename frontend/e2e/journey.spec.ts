@@ -31,18 +31,27 @@ async function recordNativeJourney(page: import("@playwright/test").Page) {
     record();
   });
 }
-// Reload the existing Chromium tab through Chrome DevTools Protocol, not a
-// Playwright navigation lifecycle wait that SwiftShader/Cesium can stall.
-// The new document is required to have a DIFFERENT genuine timeOrigin and
-// replay all four naturally observed Earth -> India -> flying -> region phases.
-// Only expected transient execution-context loss during navigation is retried;
-// persistent or unrelated browser/renderer errors still fail certification.
+// Request a native same-URL full-document navigation with Chromium's actual
+// reload transition. Standard Page.reload and CDP Page.reload did not commit
+// under software-rendered Cesium; Page.navigate provides a new loaderId, so
+// same-document hash transitions cannot masquerade as a refreshed document.
+// A new performance.timeOrigin and all four real DOM journey phases remain
+// mandatory. No synthetic phases, state injection or skipped assertions.
 async function reloadAndVerifyNativeJourney(
   page: import("@playwright/test").Page
 ) {
   const previousDocumentTime = await page.evaluate(() => performance.timeOrigin);
   const cdp = await page.context().newCDPSession(page);
-  await cdp.send("Page.reload", { ignoreCache: true });
+  // Stop pending software-renderer network loading before initiating the
+  // native reload transition, without changing application or scientific data.
+  await cdp.send("Page.stopLoading");
+  const navigation = await cdp.send("Page.navigate", {
+    url: page.url(),
+    transitionType: "reload"
+  });
+  if (navigation.errorText || !navigation.loaderId) {
+    throw new Error("Chromium native reload did not start a new document: " + JSON.stringify(navigation));
+  }
   await expect.poll(async () => {
     try {
       return await page.evaluate(() => performance.timeOrigin);
