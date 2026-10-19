@@ -64,7 +64,8 @@ jobs:
                 "$CANDIDATE_HEAD" == "integration/itm03-chromium-recovery-20261018" ||
                 "$CANDIDATE_HEAD" == "integration/itm03-retain-96-real-screenshots-20261018" ||
                 "$CANDIDATE_HEAD" == "integration/itm03-full-browser-shard1-recovery-20261018" ||
-                "$CANDIDATE_HEAD" == "integration/itm03-final-reload-basemap-20261019" ]]; then
+                "$CANDIDATE_HEAD" == "integration/itm03-final-reload-basemap-20261019" ||
+                "$CANDIDATE_HEAD" == "integration/itm03-commit-navigation-refresh-20261019" ]]; then
             recovery_args+=(--reviewed-m001-m007-package)
           fi
           python scripts/verify_mpr_release_scope.py \
