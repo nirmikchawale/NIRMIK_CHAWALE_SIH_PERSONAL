@@ -1,4 +1,4 @@
-name: UIX-01 bounded guide scroll geometry diagnosis
+name: UIX-01 isolated Chromium correction verification
 
 # Diagnostic run only, NEVER MPR release certification or 96 screenshots.
 on:
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   targeted-uix01:
-    name: Single guide scroll geometry probe
+    name: Three UIX-01 Chromium regressions
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -32,6 +32,21 @@ jobs:
           run-id: 39315649776
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: frontend/dist
+      - name: Seed unchanged verified scientific evidence into candidate build
+        run: |
+          set -euo pipefail
+          for directory in science-static operational observations samples; do
+            if test -d "frontend/dist/$directory"; then
+              cp -a "frontend/dist/$directory" "frontend/public/$directory"
+            fi
+          done
+      - name: Build exact UIX-01 source change, without re-fetching scientific data
+        working-directory: frontend
+        env:
+          VITE_STATIC_SCIENCE: 'true'
+        run: |
+          npm run typecheck
+          npm run build
       - name: Verify authentic production build is present
         run: |
           set -euo pipefail
@@ -39,12 +54,12 @@ jobs:
           test -s frontend/dist/science-static/manifest.json
           test -s frontend/dist/observations/verified-profiles.json
           test -s frontend/dist/cesiumStatic/Assets/Textures/NaturalEarthII/0/0/0.jpg
-          echo "Production runtime source: 13b030a96adcd9322fd7aff313c3f01e48bcef01"
-          echo "Only Playwright test selection/contract changed on diagnostic branch."
+          echo "Candidate runtime commit: $(git rev-parse HEAD)"
+          echo "Science data reused byte-for-byte from the 13b030a9 verified artifact."
       - name: Install genuine software-rendered Chromium
         working-directory: frontend
         run: npx playwright install --with-deps chromium
-      - name: Probe guide scroll owner in one real Chromium test
+      - name: Run only the three real UIX-01 Chromium scenarios
         working-directory: frontend
         env:
           OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
@@ -59,7 +74,7 @@ jobs:
           done
           curl --fail http://127.0.0.1:4174/ > /dev/null
           npx playwright test -c playwright.live.config.ts \
-            e2e/uix01-guide-scroll-geometry-probe.spec.ts \
+            e2e/mpr-uix01-presentation-scroll-owner.spec.ts \
             --workers=1 --retries=0
       - name: Archive real Playwright failure evidence
         if: always()
