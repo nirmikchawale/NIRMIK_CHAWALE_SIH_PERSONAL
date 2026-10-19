@@ -31,42 +31,33 @@ async function recordNativeJourney(page: import("@playwright/test").Page) {
     record();
   });
 }
-// Always certify a genuine same-URL full-document refresh. Browser reload
-// is the primary path, followed by a same-URL browser navigation if Chromium
-// stalls the reload under software-rendered Cesium. Neither hash-only routing
-// nor a synthetic journey reset can pass: the new document time origin and all
-// four observed native Earth -> India -> flying -> region phases are required.
+// Certify a real same-URL, full-document navigation exactly once. A prior
+// reload followed by a second page.goto raced Chromium's outstanding renderer
+// navigation under software-rendered Cesium, yielding timeout/interrupted
+// navigation even when all other real browser cases succeeded. Do not send a
+// second navigation while the first is pending. A new performance.timeOrigin,
+// native phase mutation history and final geographic state remain mandatory.
 async function reloadAndVerifyNativeJourney(
   page: import("@playwright/test").Page
 ) {
   const previousDocumentTime = await page.evaluate(() => performance.timeOrigin);
   const expectedUrl = page.url();
-  const committedNewDocument = async (timeout: number) => {
-    await expect.poll(async () => {
-      try {
-        return await page.evaluate(() => performance.timeOrigin);
-      } catch (error) {
-        if (/Execution context was destroyed|Cannot find context with specified id/i.test(String(error))) {
-          return previousDocumentTime;
-        }
-        throw error;
-      }
-    }, { timeout }).not.toBe(previousDocumentTime);
-  };
 
-  // Playwright owns navigation lifecycles and can safely reattach execution
-  // contexts while the native Chromium renderer changes processes. Do not
-  // send Page.stopLoading on a renderer being detached by an earlier reload.
-  try {
-    await page.reload({ waitUntil: "commit", timeout: 60_000 });
-    await committedNewDocument(20_000);
-  } catch {
-    // This is still a native, same-URL full-document navigation. It does not
-    // change app state, URL, scientific data or expected phase observations.
-    await page.goto(expectedUrl, { waitUntil: "commit", timeout: 90_000 });
-    await committedNewDocument(30_000);
-  }
+  // page.goto with the current URL performs a native full-document navigation,
+  // not a hash-route change or synthetic journey reset. A single request
+  // avoids racing a timed-out page.reload against a fallback goto.
+  await page.goto(expectedUrl, { waitUntil: "commit", timeout: 120_000 });
   await expect(page).toHaveURL(expectedUrl);
+  await expect.poll(async () => {
+    try {
+      return await page.evaluate(() => performance.timeOrigin);
+    } catch (error) {
+      if (/Execution context was destroyed|Cannot find context with specified id/i.test(String(error))) {
+        return previousDocumentTime;
+      }
+      throw error;
+    }
+  }, { timeout: 90_000 }).not.toBe(previousDocumentTime);
   await requireNativeJourney(page);
 }
 
