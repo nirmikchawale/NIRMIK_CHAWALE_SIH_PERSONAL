@@ -1,4 +1,4 @@
-name: UIX-01 mobile ControlPanel close regression
+name: UIX-01 MPR10-11 canonical mobile controls
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   isolated-shard3:
-    name: Two MPR-17 mobile close Chromium cases
+    name: Four MPR10-11 mobile controls cases
     runs-on: ubuntu-latest
     timeout-minutes: 28
     steps:
@@ -54,7 +54,7 @@ jobs:
       - name: Install genuine headless Chromium
         working-directory: frontend
         run: npx playwright install --with-deps chromium
-      - name: Run only mobile MPR-17 close cases without retries
+      - name: Check four specific MPR10-11 mobile cases without retries
         working-directory: frontend
         env:
           OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
@@ -73,7 +73,7 @@ jobs:
             e2e/mpr-block-region-relocation.spec.ts \
             e2e/mpr-geographic-toolbar-scroll.spec.ts \
             e2e/mpr-desktop-interaction-recovery.spec.ts \
-            --grep 'MPR-17 integrated two-renderer and inspector smoke: (320|390)' \
+            --grep 'MPR-10 real Cesium geographic scene reflows with one original control panel at (320|390)|MPR-11 geographic control groups retain original native controls at (320|390)' \
             --workers=1 --retries=0
       - name: Preserve real failure screenshot and locator evidence
         if: always()
