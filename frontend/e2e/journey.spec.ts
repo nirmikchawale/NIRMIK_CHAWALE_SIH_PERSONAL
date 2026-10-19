@@ -31,25 +31,19 @@ async function recordNativeJourney(page: import("@playwright/test").Page) {
     record();
   });
 }
-// In a software-rendered Cesium CI browser a committed reload can briefly
-// abort its own navigation (ERR_ABORTED), leaving Playwright waiting on the
-// superseded document. Retry one fresh document navigation *only* on that
-// recoverable transport error. Still require the genuine, ordered DOM phases.
+// Cesium/SwiftShader can keep the DOMContentLoaded lifecycle unresolved on
+// a genuinely reloaded document. Wait for the native network response commit,
+// then independently prove that the browser created a new document and
+// replayed every real, ordered Earth -> India -> flying -> region DOM phase.
+// Never replace a failed reload with a synthetic state or unrelated navigation.
 async function reloadAndVerifyNativeJourney(
-  page: import("@playwright/test").Page,
-  url: string
+  page: import("@playwright/test").Page
 ) {
   const previousDocumentTime = await page.evaluate(() => performance.timeOrigin);
-  try {
-    await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
-  } catch (error) {
-    const message = String(error);
-    if (!/net::ERR_ABORTED|frame was detached/i.test(message)) throw error;
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45_000 });
-  }
+  await page.reload({ waitUntil: "commit", timeout: 60_000 });
   await expect.poll(
-    () => page.evaluate(() => performance.timeOrigin),
-    { timeout: 30_000 }
+    async () => page.evaluate(() => performance.timeOrigin),
+    { timeout: 60_000 }
   ).not.toBe(previousDocumentTime);
   await requireNativeJourney(page);
 }
@@ -78,7 +72,7 @@ test("orientation replay, skip, explicit Water Column entry and return remain us
   await requireNativeJourney(page);
 
   // A fresh document must replay the same actual sequence after refresh.
-  await reloadAndVerifyNativeJourney(page, liveUrl);
+  await reloadAndVerifyNativeJourney(page);
 
   // Replay must restart the active orientation sequence. On a loaded public
   // Cesium scene the 900 ms Earth state can advance before Playwright finishes
@@ -122,7 +116,7 @@ test("fresh refresh replays the Earth India ocean orientation", async ({ page })
   const globe = page.locator(".globe-shell[data-journey-phase]");
   await requireNativeJourney(page);
 
-  await reloadAndVerifyNativeJourney(page, liveUrl);
+  await reloadAndVerifyNativeJourney(page);
   // The live orientation guidance is transient, not rendered once region is
   // reached. Audit what the real browser displayed during the flight.
   const status = await page.evaluate(() =>
