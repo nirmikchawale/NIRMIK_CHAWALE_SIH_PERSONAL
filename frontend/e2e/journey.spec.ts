@@ -31,16 +31,19 @@ async function recordNativeJourney(page: import("@playwright/test").Page) {
     record();
   });
 }
-// Cesium/SwiftShader can keep the DOMContentLoaded lifecycle unresolved on
-// a genuinely reloaded document. Wait for the native network response commit,
-// then independently prove that the browser created a new document and
-// replayed every real, ordered Earth -> India -> flying -> region DOM phase.
-// Never replace a failed reload with a synthetic state or unrelated navigation.
+// Software-rendered Cesium can prevent Playwright page.reload from resolving
+// even when waiting for the first response commit. Request the browser's
+// native location.reload() from the current document without depending on
+// Playwright navigation lifecycle events. Then independently require a new
+// document timeOrigin and the complete actual Earth -> India -> flying ->
+// region DOM journey. No synthetic phases, history navigation or mocked data.
 async function reloadAndVerifyNativeJourney(
   page: import("@playwright/test").Page
 ) {
   const previousDocumentTime = await page.evaluate(() => performance.timeOrigin);
-  await page.reload({ waitUntil: "commit", timeout: 60_000 });
+  await page.evaluate(() => {
+    window.setTimeout(() => window.location.reload(), 0);
+  });
   await expect.poll(
     async () => page.evaluate(() => performance.timeOrigin),
     { timeout: 60_000 }
