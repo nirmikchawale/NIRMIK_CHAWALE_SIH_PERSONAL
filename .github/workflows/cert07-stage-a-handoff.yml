@@ -1,0 +1,58 @@
+name: ocean-canvas-cert07-stage-a-handoff
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/cert07-stage-a-handoff.yml"
+      - "scripts/cert07_stage_a_handoff.py"
+      - "docs/requirements/CERT07_*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+jobs:
+  exact-source-evidence-and-release-blocker-handoff:
+    if: ${{ (github.event_name == 'pull_request' && github.event.pull_request.number == 204 && github.event.pull_request.draft) || (github.event_name == 'workflow_dispatch' && github.ref_name == 'build/m008-m095-science-ui-train') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify original 41 source SHA frames, exact prior CI/artifacts and 88 phase IDs
+        env:
+          CERT07_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 scripts/cert07_stage_a_handoff.py
+      - name: Assert handoff cannot be represented as production release approval
+        run: |
+          set -euo pipefail
+          test -s certification-evidence/cert07/CERT07_STAGE_A_EVIDENCE.json
+          test -s certification-evidence/cert07/CERT07_READABLE_SUMMARY.md
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path("certification-evidence/cert07/CERT07_STAGE_A_EVIDENCE.json").read_text())
+          assert x["m008_m095"]["count"] == 88
+          assert x["m008_m095"]["fully_live_certified"] == 0
+          assert x["original_science"]["original_source_frames"] == 41
+          assert x["ui"]["theme_count"] == 18
+          assert x["stage_a_handoff_evidence_complete"]
+          assert not x["production_release_approved"]
+          assert not x["source_promoted_to_main"]
+          assert not x["pages_published_by_cert07"]
+          print("CERT-07 Stage A only, no false production release certification")
+          PY
+      - name: Archive exact-commit final development handoff certificate
+        uses: actions/upload-artifact@v4
+        with:
+          name: ocean-canvas-cert07-exact-source-stage-a-handoff
+          path: certification-evidence/cert07/
+          if-no-files-found: error
+          retention-days: 90

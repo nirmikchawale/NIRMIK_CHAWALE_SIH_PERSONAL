@@ -1,0 +1,105 @@
+{
+  "schema": "ocean-canvas-competitor-census-v1",
+  "audited_utc": "2026-10-18",
+  "scope_note": "8 exact-head public GitHub snapshots independently verified; original full 98-candidate list not available in this checkpoint. Do not infer 98 examined.",
+  "original_98_registry_status": "UNRECOVERED",
+  "historical_300_descriptions_status": "UNRECOVERED",
+  "entries": [
+    {
+      "repository": "RAK2315/oceanverity",
+      "default_branch": "main",
+      "head_sha": "9aace9a875d75de2cbc15b38f648faa87063ff6a",
+      "fork": false,
+      "license": "UNKNOWN",
+      "inspection_level": "TREE_INSPECTED",
+      "inspected_file": "pipeline/oceanverity/collocation.py",
+      "decision": "NEEDS_CODE_REVIEW",
+      "code_evidence": "Source/Argo/collocation modules and tests exist; algorithms and rights not certified",
+      "adoption_status": "RESEARCH_ONLY"
+    },
+    {
+      "repository": "prasoonkashyap18/BlueNexus-SIH-2026",
+      "default_branch": "main",
+      "head_sha": "5f27b743c93e2d6ba03fa040ab81b14e2c79bb13",
+      "fork": false,
+      "license": "UNKNOWN",
+      "inspection_level": "CODE_INSPECTED",
+      "inspected_file": "backend/app/data/ingestion/validation.py",
+      "decision": "STRUCTURAL_QC_SEPARATION",
+      "code_evidence": "CheckReport distinguishes critical structural ingest errors from warnings and explicitly disclaims scientific validation",
+      "adoption_status": "RESEARCH_ONLY"
+    },
+    {
+      "repository": "quantumcoder2026/Fathom",
+      "default_branch": "main",
+      "head_sha": "363444175e3d83b522818a0d95199ee6e2384eb1",
+      "fork": false,
+      "license": "UNKNOWN",
+      "inspection_level": "CODE_INSPECTED",
+      "inspected_file": "compare/match.py",
+      "decision": "REQUIRES_SIGN_CONVERSION",
+      "code_evidence": "Match code uses observed-minus-model residuals; Ocean Canvas uses model-minus-observed; no-extrapolation and time/space offsets evident",
+      "adoption_status": "RESEARCH_ONLY"
+    },
+    {
+      "repository": "AnahadhBirdh/OceanScope",
+      "default_branch": "main",
+      "head_sha": "98fbab6b543d8114ff4956f33206febdebff0ad2",
+      "fork": false,
+      "license": "UNKNOWN",
+      "inspection_level": "TREE_INSPECTED",
+      "inspected_file": "README.md",
+      "decision": "NEEDS_CODE_REVIEW",
+      "code_evidence": "Tree/README present; source-backed and dimensionality assertions require inspection",
+      "adoption_status": "RESEARCH_ONLY"
+    },
+    {
+      "repository": "Rehaan15790/OceanLens-3D",
+      "default_branch": "main",
+      "head_sha": "034041bf1112dab77a228918881abe5367ab8600",
+      "fork": false,
+      "license": "UNKNOWN",
+      "inspection_level": "CODE_INSPECTED",
+      "inspected_file": "src/js/volume.js",
+      "decision": "LABEL_2_5D_CORRECTLY",
+      "code_evidence": "firstCrossing builds first-crossing depth isosurface over 2D grid, not general 3D volumetric isosurface",
+      "adoption_status": "RESEARCH_ONLY"
+    },
+    {
+      "repository": "Tanishktewetia/sih_67",
+      "default_branch": "main",
+      "head_sha": "671a7e2d6af693d68bf3312af6a0b537d4da7028",
+      "fork": false,
+      "license": "UNKNOWN",
+      "inspection_level": "TREE_INSPECTED",
+      "inspected_file": "frontend/src/observations/argoSource.js",
+      "decision": "NEEDS_CODE_REVIEW",
+      "code_evidence": "Argo and glider source modules and VolumeRaymarch file exist; content not independently verified",
+      "adoption_status": "RESEARCH_ONLY"
+    },
+    {
+      "repository": "shanshantanusingh113-max/sih26067-samudra",
+      "default_branch": "master",
+      "head_sha": "a9eb19cd5f260d12fa6e72c457a3c4e4fd640ff7",
+      "fork": false,
+      "license": "UNKNOWN",
+      "inspection_level": "METADATA_ONLY",
+      "inspected_file": null,
+      "decision": "NEEDS_CODE_REVIEW",
+      "code_evidence": "Description claims WOA23/Argo/Glider/BGC/HYCOM; none independently verified by this census",
+      "adoption_status": "RESEARCH_ONLY"
+    },
+    {
+      "repository": "sidhesh0706/OceanTwin",
+      "default_branch": "main",
+      "head_sha": "be792d1efaae3c4871d57bf972a955e97565d797",
+      "fork": false,
+      "license": "UNKNOWN",
+      "inspection_level": "METADATA_ONLY",
+      "inspected_file": null,
+      "decision": "NEEDS_CODE_REVIEW",
+      "code_evidence": "Description claims Argo/NetCDF support; confirm source bytes/realness in future code review",
+      "adoption_status": "RESEARCH_ONLY"
+    }
+  ]
+}

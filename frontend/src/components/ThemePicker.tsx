@@ -49,13 +49,26 @@ export function ThemePicker() {
 
   useEffect(() => {
     if (!open) return;
+    galleryRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as Node;
       if (rootRef.current?.contains(target) || galleryRef.current?.contains(target)) return;
       setOpen(false);
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+        rootRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
+      }
+      if (event.key === "Tab" && galleryRef.current) {
+        const buttons = Array.from(galleryRef.current.querySelectorAll<HTMLButtonElement>("button:not(:disabled)"));
+        if (!buttons.length) return;
+        if (event.shiftKey && document.activeElement === buttons[0]) {
+          event.preventDefault(); buttons[buttons.length - 1].focus();
+        } else if (!event.shiftKey && document.activeElement === buttons[buttons.length - 1]) {
+          event.preventDefault(); buttons[0].focus();
+        }
+      }
     };
     document.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("keydown", onKeyDown);
@@ -98,7 +111,7 @@ export function ThemePicker() {
               aria-pressed={filter === value}
               onClick={() => setFilter(value)}
             >
-              {value === "all" ? "All 16" : value === "dark" ? "Dark glass" : "Light glass"}
+              {value === "all" ? `All ${GLASS_THEMES.length}` : value === "dark" ? "Dark glass" : "Light glass"}
             </button>
           ))}
         </div>
@@ -140,7 +153,7 @@ export function ThemePicker() {
         </div>
 
         <div className="theme-gallery-footnote">
-          <span>16 presets · persisted on this device</span>
+          <span>{GLASS_THEMES.length} presets · persisted on this device</span>
           <span>Scientific renderer palettes remain independent</span>
         </div>
       </section>

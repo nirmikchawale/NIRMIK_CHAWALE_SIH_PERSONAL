@@ -6,6 +6,8 @@ import {
 } from "./main-block-variables";
 import { resolveMainBlock } from "./main-block-runtime";
 import { assertPilotFrameSha256 } from "./main-block-frame-integrity";
+import { inspectSourceBackedRenderFrame } from "./m064-scientific-render-pipeline";
+import { assertSourceNativeFrameTime } from "./m072-native-time-physics";
 
 export type PilotOceanRelevance = "ocean" | "coastal" | "land";
 
@@ -114,7 +116,10 @@ export interface PilotBlockPayload {
   };
 }
 
-const PILOT_BASE = `${import.meta.env.BASE_URL}main-blocks`.replace(/\/$/, "");
+// Vite provides BASE_URL in the browser; importing pure source converters in
+// the Node/Playwright certification process has no Vite env. Keep the same
+// real asset URL in production while allowing source-native conversion tests.
+const PILOT_BASE = `${import.meta.env?.BASE_URL ?? "./"}main-blocks`.replace(/\/$/, "");
 
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url, { headers: { Accept: "application/json" } });
@@ -145,7 +150,8 @@ function nativeVariableIntegration(payload: PilotBlockPayload) {
 export async function fetchPilotMainBlock(
   blockId: string,
   date: string,
-  manifest?: PilotBlockManifest
+  manifest?: PilotBlockManifest,
+  signal?: AbortSignal
 ): Promise<PilotBlockPayload> {
   const inventory = manifest ?? await fetchPilotMainBlockManifest();
   const block = inventory.blocks.find((item) => item.id === blockId);
@@ -155,7 +161,7 @@ export async function fetchPilotMainBlock(
   const record = block.payloads.find((item) => item.date === date);
   if (!record) throw new Error(`${blockId} has no genuine source frame for ${date}.`);
   // Verify the original source bytes against the immutable committed manifest.
-  const response = await fetch(`${PILOT_BASE}/${record.path}`, { headers: { Accept: "application/json" } });
+  const response = await fetch(`${PILOT_BASE}/${record.path}`, { headers: { Accept: "application/json" }, signal });
   if (!response.ok) throw new Error(`Pilot main-block asset unavailable: ${response.status} ${response.statusText}`);
   const bytes = await response.arrayBuffer();
   await assertPilotFrameSha256(bytes, record.sha256, blockId, date);
@@ -191,6 +197,9 @@ export async function fetchPilotMainBlock(
   ) throw new Error(`3DB-13 scientific source identity/shape mismatch for ${blockId} ${date}.`);
   nativeDepthAxis(payload);
   nativeVariableIntegration(payload);
+  inspectSourceBackedRenderFrame(payload);
+  assertSourceNativeFrameTime(block.available_dates, record.date, payload.time);
+  if (signal?.aborted) throw new DOMException("Source request superseded", "AbortError");
   return payload;
 }
 
@@ -211,7 +220,7 @@ function scalarMetadata(payload: PilotBlockPayload, variable: "thetao" | "so") {
   };
 }
 
-export function pilotBlockVolume(payload: PilotBlockPayload, variable: "thetao" | "so"): VolumeResponse {
+export function pilotBlockVolume(payload: PilotBlockPayload, variable: "thetao" | "so", timeIndex = 0): VolumeResponse {
   const meta = scalarMetadata(payload, variable);
   const points: VolumeResponse["points"] = [];
   const { longitude, latitude } = payload.coordinates;
@@ -230,7 +239,7 @@ export function pilotBlockVolume(payload: PilotBlockPayload, variable: "thetao" 
     variable,
     label: meta.label,
     units: meta.source.units,
-    time_index: 0,
+    time_index: timeIndex,
     time: payload.time,
     points,
     minimum: meta.minimum,
@@ -243,7 +252,8 @@ export function pilotBlockVolume(payload: PilotBlockPayload, variable: "thetao" 
 export function pilotBlockField(
   payload: PilotBlockPayload,
   variable: "thetao" | "so",
-  depthIndex: number
+  depthIndex: number,
+  timeIndex = 0
 ): FieldResponse {
   const selectedDepth = resolveNativeDepthSelection(
     payload.block_id,
@@ -265,7 +275,7 @@ export function pilotBlockField(
     variable,
     label: meta.label,
     units: meta.source.units,
-    time_index: 0,
+    time_index: timeIndex,
     time: payload.time,
     depth_index: selectedDepth.depthIndex,
     depth_m: selectedDepth.depthM,
@@ -283,7 +293,7 @@ export function pilotBlockField(
   };
 }
 
-export function pilotBlockCurrentsVolume(payload: PilotBlockPayload): CurrentsVolumeResponse {
+export function pilotBlockCurrentsVolume(payload: PilotBlockPayload, timeIndex = 0): CurrentsVolumeResponse {
   assertMainBlockVariableSelection(nativeVariableIntegration(payload), "currents");
   const vectors: CurrentsVolumeResponse["vectors"] = [];
   const { longitude, latitude } = payload.coordinates;
@@ -305,7 +315,7 @@ export function pilotBlockCurrentsVolume(payload: PilotBlockPayload): CurrentsVo
   return {
     variable: "currents",
     units: payload.variables.uo.units,
-    time_index: 0,
+    time_index: timeIndex,
     time: payload.time,
     vectors,
     minimum: speeds.length ? Math.min(...speeds) : 0,
@@ -318,7 +328,7 @@ export function pilotBlockCurrentsVolume(payload: PilotBlockPayload): CurrentsVo
   };
 }
 
-export function pilotBlockCurrents(payload: PilotBlockPayload, depthIndex: number): CurrentsResponse {
+export function pilotBlockCurrents(payload: PilotBlockPayload, depthIndex: number, timeIndex = 0): CurrentsResponse {
   assertMainBlockVariableSelection(nativeVariableIntegration(payload), "currents");
   const selectedDepth = resolveNativeDepthSelection(
     payload.block_id,
@@ -343,7 +353,7 @@ export function pilotBlockCurrents(payload: PilotBlockPayload, depthIndex: numbe
   return {
     variable: "currents",
     units: payload.variables.uo.units,
-    time_index: 0,
+    time_index: timeIndex,
     time: payload.time,
     depth_index: selectedDepth.depthIndex,
     depth_m: selectedDepth.depthM,

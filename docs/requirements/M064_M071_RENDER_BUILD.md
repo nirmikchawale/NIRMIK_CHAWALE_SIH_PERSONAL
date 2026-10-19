@@ -1,0 +1,3 @@
+# M064–M071 — Source-render work on draft build train
+
+Extra native-axis/mask/source-time and u/v authenticity guard is installed in the existing checksum-verifying pilot loader. Optional AbortSignal request cancellation and separate generation-token coordinator are built. Source tuple clipping and source-index-only LOD are available; synchronization identities are asserted. Existing React/Cesium and Water Column render paths are preserved. Tests use original IO-001 pilot bytes, but real GPU benchmarks, full UI wiring for cancellation/isosurface/clipping, and browser certification remain pending. No fake model samples or 2024 IO-087 source are produced.

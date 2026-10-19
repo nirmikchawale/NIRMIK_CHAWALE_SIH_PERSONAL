@@ -1,16 +1,16 @@
 import { expect, test } from "@playwright/test";
 import { GLASS_THEMES } from "../src/theme";
 
-/** RUI-MPR-01: smoke all 16 persisted theme choices against one shared token system. */
-test("all 16 glass presets inherit the rounded presentation foundation without changing science", async ({ page }) => {
+/** RUI-MPR-01: smoke original 16 plus 2 new neutral persisted choices against one shared token system. */
+test("all 18 glass presets inherit the rounded presentation foundation without changing science", async ({ page }) => {
   test.setTimeout(180_000);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(process.env.OCEANTWIN_LIVE_URL!);
 
-  expect(GLASS_THEMES).toHaveLength(16);
-  expect(GLASS_THEMES.filter((t) => t.scheme === "dark")).toHaveLength(8);
-  expect(GLASS_THEMES.filter((t) => t.scheme === "light")).toHaveLength(8);
+  expect(GLASS_THEMES).toHaveLength(18);
+  expect(GLASS_THEMES.filter((t) => t.scheme === "dark")).toHaveLength(9);
+  expect(GLASS_THEMES.filter((t) => t.scheme === "light")).toHaveLength(9);
 
   const root = page.locator(".ocean-workbench");
   const sourceBefore = await root.getAttribute("data-explore-source");

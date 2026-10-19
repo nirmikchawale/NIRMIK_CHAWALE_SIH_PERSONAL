@@ -1,0 +1,3 @@
+# M072–M079 — Native temporal/physics development
+
+Source frame dates and SHA identities are strictly matched against the existing manifest, with no invented time interpolation. The real pilot fetch path checks its native UTC timestamp against the chosen manifest date. Surface satellite chlorophyll is depth zero only and BGC S-profiles are separately labeled. Native salinity, temperature, pressure, native QC and external reviewed GSW are prerequisites to computed density, MLD or heat content. Cyclone prediction is never presented as scientifically certified. These contracts do not implement all derived physics or UI switching; those outputs remain source-gated, with development E2E tests and real playback across panels still pending.

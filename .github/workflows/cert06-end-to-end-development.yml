@@ -1,0 +1,214 @@
+name: ocean-canvas-cert06-end-to-end-development
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/cert06-end-to-end-development.yml"
+      - "frontend/e2e/cert06-*"
+      - "frontend/src/**"
+      - "frontend/public/main-blocks/**"
+      - "backend/**"
+      - "api/**"
+      - "scripts/**"
+      - "tests/**"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cert06-stage-a-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+jobs:
+  integrated-source-science-api:
+    if: ${{ startsWith(github.event.pull_request.head.ref || github.ref_name, 'build/m008-m095-') && (github.event_name != 'pull_request' || github.event.pull_request.draft) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Assert exact intended PR-head science commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          echo "CERT06_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "CERT06 isolated original-source backend — never deployed"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Original full source + FastAPI / OGC / Argo scientific pytest
+        run: |
+          python -m pip install -r requirements.txt -r backend/requirements.txt
+          python scripts/certify_build_first.py
+          python -m pytest -q tests backend/tests
+      - name: Real Uvicorn HTTP native source-integrity checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 >/tmp/cert06-api.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:8000/api/health >/dev/null; then break; fi
+            sleep 1
+          done
+          python - <<'PY'
+          import json
+          from urllib.request import urlopen
+          base="http://127.0.0.1:8000"
+          def get(path):
+              with urlopen(base+path,timeout=35) as r:
+                  assert r.status==200,(path,r.status)
+                  return r.read()
+          health=json.loads(get("/api/health"))
+          assert health["status"]=="ok" and health["time_steps"]==1 and health["depth_levels"]==31
+          assert health["scientific_data_network_required"] is False
+          cat=json.loads(get("/api/catalog"))
+          assert cat["capabilities"]["time_animation"] is False
+          for path in ("/api/profiles","/api/provenance","/api/field?variable=thetao&depth_index=18","/api/field?variable=so&depth_index=18","/api/currents?depth_index=18"):
+              json.loads(get(path))
+          vec=json.loads(get("/api/currents-volume?depth_stride=1&horizontal_stride=6"))
+          assert vec["components"]==["uo","vo"]
+          assert vec["vertical_component_available"] is False and len(vec["depths_m"])==31
+          wms=get("/ogc/wms?service=WMS&request=GetMap&version=1.3.0&layers=thetao&crs=CRS:84&bbox=67,12,70,14&width=120&height=90&format=image/png&depth_index=18")
+          assert wms[:8]==bytes([137,80,78,71,13,10,26,10])
+          print("CERT06 genuine original-source FastAPI HTTP native 31 depths, 1 baseline time, u/v, WMS, Argo PASS")
+          PY
+      - name: Genuine Streamlit original scientific fallback healthy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m streamlit run app.py --server.headless true --server.port 8501 >/tmp/cert06-streamlit.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          ready=0
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:8501/_stcore/health >/dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          test "$ready" -eq 1
+      - name: Retain backend exact-source audit ledger
+        run: |
+          mkdir -p certification-evidence/cert06
+          printf '{"schema":"oceancanvas-cert06-original-source-http-v1","sourceSha":"%s","realApi":true,"realStreamlit":true,"nativeDepths":31,"nativeCurrents":["uo","vo"],"syntheticSourceAdded":false}\n' "$CERT06_SHA" >certification-evidence/cert06/api.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cert06-native-api-science
+          path: certification-evidence/cert06/api.json
+          if-no-files-found: error
+          retention-days: 30
+  integrated-react-cesium-chromium:
+    if: ${{ startsWith(github.event.pull_request.head.ref || github.ref_name, 'build/m008-m095-') && (github.event_name != 'pull_request' || github.event.pull_request.draft) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact Stage A source SHA
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          echo "CERT06_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Verify original scientific dataset and export genuine static API
+        run: |
+          python -m pip install -r requirements.txt -r backend/requirements.txt
+          python scripts/certify_build_first.py
+          python scripts/export_static_science.py --output frontend/public/science-static
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: React/Cesium exact lockfile and source-backed build
+        working-directory: frontend
+        env:
+          VITE_STATIC_SCIENCE: 'true'
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+          test -s dist/index.html
+          test -s dist/science-static/catalog.json
+          test -s dist/cesiumStatic/Assets/Textures/NaturalEarthII/0/0/0.jpg
+          find dist/assets -name 'netcdf4-wasm-*.wasm' -type f -size +0c | grep -q .
+      - name: Install genuine Chromium WebGL software renderer
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Execute real end-to-end multi-view and security-recovery science workflow
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist >/tmp/cert06-browser.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4174/science-static/catalog.json >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:4174/main-blocks/manifest.json >/dev/null
+          npx playwright test -c playwright.live.config.ts e2e/cert06-end-to-end-development.spec.ts e2e/cert03-native-timestep-index.spec.ts e2e/cert05-performance-security-recovery.spec.ts e2e/m080-m087-neutral-glass.spec.ts e2e/m088-m095-hardening.spec.ts
+      - name: Retain genuine integrated source-control evidence
+        working-directory: frontend
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          root=Path("certification-evidence")
+          a=json.loads((root/"cert06/integrated-browser.json").read_text())
+          p=json.loads((root/"cert05/performance.json").read_text())
+          assert a["block"]=="IO-001" and a["nativeDepthLevels"]==31
+          assert a["nativeDates"]==["2004-03-15","2004-07-28"]
+          assert a["bothViewsAccepted"] is True and a["syntheticFrameCreated"] is False
+          assert p["realBrowser"] is True and p["gpuMeasured"] is False
+          print("CERT06 real native integrated browser+failure recovery contract PASS")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cert06-genuine-integrated-browser
+          path: |
+            frontend/certification-evidence/cert06/
+            frontend/certification-evidence/cert05/
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 30
+  combined-development-certificate:
+    if: ${{ startsWith(github.event.pull_request.head.ref || github.ref_name, 'build/m008-m095-') && (github.event_name != 'pull_request' || github.event.pull_request.draft) }}
+    needs: [integrated-source-science-api, integrated-react-cesium-chromium]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cert06-*
+          merge-multiple: false
+          path: certificate-evidence
+      - name: Confirm real scientific and browser acceptance manifests both exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          a=Path("certificate-evidence")
+          api=list(a.rglob("api.json"))
+          browser=list(a.rglob("integrated-browser.json"))
+          assert len(api)==1 and len(browser)==1,(api,browser)
+          api_doc=json.loads(api[0].read_text())
+          web_doc=json.loads(browser[0].read_text())
+          assert api_doc["sourceSha"]=="${{ github.event.pull_request.head.sha || github.sha }}"
+          assert api_doc["realApi"] and api_doc["realStreamlit"]
+          assert web_doc["bothViewsAccepted"] and web_doc["syntheticFrameCreated"] is False
+          print("CERT06 exact-head original-source backend+WebGL browser complete:",api_doc["sourceSha"])
+          PY

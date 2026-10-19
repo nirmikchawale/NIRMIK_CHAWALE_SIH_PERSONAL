@@ -31,7 +31,7 @@ test("glass appearance gallery exposes all presets, is centered and persists sel
 
   const gallery = page.getByRole("dialog", { name: "Glass appearance gallery" });
   await expect(gallery).toBeVisible();
-  await expect(gallery.locator(".theme-option")).toHaveCount(16);
+  await expect(gallery.locator(".theme-option")).toHaveCount(18);
   await expectCenteredAndBounded(page, viewport);
 
   await gallery.getByRole("button", { name: /Lavender Haze/i }).click();
@@ -74,7 +74,7 @@ for (const viewport of [
     await expectCenteredAndBounded(page, viewport, 2);
 
     await gallery.getByRole("button", { name: "Light glass", exact: true }).click();
-    await expect(gallery.locator(".theme-option")).toHaveCount(8);
+    await expect(gallery.locator(".theme-option")).toHaveCount(9);
     await gallery.getByRole("button", { name: /Pearl Lagoon/i }).click();
     await expect.poll(() => page.locator("html").getAttribute("data-glass-theme")).toBe("pearl-lagoon");
   });
