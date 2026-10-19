@@ -53,6 +53,8 @@ jobs:
         if: steps.ui-scope.outputs.ui_changed == 'true'
         env:
           CANDIDATE_HEAD: ${{ github.event.pull_request.head.ref }}
+          CANDIDATE_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          CANDIDATE_BASE: ${{ github.event.pull_request.base.ref }}
         shell: bash
         run: |
           set -euo pipefail
@@ -67,6 +69,16 @@ jobs:
                 "$CANDIDATE_HEAD" == "integration/itm03-final-reload-basemap-20261019" ||
                 "$CANDIDATE_HEAD" == "integration/itm03-commit-navigation-refresh-20261019" ]]; then
             recovery_args+=(--reviewed-m001-m007-package)
+          fi
+          # ITM-05-B is an explicit, owner-repository stacked candidate. This
+          # path only authorizes exact certified inherited blobs; the auditor
+          # rejects a changed safety script, scientific provider, test, audit,
+          # a different parent or any other prohibited file.
+          if [[ "$CANDIDATE_HEAD" == "integration/itm05-verified-argo-5907092-20261019" ]]; then
+            [[ "$CANDIDATE_REPO" == "nirmikchawale/NIRMIK_CHAWALE_SIH_PERSONAL" &&
+               "$CANDIDATE_BASE" == "integration/itm02-safety-exact-science-20261019" ]] ||
+              { echo "ITM-05 provenance/base mismatch; fail closed"; exit 1; }
+            recovery_args+=(--reviewed-itm05-stack)
           fi
           python scripts/verify_mpr_release_scope.py \
             --base origin/main --head HEAD \
