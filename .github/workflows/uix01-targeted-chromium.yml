@@ -1,4 +1,4 @@
-name: UIX-01 targeted real Chromium diagnosis
+name: UIX-01 bounded guide scroll geometry diagnosis
 
 # Diagnostic run only, NEVER MPR release certification or 96 screenshots.
 on:
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   targeted-uix01:
-    name: Three real Chromium UIX-01 scenarios
+    name: Single guide scroll geometry probe
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -44,7 +44,7 @@ jobs:
       - name: Install genuine software-rendered Chromium
         working-directory: frontend
         run: npx playwright install --with-deps chromium
-      - name: Execute exactly the three UIX-01 tests on real Chromium
+      - name: Probe guide scroll owner in one real Chromium test
         working-directory: frontend
         env:
           OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
@@ -59,7 +59,7 @@ jobs:
           done
           curl --fail http://127.0.0.1:4174/ > /dev/null
           npx playwright test -c playwright.live.config.ts \
-            e2e/mpr-uix01-presentation-scroll-owner.spec.ts \
+            e2e/uix01-guide-scroll-geometry-probe.spec.ts \
             --workers=1 --retries=0
       - name: Archive real Playwright failure evidence
         if: always()
