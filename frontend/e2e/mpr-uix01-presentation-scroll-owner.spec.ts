@@ -42,3 +42,30 @@ for (const width of [1440, 390]) {
     await expect(page.getByTestId("presentation-guide")).toHaveCount(0);
   });
 }
+
+test("UIX-01 initial Explorer scroll and Present demo follow correct scroll owners", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(live!.replace(/#.*$/, "") + "#/explore", { waitUntil: "domcontentloaded" });
+  await expect(page.getByTestId("mpr-block-details-workspace")).toBeVisible({ timeout: 60_000 });
+  const skip = page.getByRole("button", { name: "Skip journey" });
+  if (await skip.isVisible().catch(() => false)) await skip.click();
+
+  const root = page.locator(".ocean-workbench");
+  const geographic = page.locator("#mpr-3d-stage");
+  const water = page.getByTestId("mpr-12-water-column-section");
+  await expect(root).toHaveAttribute("data-workspace-mode", "explorer");
+  await expect(root).toHaveCSS("overflow-y", "auto");
+  await water.evaluate(el => el.scrollIntoView({ block: "start", behavior: "instant" }));
+  await expect(geographic).toHaveAttribute("data-visualization-mode", "water-column");
+  await geographic.evaluate(el => el.scrollIntoView({ block: "start", behavior: "instant" }));
+  await expect(geographic).toHaveAttribute("data-visualization-mode", "globe");
+
+  await page.getByRole("button", { name: "Present demo" }).click();
+  await expect(page.getByTestId("presentation-guide")).toBeVisible();
+  await water.evaluate(el => el.scrollIntoView({ block: "start", behavior: "instant" }));
+  await expect(geographic).toHaveAttribute("data-visualization-mode", "water-column");
+  await page.getByRole("button", { name: "Close presentation guide" }).click();
+  await expect(page.getByTestId("presentation-guide")).toHaveCount(0);
+});

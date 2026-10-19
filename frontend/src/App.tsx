@@ -942,7 +942,8 @@ export default function App() {
   // MPR-12: update the navigator from ACTUAL scroll visibility, without
   // reissuing scientific requests or triggering scroll from a scroll observer.
   useEffect(() => {
-    if (page !== "explore") return;
+    // The boot screen has no Explorer shell. Re-attach when catalog loads.
+    if (page !== "explore" || !catalog) return;
     const root = document.querySelector<HTMLElement>('.ocean-workbench[data-page="explore"]');
     if (!root) return;
     // Explorer scrolls on the shell; Presentation and the judge guide use the
@@ -978,7 +979,7 @@ export default function App() {
       window.removeEventListener("resize", onScroll);
       if (pending) window.cancelAnimationFrame(pending);
     };
-  }, [page, workspaceMode, guideOpen]);
+  }, [page, workspaceMode, guideOpen, catalog]);
 
 
   if (!catalog) {
