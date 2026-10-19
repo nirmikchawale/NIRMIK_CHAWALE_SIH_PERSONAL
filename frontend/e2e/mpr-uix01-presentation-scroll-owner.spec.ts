@@ -31,8 +31,15 @@ for (const width of [1440, 390]) {
     await geographic.evaluate((el) => el.scrollIntoView({ block: "start", behavior: "instant" }));
     await expect(geographic).toHaveAttribute("data-visualization-mode", "globe");
 
-    // Opening Present demo changes the scroll context again, without trapping
-    // the active-view observer on an inactive outer container.
+    // Presentation intentionally hides the desktop header containing Present demo.
+    // Exit through the visible in-scene control before accessing the header guide.
+    // Requiring a hidden header button caused repeated 180-second Playwright timeouts.
+    if (width > 760) await expect(root.locator(".app-header")).toBeHidden();
+    await page.getByRole("button", { name: "Exit presentation workspace" }).click();
+    await expect(root).toHaveAttribute("data-workspace-mode", "explorer");
+    await expect(page.getByRole("button", { name: "Present demo" })).toBeVisible();
+
+    // Opening Present demo now tests the supported Explorer guide pathway.
     await page.getByRole("button", { name: "Present demo" }).click();
     await expect(page.getByTestId("presentation-guide")).toBeVisible();
     await expect(page.locator(".workspace")).toHaveAttribute("data-judge-guide", "open");

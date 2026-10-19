@@ -946,11 +946,16 @@ export default function App() {
     if (page !== "explore" || !catalog) return;
     const root = document.querySelector<HTMLElement>('.ocean-workbench[data-page="explore"]');
     if (!root) return;
-    // Explorer scrolls on the shell; Presentation and the judge guide use the
-    // inner scene scroller. Observe the element that actually receives scroll.
+    // Presentation uses the inner scene scroller. The judge guide only uses
+    // that inner scroller when it has actual overflow. In Explorer-guide layout
+    // the outer shell can remain the true scroll owner (observed in Chromium:
+    // shell scrollTop 2795, station scrollTop 0), so never bind to a non-scroller.
     const stationScroller = root.querySelector<HTMLElement>(".station-workspace");
-    const scrollHost = (workspaceMode === "presentation" || guideOpen) && stationScroller
-      ? stationScroller : root;
+    const innerHasScrollableOverflow = Boolean(stationScroller &&
+      stationScroller.scrollHeight > stationScroller.clientHeight + 1);
+    const observeInner = workspaceMode === "presentation" ||
+      (guideOpen && innerHasScrollableOverflow);
+    const scrollHost = observeInner && stationScroller ? stationScroller : root;
     let pending = 0;
     const reflectVisibleSection = () => {
       pending = 0;
