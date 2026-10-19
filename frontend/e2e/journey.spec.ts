@@ -44,7 +44,13 @@ test("orientation replay, skip, explicit Water Column entry and return remain us
   await expect(waterColumnView).toHaveAttribute("aria-pressed", "false");
 
   await hud.getByRole("button", { name: "Open in Water Column 3D" }).click();
-  await expect(page.locator(".water-column-shell")).toBeVisible();
+  // MPR-12 now owns a separate genuine Water Column section, not the
+  // pre-MPR single-stage renderer. Verify native linked block/eligibility.
+  const waterSection = page.getByTestId("mpr-12-water-column-section");
+  await expect(waterSection).toBeVisible();
+  await expect(waterSection).toHaveAttribute("data-linked-block", "IO-073");
+  await expect(waterSection).toHaveAttribute("data-eligible", "true");
+  await expect(page.locator("#mpr-3d-stage")).toHaveAttribute("data-visualization-mode", "water-column");
   await expect(waterColumnView).toHaveAttribute("aria-pressed", "true");
   await geographicView.click();
   await expect(geographicView).toHaveAttribute("aria-pressed", "true");
