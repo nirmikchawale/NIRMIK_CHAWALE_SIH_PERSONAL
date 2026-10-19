@@ -62,3 +62,13 @@
 - Keep statuses separate: coded, targeted tested, integrated, exact-commit certified, human approved, merged, deployed and public-verified.
 - If no proof, say **BLOCKED with the exact reason**, not "done."
 - Future agents: read issue #220 and this runbook before planning *any* browser rerun. Maintain a durable PR/issue failure ledger, and pick the *first incomplete step*, never a fresh full-suite loop.
+
+## 20 October update — proven screenshot evidence-packaging defect and exact correction
+
+The completed old MPR run 39320367252 failed (52 real browser cases PASS / six FAIL); its uploaded artifact 12222679929 was downloaded and ZIP-inspected. **The archive contained zero PNG files**: 13 error-context .md files and one preview .log. Thus previous matrix test passes did not certify actual screenshot deliverables.
+
+We isolated ONLY ONE genuine Chromium screenshot using diagnostic run 39329940482. The real 1440px Geographic screenshot yielded a **437,746-byte PNG** with the correct PNG signature. The downloaded diagnostic ZIP (artifact 12223537564) contains the same real image in three locations: explicit test output, test attachment and HTML report. The Playwright test **passed 1/1**; the GitHub Actions job was marked FAILURE only because a *post-test shell glob* assumed the wrong Playwright output-directory name. The ZIP independently proves screenshot preservation, so **do not rerun this diagnostic**.
+
+**Permanent image-gate remediation staged:** the MPR-16 spec now writes every genuine image explicitly via page.screenshot(path=info.outputPath(...)) and attaches that path. The MPR release workflow uses an HTML reporter and validates **96 unique actual nonempty PNG files**, checks each 8-byte PNG signature, viewport/view/theme combination and SHA-256 manifest. Retry duplicates are logged but cannot substitute for missing unique images. If insufficient files, CI fails closed and uploads its manifest. This change is staged on the protected-scope-approved integration branch, **not on main**, and has not generated the 96 screenshots again. Execute the final whole image matrix only after the other isolated blockers pass and an exact release candidate is ready.
+
+The final-mvp 39320367264 results have all concluded: shard 1 **58 PASS, 5 FAIL, 2 FLAKY**; shard 2 **56 PASS, 9 FAIL**; shard 3 **54 PASS, 8 FAIL**; shard 4 **64/64 PASS**. Shard-2 errors are predominantly legacy mobile block HUD and obsolete Water Column shell expectations, plus MPR10/11 mobile tray tests already isolated. Do not launch this matrix anew to diagnose those errors.
