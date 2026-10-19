@@ -128,7 +128,7 @@ def main() -> int:
                  not (allowed(path) or path in reviewed)]
     # Provider-side scientific changes are NEVER released without both the
     # genuine-source audit and numerical/immutable regression suite.
-    if unexpected_science and unexpected_science != reviewed:
+    if unexpected_science and unexpected_science != set(REVIEWED_SCIENCE_RECOVERY):
         forbidden.append("INCOMPLETE_REVIEWED_SCIENCE_RECOVERY_TRIO")
     if reviewed_science and not unexpected_science:
         forbidden.append("REVIEWED_SCIENCE_RECOVERY_ABSENT")
