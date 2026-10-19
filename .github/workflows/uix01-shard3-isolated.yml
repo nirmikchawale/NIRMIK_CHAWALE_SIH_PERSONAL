@@ -1,0 +1,73 @@
+name: UIX-01 shard-3 isolated browser contracts
+
+on:
+  push:
+    branches:
+      - diagnostic/uix01-shard3-browser-contract-20261020
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  isolated-shard3:
+    name: Four repaired legacy interactions on real Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Download byte-identical certified scientific build
+        uses: actions/download-artifact@v4
+        with:
+          name: final-mvp-verified-production-static
+          run-id: 39320367264
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: frontend/dist
+      - name: Verify original release candidate built science
+        run: |
+          set -euo pipefail
+          test -s frontend/dist/index.html
+          test -s frontend/dist/science-static/catalog.json
+          test -s frontend/dist/observations/verified-profiles.json
+          echo "Runtime source SHA d2c444fdaaf75c449aeff30bf23904363d47fa05"
+      - name: Install genuine headless Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Run four isolated real-browser tests without retries
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > shard3-preview.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:4174/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:4174/ >/dev/null
+          npx playwright test -c playwright.live.config.ts \
+            e2e/mpr-17-cross-phase-certification.spec.ts \
+            e2e/mpr-block-region-relocation.spec.ts \
+            e2e/mpr-geographic-toolbar-scroll.spec.ts \
+            e2e/mpr-desktop-interaction-recovery.spec.ts \
+            --grep 'MPR-17 integrated two-renderer and inspector smoke: 390|Block & Region owns the real globe controls without obscuring Cesium at 390px|Geographic toolbar is aligned and wheel-scrollable at 390px|desktop real toolbar receives pointer input at 1327px' \
+            --workers=1 --retries=0
+      - name: Preserve real failure screenshot and locator evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shard3-isolated-real-browser-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            frontend/playwright-report
+            frontend/shard3-preview.log
+          if-no-files-found: warn
+          retention-days: 7
