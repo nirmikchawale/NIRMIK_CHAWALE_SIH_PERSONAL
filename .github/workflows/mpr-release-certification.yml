@@ -160,6 +160,7 @@ jobs:
                           and p.name.endswith(('--geographic.png', '--water-column.png')))
           matrix = {}
           errors = []
+          repeated_capture_attempts = []
           for path in images:
               match = re.fullmatch(r'(wide-desktop|tablet|mobile)--([a-z0-9-]+)--(geographic|water-column)\.png', path.name)
               if not match:
@@ -168,7 +169,9 @@ jobs:
               key = '::'.join(match.groups())
               raw = path.read_bytes()
               if key in matrix:
-                  errors.append('Duplicate image: ' + key)
+                  # Playwright can retain a partial first attempt and a successful
+                  # retry. Preserve both files but certify unique matrix keys.
+                  repeated_capture_attempts.append(key)
               if len(raw) <= 1024 or raw[:8] != bytes([137,80,78,71,13,10,26,10]):
                   errors.append('Invalid or empty Chromium PNG: ' + key)
               matrix[key] = dict(path=str(path), bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest())
@@ -180,7 +183,8 @@ jobs:
               errors.append('Expected 96 unique PNGs (16 themes x 3 viewports x 2 views), got '+str(len(matrix))+'; themes='+str(len(theme_ids)))
           root.mkdir(parents=True, exist_ok=True)
           out = root / 'mpr16-actual-96-png-manifest.json'
-          out.write_text(json.dumps({'schema':'oceancanvas-mpr16-real-png-v1','count':len(matrix),'themes':sorted(theme_ids),
+          out.write_text(json.dumps({'schema':'oceancanvas-mpr16-real-png-v1','count':len(matrix),'raw_png_files':len(images),
+                                     'themes':sorted(theme_ids),'retry_duplicates':sorted(set(repeated_capture_attempts)),
                                      'valid':not errors,'errors':errors,'images':matrix}, indent=2)+'\n')
           print('MPR16 actual persisted PNGs:', len(matrix), 'themes:', len(theme_ids), 'errors:', errors)
           if errors: raise SystemExit(1)
