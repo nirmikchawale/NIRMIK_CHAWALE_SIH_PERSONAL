@@ -31,27 +31,23 @@ async function recordNativeJourney(page: import("@playwright/test").Page) {
     record();
   });
 }
-// Request a native same-URL full-document navigation with Chromium's actual
-// reload transition. Standard Page.reload and CDP Page.reload did not commit
-// under software-rendered Cesium; Page.navigate provides a new loaderId, so
-// same-document hash transitions cannot masquerade as a refreshed document.
-// A new performance.timeOrigin and all four real DOM journey phases remain
-// mandatory. No synthetic phases, state injection or skipped assertions.
+// Certify a real same-URL, full-document navigation exactly once. A prior
+// reload followed by a second page.goto raced Chromium's outstanding renderer
+// navigation under software-rendered Cesium, yielding timeout/interrupted
+// navigation even when all other real browser cases succeeded. Do not send a
+// second navigation while the first is pending. A new performance.timeOrigin,
+// native phase mutation history and final geographic state remain mandatory.
 async function reloadAndVerifyNativeJourney(
   page: import("@playwright/test").Page
 ) {
   const previousDocumentTime = await page.evaluate(() => performance.timeOrigin);
-  const cdp = await page.context().newCDPSession(page);
-  // Stop pending software-renderer network loading before initiating the
-  // native reload transition, without changing application or scientific data.
-  await cdp.send("Page.stopLoading");
-  const navigation = await cdp.send("Page.navigate", {
-    url: page.url(),
-    transitionType: "reload"
-  });
-  if (navigation.errorText || !navigation.loaderId) {
-    throw new Error("Chromium native reload did not start a new document: " + JSON.stringify(navigation));
-  }
+  const expectedUrl = page.url();
+
+  // page.goto with the current URL performs a native full-document navigation,
+  // not a hash-route change or synthetic journey reset. A single request
+  // avoids racing a timed-out page.reload against a fallback goto.
+  await page.goto(expectedUrl, { waitUntil: "commit", timeout: 120_000 });
+  await expect(page).toHaveURL(expectedUrl);
   await expect.poll(async () => {
     try {
       return await page.evaluate(() => performance.timeOrigin);
