@@ -31,13 +31,11 @@ async function recordNativeJourney(page: import("@playwright/test").Page) {
     record();
   });
 }
-// Browser-native, SAME-URL full-document reload. A hash-only transition or
-// synthetic reset must never count: a new performance.timeOrigin plus the
-// real Earth -> India -> flying -> region DOM sequence are mandatory.
-// Chromium's software-rendered Cesium scene can occasionally leave a
-// requested navigation uncommitted. Try the actual page location.reload
-// first; on a bounded non-commit, request a second real full-document
-// navigation without changing the URL or skipping any scientific/UI checks.
+// Always certify a genuine same-URL full-document refresh. Browser reload
+// is the primary path, followed by a same-URL browser navigation if Chromium
+// stalls the reload under software-rendered Cesium. Neither hash-only routing
+// nor a synthetic journey reset can pass: the new document time origin and all
+// four observed native Earth -> India -> flying -> region phases are required.
 async function reloadAndVerifyNativeJourney(
   page: import("@playwright/test").Page
 ) {
@@ -56,27 +54,17 @@ async function reloadAndVerifyNativeJourney(
     }, { timeout }).not.toBe(previousDocumentTime);
   };
 
-  // The browser's native location.reload() refreshes exactly the current
-  // document; a timer lets the originating evaluate return before unload.
-  await page.evaluate(() => {
-    window.setTimeout(() => window.location.reload(), 0);
-  });
+  // Playwright owns navigation lifecycles and can safely reattach execution
+  // contexts while the native Chromium renderer changes processes. Do not
+  // send Page.stopLoading on a renderer being detached by an earlier reload.
   try {
-    await committedNewDocument(30_000);
+    await page.reload({ waitUntil: "commit", timeout: 60_000 });
+    await committedNewDocument(20_000);
   } catch {
-    // Still require a real document commit after Chromium's renderer stalls.
-    // Page.navigate uses a native full-document loader, never a hash-only or
-    // client-side navigation. The timeOrigin assertion remains mandatory.
-    const cdp = await page.context().newCDPSession(page);
-    await cdp.send("Page.stopLoading");
-    const navigation = await cdp.send("Page.navigate", {
-      url: expectedUrl,
-      transitionType: "reload"
-    });
-    if (navigation.errorText || !navigation.loaderId) {
-      throw new Error("Chromium native reload did not start a new document: " + JSON.stringify(navigation));
-    }
-    await committedNewDocument(90_000);
+    // This is still a native, same-URL full-document navigation. It does not
+    // change app state, URL, scientific data or expected phase observations.
+    await page.goto(expectedUrl, { waitUntil: "commit", timeout: 90_000 });
+    await committedNewDocument(30_000);
   }
   await expect(page).toHaveURL(expectedUrl);
   await requireNativeJourney(page);
