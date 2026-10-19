@@ -74,7 +74,13 @@ for (const viewport of [
     await expect(page.getByTestId("phase35-block-launcher")).toBeHidden();
     const globe = page.locator(".globe-shell[data-journey-phase]");
     await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 30_000 });
-    const hud = page.locator(".main-block-globe-hud");
+    // In the present MPR mobile UI the source-owned main block control lives
+    // in the ControlPanel. Its old in-globe HUD is intentionally hidden.
+    await page.getByTestId("mpr-block-details-workspace")
+      .getByRole("button", { name: "Block & Region controls" }).click();
+    const controlPanel = page.locator(".station-workspace > .control-panel");
+    await expect(controlPanel).toHaveAttribute("data-mobile-open", "true");
+    const hud = controlPanel.getByTestId("integrated-main-block-hud");
     await expect(hud).toBeVisible();
     await hud.scrollIntoViewIfNeeded();
     const box = await hud.boundingBox();

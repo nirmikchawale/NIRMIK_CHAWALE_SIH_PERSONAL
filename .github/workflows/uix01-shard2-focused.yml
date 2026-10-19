@@ -1,0 +1,83 @@
+name: UIX-01 shard-2 five actual Chromium regressions
+on:
+  push:
+    branches:
+      - diagnostic/uix01-shard2-legacy-block-controls-20261020
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  isolate-shard2:
+    name: Exactly five main-block browser contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 27
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install deterministic Playwright runtime
+        working-directory: frontend
+        run: npm ci
+      - name: Reuse verified source science files (no network data regeneration)
+        uses: actions/download-artifact@v4
+        with:
+          name: final-mvp-verified-production-static
+          run-id: 39320367264
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: frontend/dist
+      - name: Restore immutable source-backed data for candidate build
+        run: |
+          set -euo pipefail
+          for dir in science-static operational observations samples; do
+            test -d "frontend/dist/$dir" && cp -a "frontend/dist/$dir" "frontend/public/$dir"
+          done
+      - name: Build actual corrected UI without altering scientific arrays
+        working-directory: frontend
+        env:
+          VITE_STATIC_SCIENCE: 'true'
+        run: |
+          npm run typecheck
+          npm run build
+      - name: Install real Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Assert exactly five isolated cases are selected (no entire shard)
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+        run: |
+          npx playwright test -c playwright.live.config.ts \
+            e2e/main-block-engine.spec.ts e2e/main-block-globe-integration.spec.ts \
+            --grep 'Phase 3.5D legacy launcher yields|planned target enters|integrated main-block controls stay viewport-safe at (390|430)' \
+            --list | tee /tmp/shard2-listed.txt
+          grep -q 'Total: 5 tests' /tmp/shard2-listed.txt
+      - name: Run only five real Chromium cases with zero retries
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > shard2-preview.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            curl --silent --fail http://127.0.0.1:4174/ > /dev/null && break || sleep 1
+          done
+          curl --fail http://127.0.0.1:4174/ > /dev/null
+          npx playwright test -c playwright.live.config.ts \
+            e2e/main-block-engine.spec.ts e2e/main-block-globe-integration.spec.ts \
+            --grep 'Phase 3.5D legacy launcher yields|planned target enters|integrated main-block controls stay viewport-safe at (390|430)' \
+            --workers=1 --retries=0
+      - name: Preserve exact failures without duplicate full-suite runs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uix01-shard2-five-cases-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            frontend/shard2-preview.log
+          if-no-files-found: warn
+          retention-days: 10
