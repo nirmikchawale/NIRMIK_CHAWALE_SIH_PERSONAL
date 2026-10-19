@@ -1,4 +1,4 @@
-name: UIX-01 shard-3 isolated browser contracts
+name: UIX-01 mobile ControlPanel close regression
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   isolated-shard3:
-    name: Four repaired legacy interactions on real Chromium
+    name: Two MPR-17 mobile close Chromium cases
     runs-on: ubuntu-latest
     timeout-minutes: 28
     steps:
@@ -29,6 +29,19 @@ jobs:
           run-id: 39320367264
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: frontend/dist
+      - name: Retain byte-identical verified science payload for exact UI build
+        run: |
+          set -euo pipefail
+          for directory in science-static operational observations samples; do
+            if test -d "frontend/dist/$directory"; then
+              cp -a "frontend/dist/$directory" "frontend/public/$directory"
+            fi
+          done
+      - name: Build exact candidate with one mobile CSS correction
+        working-directory: frontend
+        run: |
+          npm run typecheck
+          npm run build
       - name: Verify original release candidate built science
         run: |
           set -euo pipefail
@@ -39,7 +52,7 @@ jobs:
       - name: Install genuine headless Chromium
         working-directory: frontend
         run: npx playwright install --with-deps chromium
-      - name: Run four isolated real-browser tests without retries
+      - name: Run only mobile MPR-17 close cases without retries
         working-directory: frontend
         env:
           OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
@@ -58,7 +71,7 @@ jobs:
             e2e/mpr-block-region-relocation.spec.ts \
             e2e/mpr-geographic-toolbar-scroll.spec.ts \
             e2e/mpr-desktop-interaction-recovery.spec.ts \
-            --grep 'MPR-17 integrated two-renderer and inspector smoke: 390|Block & Region owns the real globe controls without obscuring Cesium at 390px|Geographic toolbar is aligned and wheel-scrollable at 390px|desktop real toolbar receives pointer input at 1327px' \
+            --grep 'MPR-17 integrated two-renderer and inspector smoke: (320|390)' \
             --workers=1 --retries=0
       - name: Preserve real failure screenshot and locator evidence
         if: always()

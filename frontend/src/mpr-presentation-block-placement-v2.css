@@ -356,3 +356,15 @@
     grid-template-columns: repeat(2,minmax(0,1fr)) !important;
   }
 }
+
+/* UIX-01 mobile accessibility: the older station stylesheet suppresses the
+   real ControlPanel's close heading even when the source-owned mobile sheet
+   is deliberately open. Reveal ONLY that genuine close control, preserving
+   the MPR-scoped stacked scenes, glass tokens and scientific content. */
+@media (max-width: 760px) {
+  .ocean-workbench[data-page="explore"] .station-workspace > .control-panel[data-mobile-open="true"] > .mobile-sheet-header {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
