@@ -105,7 +105,11 @@ for(const size of sizes) {
     const geographicPath = resolve(evidenceDir, geographicName+".png");
     await page.screenshot({path: geographicPath,animations:"allow",timeout:120000});
     await info.attach(geographicName,{path:geographicPath,contentType:"image/png"});
-    await water.scrollIntoViewIfNeeded();
+    // Show the genuine 3D canvas itself, not merely the Water Column heading or controls.
+    // A screenshot without this visible surface does not certify the renderer.
+    const columnCanvas = water.getByRole("application", { name: "Interactive scientific water-column 3D" });
+    await expect(columnCanvas).toBeVisible();
+    await columnCanvas.scrollIntoViewIfNeeded();
     const columnName = size.name+"--"+theme.id+"--water-column";
     const columnPath = resolve(evidenceDir,columnName+".png");
     await page.screenshot({path:columnPath,animations:"allow",timeout:120000});
