@@ -46,7 +46,10 @@ for (const width of [1440,1280,1024,768,390,320]){
     // flow, so checking its hidden bounding box below the globe is invalid.
     await expect(control).toHaveAttribute("data-mobile-open","false");
     await expect(control).toBeHidden();
-    await page.locator(".mobile-explore-tray button").first().click();
+    // Mobile Block Details is the canonical visible entry; the retired
+    // quick-control tray is intentionally hidden by the new station UI.
+    await page.getByTestId("mpr-block-details-workspace")
+      .getByRole("button", { name: "Block & Region controls" }).click();
     await expect(control).toHaveAttribute("data-mobile-open","true");
     await expect(control).toBeVisible();
     await expect(control.getByRole("navigation",{name:"Geographic tools"}).getByRole("button")).toHaveCount(4);

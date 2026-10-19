@@ -63,7 +63,9 @@ for (const width of [390, 1024, 1327, 1440]) {
     await expect.poll(() => toolbar.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
     await page.mouse.wheel(0, 1800);
     await page.mouse.wheel(0, 900);
-    await expect.poll(() => page.locator(".station-workspace").evaluate(el => el.scrollTop)).toBeGreaterThan(0);
+    // MPR-02 deliberately makes Explorer's outer .ocean-workbench shell the
+    // only page-level scroll owner; the station grid no longer scrolls itself.
+    await expect.poll(() => page.locator(".ocean-workbench").evaluate(el => el.scrollTop)).toBeGreaterThan(0);
     // Same toolbar maintains real actions when not scrolling.
     await toolbar.evaluate(el => { el.scrollTop = el.scrollHeight; });
     const offline = basemap.getByRole("button", { name: "Offline", exact: true });

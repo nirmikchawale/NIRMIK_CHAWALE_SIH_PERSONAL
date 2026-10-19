@@ -14,6 +14,9 @@ for (const width of [1327, 1440]) {
     const shelf = shell.locator(".renderer-tools");
     const offline = shelf.getByRole("button", { name: "Offline", exact: true });
     await expect(offline).toBeVisible({ timeout: 30000 });
+    // elementFromPoint returns null for offscreen buttons regardless of CSS.
+    // First expose the real control inside the nested, scrollable globe toolbar.
+    await offline.scrollIntoViewIfNeeded();
     const hit = await offline.evaluate(el => {
       const r = el.getBoundingClientRect();
       const found = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);

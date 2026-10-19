@@ -11,7 +11,10 @@ for(const width of [1440,1024,390,320]){
   const dock=page.locator(".station-workspace > .control-panel");
   if(width<=760){
     await expect(dock).toHaveAttribute("data-mobile-open","false");
-    await page.locator(".mobile-explore-tray button").first().click();
+    // Open the real React-owned mobile ControlPanel via Block Details,
+    // never an obsolete tray deliberately hidden in station.css.
+    await page.getByTestId("mpr-block-details-workspace")
+      .getByRole("button", { name: "Block & Region controls" }).click();
     await expect(dock).toHaveAttribute("data-mobile-open","true");
   }
   await expect(dock).toHaveAttribute("data-mpr-geographic-dock","true");
