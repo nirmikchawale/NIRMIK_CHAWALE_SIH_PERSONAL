@@ -605,7 +605,9 @@ export default function App() {
             readActiveMainBlockId()
           );
           setSelectedProfileId(selected.profileId);
-          setProfileCalloutOpen(selected.autoSelectedDemo);
+          // A verified default selects the observation, but does not open a floating
+          // overlay until the visitor explicitly interacts with an Argo pin.
+          setProfileCalloutOpen(false);
           if (!selected.profileId) setProfileDetail(null);
           // Planned/pilot blocks do not have the baseline Argo matchup.
           // Missing baseline data remains an explicit degraded condition.
