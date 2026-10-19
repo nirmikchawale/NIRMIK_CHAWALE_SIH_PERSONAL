@@ -73,6 +73,22 @@ REVIEWED_SCIENCE_RECOVERY = frozenset({
 })
 
 
+# ITM-05-B: exactly the previously CI-certified ITM-02 parent safety files,
+# plus the independently reviewed M001-M007 science recovery trio. This is
+# NOT an unrestricted allowance to edit safety/science files in a stacked PR.
+# The candidate must descend from the exact parent, and ALL six original
+# protected files must retain their pinned parent Git blob SHA unchanged.
+ITM02_CERTIFIED_PARENT = "00a04a8ad09317cdc00e2d999ae7ede2c983c02d"
+ITM02_INHERITED_BLOBS = {
+    ".github/scripts/release-conductor.cjs": "bb0aa56e53f83389037701f9a1112c6fb0ff9648",
+    ".github/workflows/release-conductor.yml": "813542f7a2b1ab19c7bd91d119bfffc85a823657",
+    "scripts/test_release_conductor.cjs": "cfaec2d312fde2ca9a6b871534ac83461ab3da6a",
+    "docs/requirements/M001_M007_BASELINE_AUDIT.md": "573a1232ecb592f5dcbf006baea76ce279fdc699",
+    "scripts/fetch_verified_observation_breadth.py": "7a4f5f5025c59f337b813fc89a854c6205a37b17",
+    "tests/test_m001_m007_scientific_baseline.py": "016020ce9cbe734ab77ca3163e17daee121a8c83",
+}
+
+
 
 def git(*args: str) -> str:
     return subprocess.check_output(["git", *args], text=True).strip()
@@ -97,10 +113,15 @@ def main() -> int:
     parser.add_argument("--output", default="mpr-release-scope.json")
     parser.add_argument("--reviewed-m001-m007-package", action="store_true",
                         help="Allow exactly the paired M001–M007 provider+test+audit trio")
+    parser.add_argument("--reviewed-itm05-stack", action="store_true",
+                        help="Allow ONLY the exact immutable ITM-02 safety+M001–M007 scientific parent blobs")
     args = parser.parse_args()
     changed = [p for p in git("diff", "--name-only", f"{args.base}...{args.head}").splitlines() if p]
-    reviewed = set(REVIEWED_SCIENCE_RECOVERY) if args.reviewed_m001_m007_package else set()
-    unexpected_science = reviewed.intersection(changed)
+    reviewed_science = bool(args.reviewed_m001_m007_package or args.reviewed_itm05_stack)
+    reviewed = set(REVIEWED_SCIENCE_RECOVERY) if reviewed_science else set()
+    if args.reviewed_itm05_stack:
+        reviewed.update(ITM02_INHERITED_BLOBS)
+    unexpected_science = set(REVIEWED_SCIENCE_RECOVERY).intersection(changed)
     forbidden = [path for path in changed if
                  path.startswith(DANGEROUS_PREFIXES) or
                  path.lower().endswith(DANGEROUS_SUFFIXES) or
@@ -109,8 +130,26 @@ def main() -> int:
     # genuine-source audit and numerical/immutable regression suite.
     if unexpected_science and unexpected_science != reviewed:
         forbidden.append("INCOMPLETE_REVIEWED_SCIENCE_RECOVERY_TRIO")
-    if args.reviewed_m001_m007_package and not unexpected_science:
+    if reviewed_science and not unexpected_science:
         forbidden.append("REVIEWED_SCIENCE_RECOVERY_ABSENT")
+    if args.reviewed_itm05_stack:
+        # Never accept a different integration ancestry or silently permit
+        # edits to any inherited safety/scientific implementation.
+        if subprocess.run(
+            ["git", "merge-base", "--is-ancestor", ITM02_CERTIFIED_PARENT, args.head],
+            check=False, capture_output=True
+        ).returncode != 0:
+            forbidden.append("ITM02_CERTIFIED_PARENT_NOT_ANCESTOR")
+        absent = sorted(set(ITM02_INHERITED_BLOBS).difference(changed))
+        if absent:
+            forbidden.extend(f"ITM05_EXPECTED_PARENT_PATH_MISSING:{p}" for p in absent)
+        for path, expected_blob in ITM02_INHERITED_BLOBS.items():
+            try:
+                actual_blob = git("rev-parse", f"{args.head}:{path}")
+            except subprocess.CalledProcessError:
+                actual_blob = "MISSING"
+            if actual_blob != expected_blob:
+                forbidden.append(f"ITM05_PROTECTED_BLOB_CHANGED:{path}")
     # Validate the actual candidate tree, NOT only the PR diff. Once MPR-10–17
     # is merged, valid maintenance PRs inherit its eight immutable ledgers.
     # The old diff-only check falsely rejected safe post-release UI fixes.
@@ -128,6 +167,12 @@ def main() -> int:
         "forbidden_files": forbidden,
         "missing_phase_docs": missing,
         "reviewed_m001_m007_science_package": sorted(unexpected_science),
+        "itm05_certified_parent": ITM02_CERTIFIED_PARENT if args.reviewed_itm05_stack else None,
+        "itm05_inherited_protected_blob_paths": sorted(ITM02_INHERITED_BLOBS) if args.reviewed_itm05_stack else [],
+        "itm05_inherited_blobs_immutable": args.reviewed_itm05_stack and not any(
+            str(error).startswith("ITM05_PROTECTED_BLOB_CHANGED:")
+            for error in forbidden
+        ),
         "scientific_raw_data_and_backend_unchanged": not any(
             path.startswith(DANGEROUS_PREFIXES) or path.lower().endswith(DANGEROUS_SUFFIXES)
             for path in changed),
@@ -141,7 +186,9 @@ def main() -> int:
     if forbidden or missing:
         print("RELEASE BLOCKED: scope changed forbidden files or required phase documents are missing.")
         return 1
-    if args.reviewed_m001_m007_package:
+    if args.reviewed_itm05_stack:
+        print("SCOPE PASSED: exact inherited certified ITM-02 safety and M001-M007 blobs remain immutable.")
+    elif args.reviewed_m001_m007_package:
         print("SCOPE PASSED: original MPR UI plus strictly reviewed M001–M007 scientific recovery trio.")
     else:
         print("SCOPE PASSED: changed surfaces are MPR UI, tests, docs and certification only.")
