@@ -69,10 +69,8 @@ jobs:
           done
           curl --fail http://127.0.0.1:4174/ >/dev/null
           npx playwright test -c playwright.live.config.ts \
-            e2e/mpr-17-cross-phase-certification.spec.ts \
-            e2e/mpr-block-region-relocation.spec.ts \
-            e2e/mpr-geographic-toolbar-scroll.spec.ts \
-            e2e/mpr-desktop-interaction-recovery.spec.ts \
+            e2e/mpr-10-geographic-section.spec.ts \
+            e2e/mpr-11-geographic-controls.spec.ts \
             --grep 'MPR-10 real Cesium geographic scene reflows with one original control panel at (320|390)|MPR-11 geographic control groups retain original native controls at (320|390)' \
             --workers=1 --retries=0
       - name: Preserve real failure screenshot and locator evidence
