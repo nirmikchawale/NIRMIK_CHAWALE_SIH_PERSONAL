@@ -1,4 +1,4 @@
-name: UIX-01 shard-1 prior-failure isolation
+name: UIX-01 legacy two-case root-cause verification
 
 # Diagnostic only. No full sharded suite, MPR certificate, or screenshots.
 on:
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   diagnose-known-shard1:
-    name: Four previously failing browser scenarios
+    name: Two specifically corrected browser scenarios
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -42,7 +42,7 @@ jobs:
       - name: Install real Chromium
         working-directory: frontend
         run: npx playwright install --with-deps chromium
-      - name: Run four previously failing cases without retries
+      - name: Run two corrected browser scenarios without retries
         working-directory: frontend
         env:
           OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
@@ -60,7 +60,7 @@ jobs:
             e2e/3db05-geographic-water-column-sync.spec.ts \
             e2e/journey.spec.ts \
             e2e/live.spec.ts \
-            --grep '3DB-05 keeps a planned|orientation replay, skip|live Ocean Canvas judge flow|live Ocean Canvas explorer and evidence' \
+            --grep 'orientation replay, skip|live Ocean Canvas explorer and evidence' \
             --workers=1 --retries=0
       - name: Archive exact browser error contexts
         if: always()

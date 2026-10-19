@@ -540,7 +540,7 @@ test("live Ocean Canvas explorer and evidence flow works", async ({ page }) => {
   await expect(page.locator(".renderer-fallback-card")).toHaveCount(0);
 
   await page.getByRole("button", { name: "3D field" }).click();
-  await expect(page.locator(".volume-note")).toContainText("3D WATER COLUMN");
+  await expect(page.locator(".globe-overlay.volume-note:not(.water-column-note)")).toContainText("3D WATER COLUMN");
   await expect(page.locator(".renderer-fallback-card")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Depth slice" }).click();
