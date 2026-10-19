@@ -1,0 +1,74 @@
+name: UIX-01 targeted real Chromium diagnosis
+
+# Diagnostic run only, NEVER MPR release certification or 96 screenshots.
+on:
+  push:
+    branches:
+      - diagnostic/uix01-present-demo-contract-20261020
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  targeted-uix01:
+    name: Three real Chromium UIX-01 scenarios
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install deterministic frontend test dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Reuse the exact verified 13b030a9 built scientific frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: final-mvp-verified-production-static
+          run-id: 39315649776
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: frontend/dist
+      - name: Verify authentic production build is present
+        run: |
+          set -euo pipefail
+          test -s frontend/dist/index.html
+          test -s frontend/dist/science-static/manifest.json
+          test -s frontend/dist/observations/verified-profiles.json
+          test -s frontend/dist/cesiumStatic/Assets/Textures/NaturalEarthII/0/0/0.jpg
+          echo "Production runtime source: 13b030a96adcd9322fd7aff313c3f01e48bcef01"
+          echo "Only Playwright test selection/contract changed on diagnostic branch."
+      - name: Install genuine software-rendered Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Execute exactly the three UIX-01 tests on real Chromium
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > uix01-preview.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:4174/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:4174/ > /dev/null
+          npx playwright test -c playwright.live.config.ts \
+            e2e/mpr-uix01-presentation-scroll-owner.spec.ts \
+            --workers=1 --retries=0
+      - name: Archive real Playwright failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uix01-targeted-real-browser-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            frontend/playwright-report
+            frontend/uix01-preview.log
+          if-no-files-found: warn
+          retention-days: 14
