@@ -945,16 +945,21 @@ export default function App() {
     if (page !== "explore") return;
     const root = document.querySelector<HTMLElement>('.ocean-workbench[data-page="explore"]');
     if (!root) return;
+    // Explorer scrolls on the shell; Presentation and the judge guide use the
+    // inner scene scroller. Observe the element that actually receives scroll.
+    const stationScroller = root.querySelector<HTMLElement>(".station-workspace");
+    const scrollHost = (workspaceMode === "presentation" || guideOpen) && stationScroller
+      ? stationScroller : root;
     let pending = 0;
     const reflectVisibleSection = () => {
       pending = 0;
       const geo = document.getElementById("mpr-3d-stage");
       const water = document.getElementById("mpr-water-column-section");
       if (!geo || !water) return;
-      const rootBox = root.getBoundingClientRect();
-      const center = rootBox.top + rootBox.height * 0.48;
+      const scrollBox = scrollHost.getBoundingClientRect();
+      const center = scrollBox.top + scrollBox.height * 0.48;
       const isVisible = (rect: DOMRect) =>
-        rect.bottom > rootBox.top && rect.top < rootBox.bottom;
+        rect.bottom > scrollBox.top && rect.top < scrollBox.bottom;
       const g = geo.getBoundingClientRect();
       const w = water.getBoundingClientRect();
       if (!isVisible(g) && !isVisible(w)) return;
@@ -966,14 +971,14 @@ export default function App() {
     const onScroll = () => {
       if (!pending) pending = window.requestAnimationFrame(reflectVisibleSection);
     };
-    root.addEventListener("scroll", onScroll, { passive: true });
+    scrollHost.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll, { passive: true });
     return () => {
-      root.removeEventListener("scroll", onScroll);
+      scrollHost.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       if (pending) window.cancelAnimationFrame(pending);
     };
-  }, [page]);
+  }, [page, workspaceMode, guideOpen]);
 
 
   if (!catalog) {
