@@ -12,6 +12,10 @@ on:
       - mpr-10-17-release-certification
       - deploy-oceantwin-pages
     types: [completed]
+    # Only releases/checks on main should wake the production controller.
+    # PR workflow completions are handled by the existing 15-minute poll;
+    # this avoids a storm of redundant workflow_run jobs across Stage A.
+    branches: [main]
   workflow_dispatch:
 
 permissions:
