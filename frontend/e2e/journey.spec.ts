@@ -67,7 +67,11 @@ test("fresh refresh replays the Earth India ocean orientation", async ({ page })
   await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 30_000 });
 
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(globe).toHaveAttribute("data-journey-phase", /^(earth|india|flying)$/, { timeout: 5_000 });
+  // On cold reload, the genuine scientific viewer can stay in "idle" while
+  // the first-open loading overlay owns the screen (up to 120 × 75 ms).
+  // Require the actual Earth→India→flying sequence after readiness, not
+  // an arbitrary 5-second deadline measured before Cesium is interactive.
+  await expect(globe).toHaveAttribute("data-journey-phase", /^(earth|india|flying)$/, { timeout: 25_000 });
   await expect(page.locator(".globe-intro-status")).toBeVisible();
   await expect(page.locator(".globe-intro-status")).toContainText(/EARTH|INDIA|VERIFIED OCEAN FIELD/);
   await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 30_000 });
