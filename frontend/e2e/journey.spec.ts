@@ -31,23 +31,28 @@ async function recordNativeJourney(page: import("@playwright/test").Page) {
     record();
   });
 }
-// Software-rendered Cesium can prevent Playwright page.reload from resolving
-// even when waiting for the first response commit. Request the browser's
-// native location.reload() from the current document without depending on
-// Playwright navigation lifecycle events. Then independently require a new
-// document timeOrigin and the complete actual Earth -> India -> flying ->
-// region DOM journey. No synthetic phases, history navigation or mocked data.
+// Reload the existing Chromium tab through Chrome DevTools Protocol, not a
+// Playwright navigation lifecycle wait that SwiftShader/Cesium can stall.
+// The new document is required to have a DIFFERENT genuine timeOrigin and
+// replay all four naturally observed Earth -> India -> flying -> region phases.
+// Only expected transient execution-context loss during navigation is retried;
+// persistent or unrelated browser/renderer errors still fail certification.
 async function reloadAndVerifyNativeJourney(
   page: import("@playwright/test").Page
 ) {
   const previousDocumentTime = await page.evaluate(() => performance.timeOrigin);
-  await page.evaluate(() => {
-    window.setTimeout(() => window.location.reload(), 0);
-  });
-  await expect.poll(
-    async () => page.evaluate(() => performance.timeOrigin),
-    { timeout: 60_000 }
-  ).not.toBe(previousDocumentTime);
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Page.reload", { ignoreCache: true });
+  await expect.poll(async () => {
+    try {
+      return await page.evaluate(() => performance.timeOrigin);
+    } catch (error) {
+      if (/Execution context was destroyed|Cannot find context with specified id/i.test(String(error))) {
+        return previousDocumentTime;
+      }
+      throw error;
+    }
+  }, { timeout: 90_000 }).not.toBe(previousDocumentTime);
   await requireNativeJourney(page);
 }
 
