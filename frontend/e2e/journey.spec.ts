@@ -31,37 +31,54 @@ async function recordNativeJourney(page: import("@playwright/test").Page) {
     record();
   });
 }
-// Request a native same-URL full-document navigation with Chromium's actual
-// reload transition. Standard Page.reload and CDP Page.reload did not commit
-// under software-rendered Cesium; Page.navigate provides a new loaderId, so
-// same-document hash transitions cannot masquerade as a refreshed document.
-// A new performance.timeOrigin and all four real DOM journey phases remain
-// mandatory. No synthetic phases, state injection or skipped assertions.
+// Browser-native, SAME-URL full-document reload. A hash-only transition or
+// synthetic reset must never count: a new performance.timeOrigin plus the
+// real Earth -> India -> flying -> region DOM sequence are mandatory.
+// Chromium's software-rendered Cesium scene can occasionally leave a
+// requested navigation uncommitted. Try the actual page location.reload
+// first; on a bounded non-commit, request a second real full-document
+// navigation without changing the URL or skipping any scientific/UI checks.
 async function reloadAndVerifyNativeJourney(
   page: import("@playwright/test").Page
 ) {
   const previousDocumentTime = await page.evaluate(() => performance.timeOrigin);
-  const cdp = await page.context().newCDPSession(page);
-  // Stop pending software-renderer network loading before initiating the
-  // native reload transition, without changing application or scientific data.
-  await cdp.send("Page.stopLoading");
-  const navigation = await cdp.send("Page.navigate", {
-    url: page.url(),
-    transitionType: "reload"
-  });
-  if (navigation.errorText || !navigation.loaderId) {
-    throw new Error("Chromium native reload did not start a new document: " + JSON.stringify(navigation));
-  }
-  await expect.poll(async () => {
-    try {
-      return await page.evaluate(() => performance.timeOrigin);
-    } catch (error) {
-      if (/Execution context was destroyed|Cannot find context with specified id/i.test(String(error))) {
-        return previousDocumentTime;
+  const expectedUrl = page.url();
+  const committedNewDocument = async (timeout: number) => {
+    await expect.poll(async () => {
+      try {
+        return await page.evaluate(() => performance.timeOrigin);
+      } catch (error) {
+        if (/Execution context was destroyed|Cannot find context with specified id/i.test(String(error))) {
+          return previousDocumentTime;
+        }
+        throw error;
       }
-      throw error;
+    }, { timeout }).not.toBe(previousDocumentTime);
+  };
+
+  // The browser's native location.reload() refreshes exactly the current
+  // document; a timer lets the originating evaluate return before unload.
+  await page.evaluate(() => {
+    window.setTimeout(() => window.location.reload(), 0);
+  });
+  try {
+    await committedNewDocument(30_000);
+  } catch {
+    // Still require a real document commit after Chromium's renderer stalls.
+    // Page.navigate uses a native full-document loader, never a hash-only or
+    // client-side navigation. The timeOrigin assertion remains mandatory.
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("Page.stopLoading");
+    const navigation = await cdp.send("Page.navigate", {
+      url: expectedUrl,
+      transitionType: "reload"
+    });
+    if (navigation.errorText || !navigation.loaderId) {
+      throw new Error("Chromium native reload did not start a new document: " + JSON.stringify(navigation));
     }
-  }, { timeout: 90_000 }).not.toBe(previousDocumentTime);
+    await committedNewDocument(90_000);
+  }
+  await expect(page).toHaveURL(expectedUrl);
   await requireNativeJourney(page);
 }
 
