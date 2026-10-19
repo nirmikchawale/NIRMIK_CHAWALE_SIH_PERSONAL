@@ -31,6 +31,29 @@ async function recordNativeJourney(page: import("@playwright/test").Page) {
     record();
   });
 }
+// In a software-rendered Cesium CI browser a committed reload can briefly
+// abort its own navigation (ERR_ABORTED), leaving Playwright waiting on the
+// superseded document. Retry one fresh document navigation *only* on that
+// recoverable transport error. Still require the genuine, ordered DOM phases.
+async function reloadAndVerifyNativeJourney(
+  page: import("@playwright/test").Page,
+  url: string
+) {
+  const previousDocumentTime = await page.evaluate(() => performance.timeOrigin);
+  try {
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
+  } catch (error) {
+    const message = String(error);
+    if (!/net::ERR_ABORTED|frame was detached/i.test(message)) throw error;
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45_000 });
+  }
+  await expect.poll(
+    () => page.evaluate(() => performance.timeOrigin),
+    { timeout: 30_000 }
+  ).not.toBe(previousDocumentTime);
+  await requireNativeJourney(page);
+}
+
 async function requireNativeJourney(page: import("@playwright/test").Page) {
   await expect.poll(async () => page.evaluate(() => {
     const all = (window as typeof window & { __oceanJourneyPhases?: string[] }).__oceanJourneyPhases ?? [];
@@ -55,8 +78,7 @@ test("orientation replay, skip, explicit Water Column entry and return remain us
   await requireNativeJourney(page);
 
   // A fresh document must replay the same actual sequence after refresh.
-  await page.reload({ waitUntil: "domcontentloaded" });
-  await requireNativeJourney(page);
+  await reloadAndVerifyNativeJourney(page, liveUrl);
 
   // Replay must restart the active orientation sequence. On a loaded public
   // Cesium scene the 900 ms Earth state can advance before Playwright finishes
@@ -93,14 +115,14 @@ test("orientation replay, skip, explicit Water Column entry and return remain us
 
 
 test("fresh refresh replays the Earth India ocean orientation", async ({ page }) => {
+  test.setTimeout(300_000);
   if (!liveUrl) throw new Error("OCEANTWIN_LIVE_URL is required");
   await recordNativeJourney(page);
   await page.goto(liveUrl, { waitUntil: "domcontentloaded" });
   const globe = page.locator(".globe-shell[data-journey-phase]");
   await requireNativeJourney(page);
 
-  await page.reload({ waitUntil: "domcontentloaded" });
-  await requireNativeJourney(page);
+  await reloadAndVerifyNativeJourney(page, liveUrl);
   // The live orientation guidance is transient, not rendered once region is
   // reached. Audit what the real browser displayed during the flight.
   const status = await page.evaluate(() =>
