@@ -42,18 +42,20 @@ test("planned target enters the same Water Column 3D workflow without fabricated
   await hud.getByLabel("Active main block").selectOption("IO-047");
   await hud.getByRole("button", { name: "Open in Water Column 3D" }).click();
 
-  const planned = page.locator('.planned-main-block-shell[data-main-block-id="IO-047"]');
-  await expect(planned).toBeVisible();
-  await expect(planned).toHaveAttribute("data-materialization", "planned");
-  await expect(planned).toHaveAttribute("data-scientific-values", "0");
-  await expect(planned.getByText("PLANNED TARGET · NO MATERIALIZED VOLUME", { exact: true })).toBeVisible();
-  await expect(planned.getByText(/none copied from the baseline/i)).toBeVisible();
+  // The canonical MPR-12 Water Column section replaces the removed legacy
+  // placeholder renderer. Planned geometry must NEVER show synthetic values.
+  const water = page.getByTestId("mpr-12-water-column-section");
+  await expect(water).toBeVisible();
+  await expect(water).toHaveAttribute("data-linked-block", "IO-047");
+  await expect(water).toHaveAttribute("data-linked-evidence", "planned");
+  await expect(water.locator(".mpr-water-column-unavailable")).toContainText("Planned block · water-column evidence withheld");
+  await expect(water).toContainText("No copied, extrapolated or synthetic ocean values are displayed.");
+  await expect(water.locator("canvas.water-column-canvas")).toHaveCount(0);
 
-  await planned.getByRole("button", { name: "Return to verified baseline volume" }).click();
-  const verified = page.locator('.water-column-visualization-layer.active .water-column-shell[data-main-block-id="BASE-GLORYS-001"]');
-  await expect(verified).toBeVisible();
-  await expect(verified).toHaveAttribute("data-materialization", "verified-baseline");
-  await expect(verified.locator("canvas.water-column-canvas")).toBeVisible();
+  // Switch to a real source-backed pilot without inventing a baseline reset
+  // command that the new active-block selector does not implement.
+  await hud.getByLabel("Active main block").selectOption("IO-001");
+  await expect(water).toHaveAttribute("data-linked-block", "IO-001", { timeout: 30_000 });
 });
 
 for (const viewport of [
@@ -74,7 +76,8 @@ for (const viewport of [
     await expect(canvas.locator('[data-testid="integrated-main-block-hud"]')).toHaveCount(0);
     if (viewport.width <= 760) {
       await expect(control).toHaveAttribute("data-mobile-open", "false");
-      await page.locator(".mobile-explore-tray button").first().click();
+      await page.getByTestId("mpr-block-details-workspace")
+        .getByRole("button", { name: "Block & Region controls" }).click();
       await expect(control).toHaveAttribute("data-mobile-open", "true");
     }
     await expect(control.getByTestId("mpr-block-region-group")).toBeVisible();
