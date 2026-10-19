@@ -1,0 +1,67 @@
+name: MPR-16 one real PNG artifact retention proof
+on:
+  push:
+    branches:
+      - diagnostic/mpr16-single-image-evidence-20261020
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  png-evidence-proof:
+    name: One true Chromium screenshot, prove ZIP retention
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install verified browser runtime
+        working-directory: frontend
+        run: npm ci
+      - name: Reuse built original source-backed ocean data
+        uses: actions/download-artifact@v4
+        with:
+          name: final-mvp-verified-production-static
+          run-id: 39320367264
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: frontend/dist
+      - name: Confirm real built scientific artifacts
+        run: |
+          test -s frontend/dist/index.html
+          test -s frontend/dist/science-static/catalog.json
+          test -s frontend/dist/observations/verified-profiles.json
+      - name: Install real Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Run ONE visual case without retries and write explicit PNG
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+          PLAYWRIGHT_HTML_OPEN: never
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > png-preview.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            curl --silent --fail http://127.0.0.1:4174/ > /dev/null && break || sleep 1
+          done
+          npx playwright test -c playwright.live.config.ts \
+            e2e/mpr-16-image-retention-probe.spec.ts \
+            --reporter=html --workers=1 --retries=0
+          test -s test-results/mpr-16-image-retention-probe-*/single-real-geographic-1440.png
+          find test-results playwright-report -type f -name '*.png' -printf '%p %s bytes\n'
+      - name: Preserve source-backed screenshot and HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: single-real-chromium-png-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            frontend/playwright-report
+            frontend/png-preview.log
+          retention-days: 10
+          if-no-files-found: warn
