@@ -1,0 +1,81 @@
+name: UIX-02-C isolated Presentation Chromium audit
+
+on:
+  push:
+    branches:
+      - diagnostic/uix02c-presentation-audit-20261020
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  presentation-audit:
+    name: Four genuine Chromium presentation audits; zero retries
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify UIX-02 App/science source frozen
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor d2565c8c58e787f2bb8115880a099a45256df74d HEAD
+          test -z "$(git diff --name-only d2565c8c58e787f2bb8115880a099a45256df74d HEAD -- frontend/src backend data)"
+          echo "Runtime App/CSS and scientific sources unchanged from UIX-02-B draft"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install Playwright pinned dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Reuse exact UIX-02 candidate production build (do NOT rebuild science)
+        uses: actions/download-artifact@v4
+        with:
+          name: final-mvp-verified-production-static
+          run-id: 39400125238
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: frontend/dist
+      - name: Install genuine Chromium
+        working-directory: frontend
+        run: |
+          test -s dist/index.html
+          test -s dist/science-static/catalog.json
+          test -s dist/observations/verified-profiles.json
+          npx playwright install --with-deps chromium
+      - name: Require exactly four responsive/accessibility tests
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
+        run: |
+          set -euo pipefail
+          npx playwright test -c playwright.live.config.ts e2e/uix02c-presentation-audit.spec.ts --list | tee /tmp/uix02c-selected.log
+          grep -q 'Total: 4 tests' /tmp/uix02c-selected.log
+      - name: Audit actual static app in Chromium; 4 cases, 0 retries
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > uix02c-preview.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:4174/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4174/ >/dev/null
+          npx playwright test -c playwright.live.config.ts e2e/uix02c-presentation-audit.spec.ts --workers=1 --retries=0 --reporter=list --trace=on
+      - name: Preserve only focused test traces (no 96-image suite)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uix02c-presentation-audit-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            frontend/uix02c-preview.log
+          if-no-files-found: warn
+          retention-days: 14
