@@ -74,7 +74,15 @@ for (const width of [320, 390, 1024]) {
     const shell = page.locator(".ocean-workbench");
     const mode = page.getByTestId("mpr-04-workspace-mode-island");
     await expect(mode).toBeVisible();
-    const buttons = mode.locator("button");
+    // Only the three mode choices and Focus 3D are canonical layout buttons.
+    // Exit hidden controls is a separate, conditional recovery action.
+    const buttons = mode.locator(".mpr-workspace-mode-actions > button, .mpr-focus-3d-action");
+    const restoreControls = mode.getByTestId("exit-hidden-controls");
+    if (await shell.getAttribute("data-control-dock") === "closed") {
+      await expect(restoreControls).toBeVisible();
+    } else {
+      await expect(restoreControls).toHaveCount(0);
+    }
     await expect(buttons).toHaveCount(4);
     const island = await mode.boundingBox();
     expect(island).not.toBeNull();
