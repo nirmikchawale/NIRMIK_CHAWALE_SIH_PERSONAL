@@ -25,7 +25,10 @@ for (const width of [1440, 1024, 390, 320]) {
     if (width <= 760) {
       // Mobile owns a genuine on-demand controls sheet; no always-on globe overlay.
       await expect(dock).toHaveAttribute("data-mobile-open", "false");
-      await page.locator(".mobile-explore-tray button").first().click();
+      // Use the actual visible Block Details launcher, which opens the
+      // source-owned mobile controls sheet without resurrecting the old tray.
+      await page.getByTestId("mpr-block-details-workspace")
+        .getByRole("button", { name: "Block & Region controls" }).click();
       await expect(dock).toHaveAttribute("data-mobile-open", "true");
     }
     await expect(hud).toBeVisible();

@@ -30,6 +30,12 @@ EXACT_FILES = {
     "frontend/index.html",
     "docs/MPR_DESKTOP_JOURNEY_ARCTIC_IMMERSIVE.md",
     "frontend/e2e/main-block-globe-integration.spec.ts",
+    # UIX-01-SCOPE-APPROVAL issue #221 (20 October 2026): exactly three
+    # test-only regression contracts. Not a 3DB wildcard, runtime, science,
+    # dataset, provenance, API or production-release authorization.
+    "frontend/e2e/3db05-geographic-water-column-sync.spec.ts",
+    "frontend/e2e/journey.spec.ts",
+    "frontend/e2e/main-block-engine.spec.ts",
     # Post-release RUI-02/MPR integration hardening: presentation + acceptance only.
     "frontend/src/components/ScientificContextHeader.tsx",
     "frontend/e2e/rui-context-header.spec.ts",

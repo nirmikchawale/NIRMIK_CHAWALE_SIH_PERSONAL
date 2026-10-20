@@ -146,7 +146,50 @@ jobs:
             e2e/mpr-15-inspectors-responsive.spec.ts \
             e2e/mpr-16-all-themes-visual.spec.ts \
             e2e/mpr-17-cross-phase-certification.spec.ts \
-            e2e/mpr-presentation-block-details.spec.ts
+            e2e/mpr-presentation-block-details.spec.ts \
+            --reporter=html
+      - name: Validate 96 physical Chromium PNG files and write SHA256 manifest
+        if: always()
+        run: |
+          python - <<'PY'
+          import hashlib, json, re
+          from pathlib import Path
+          root = Path('frontend/test-results')
+          images = sorted(p for p in root.rglob('*.png')
+                          if '/attachments/' not in p.as_posix()
+                          and p.name.endswith(('--geographic.png', '--water-column.png')))
+          matrix = {}
+          errors = []
+          repeated_capture_attempts = []
+          for path in images:
+              match = re.fullmatch(r'(wide-desktop|tablet|mobile)--([a-z0-9-]+)--(geographic|water-column)\.png', path.name)
+              if not match:
+                  errors.append('Unexpected screenshot name: ' + str(path))
+                  continue
+              key = '::'.join(match.groups())
+              raw = path.read_bytes()
+              if key in matrix:
+                  # Playwright can retain a partial first attempt and a successful
+                  # retry. Preserve both files but certify unique matrix keys.
+                  repeated_capture_attempts.append(key)
+              if len(raw) <= 1024 or raw[:8] != bytes([137,80,78,71,13,10,26,10]):
+                  errors.append('Invalid or empty Chromium PNG: ' + key)
+              matrix[key] = dict(path=str(path), bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest())
+          viewports = ['wide-desktop', 'tablet', 'mobile']
+          views = ['geographic', 'water-column']
+          theme_ids = {key.split('::')[1] for key in matrix}
+          expected = {v+'::'+theme+'::'+view for v in viewports for theme in theme_ids for view in views}
+          if len(theme_ids) != 16 or len(matrix) != 96 or set(matrix) != expected:
+              errors.append('Expected 96 unique PNGs (16 themes x 3 viewports x 2 views), got '+str(len(matrix))+'; themes='+str(len(theme_ids)))
+          root.mkdir(parents=True, exist_ok=True)
+          out = root / 'mpr16-actual-96-png-manifest.json'
+          out.write_text(json.dumps({'schema':'oceancanvas-mpr16-real-png-v1','count':len(matrix),'raw_png_files':len(images),
+                                     'themes':sorted(theme_ids),'retry_duplicates':sorted(set(repeated_capture_attempts)),
+                                     'valid':not errors,'errors':errors,'images':matrix}, indent=2)+'\n')
+          print('MPR16 actual persisted PNGs:', len(matrix), 'themes:', len(theme_ids), 'errors:', errors)
+          if errors: raise SystemExit(1)
+          PY
+
       - name: Archive actual screenshot and Playwright evidence
         if: always()
         uses: actions/upload-artifact@v4

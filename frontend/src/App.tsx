@@ -942,19 +942,30 @@ export default function App() {
   // MPR-12: update the navigator from ACTUAL scroll visibility, without
   // reissuing scientific requests or triggering scroll from a scroll observer.
   useEffect(() => {
-    if (page !== "explore") return;
+    // The boot screen has no Explorer shell. Re-attach when catalog loads.
+    if (page !== "explore" || !catalog) return;
     const root = document.querySelector<HTMLElement>('.ocean-workbench[data-page="explore"]');
     if (!root) return;
+    // Presentation uses the inner scene scroller. The judge guide only uses
+    // that inner scroller when it has actual overflow. In Explorer-guide layout
+    // the outer shell can remain the true scroll owner (observed in Chromium:
+    // shell scrollTop 2795, station scrollTop 0), so never bind to a non-scroller.
+    const stationScroller = root.querySelector<HTMLElement>(".station-workspace");
+    const innerHasScrollableOverflow = Boolean(stationScroller &&
+      stationScroller.scrollHeight > stationScroller.clientHeight + 1);
+    const observeInner = workspaceMode === "presentation" ||
+      (guideOpen && innerHasScrollableOverflow);
+    const scrollHost = observeInner && stationScroller ? stationScroller : root;
     let pending = 0;
     const reflectVisibleSection = () => {
       pending = 0;
       const geo = document.getElementById("mpr-3d-stage");
       const water = document.getElementById("mpr-water-column-section");
       if (!geo || !water) return;
-      const rootBox = root.getBoundingClientRect();
-      const center = rootBox.top + rootBox.height * 0.48;
+      const scrollBox = scrollHost.getBoundingClientRect();
+      const center = scrollBox.top + scrollBox.height * 0.48;
       const isVisible = (rect: DOMRect) =>
-        rect.bottom > rootBox.top && rect.top < rootBox.bottom;
+        rect.bottom > scrollBox.top && rect.top < scrollBox.bottom;
       const g = geo.getBoundingClientRect();
       const w = water.getBoundingClientRect();
       if (!isVisible(g) && !isVisible(w)) return;
@@ -966,14 +977,14 @@ export default function App() {
     const onScroll = () => {
       if (!pending) pending = window.requestAnimationFrame(reflectVisibleSection);
     };
-    root.addEventListener("scroll", onScroll, { passive: true });
+    scrollHost.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll, { passive: true });
     return () => {
-      root.removeEventListener("scroll", onScroll);
+      scrollHost.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       if (pending) window.cancelAnimationFrame(pending);
     };
-  }, [page]);
+  }, [page, workspaceMode, guideOpen, catalog]);
 
 
   if (!catalog) {

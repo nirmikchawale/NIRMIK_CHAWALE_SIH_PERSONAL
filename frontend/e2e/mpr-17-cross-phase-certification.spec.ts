@@ -20,7 +20,10 @@ for(const width of [320,390,768,1024,1366,1440]) {
   if(width<=760){
     // Mobile uses the existing accessible bottom-sheet entry by design.
     await expect(geographicControls).toHaveAttribute("data-mobile-open","false");
-    await page.locator(".mobile-explore-tray button").first().click();
+    // The post-MPR block-details island is the supported mobile entry point
+    // for opening the actual ControlPanel React owner; the retired tray is hidden.
+    await page.getByTestId("mpr-block-details-workspace")
+      .getByRole("button", { name: "Block & Region controls" }).click();
     await expect(geographicControls).toHaveAttribute("data-mobile-open","true");
   }
   await expect(geographicControls).toBeVisible();
