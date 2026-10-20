@@ -2,11 +2,11 @@ import { expect, test, type Page } from "@playwright/test";
 
 // UIX-02-D: genuine native Analysis Split/Focus 3D responsive audit.
 // No mocked observations, source data or science fixtures.
-const live = process.env.OCEANTWIN_LIVE_URL;
-if (!live || !(live.startsWith("http://") || live.startsWith("https://"))) {
-  throw new Error("UIX-02-D needs an absolute OCEANTWIN_LIVE_URL");
-}
 async function open(page: Page, width: number) {
+  const live = process.env.OCEANTWIN_LIVE_URL;
+  if (!live || !(live.startsWith("http://") || live.startsWith("https://"))) {
+    throw new Error("UIX-02-D needs an absolute OCEANTWIN_LIVE_URL");
+  }
   await page.setViewportSize({ width, height: 900 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(live!.replace(/#.*$/, "") + "#/explore", { waitUntil: "domcontentloaded" });

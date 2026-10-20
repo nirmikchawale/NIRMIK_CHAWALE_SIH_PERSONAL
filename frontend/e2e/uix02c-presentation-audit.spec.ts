@@ -2,12 +2,12 @@ import { test, expect, type Page } from "@playwright/test";
 
 // UIX-02-C: targeted Presentation layout/scroll/keyboard audit only.
 // Existing scientific data and Cesium/WC renderers are never mocked or modified.
-const live = process.env.OCEANTWIN_LIVE_URL;
-if (!live?.startsWith("http://") && !live?.startsWith("https://")) {
-  throw new Error("UIX02-C requires absolute OCEANTWIN_LIVE_URL");
-}
-const url = live.replace(/#.*$/, "") + "#/explore";
 async function openExplorer(page: Page) {
+  const live = process.env.OCEANTWIN_LIVE_URL;
+  if (!live?.startsWith("http://") && !live?.startsWith("https://")) {
+    throw new Error("UIX02-C requires absolute OCEANTWIN_LIVE_URL");
+  }
+  const url = live.replace(/#.*$/, "") + "#/explore";
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(url, { waitUntil: "domcontentloaded" });
   await expect(page.getByTestId("mpr-block-details-workspace")).toBeVisible({ timeout: 60_000 });

@@ -3,13 +3,13 @@ import { GLASS_THEMES, DEFAULT_GLASS_THEME } from "../src/theme";
 
 // UIX-02-F: targeted, real-source route/evidence/interaction & 16-theme
 // acceptance on the exact UIX-02-E draft application; NO mocks or screenshots.
-const origin = process.env.OCEANTWIN_LIVE_URL;
-if (!origin || !(origin.startsWith("http://") || origin.startsWith("https://"))) {
-  throw new Error("UIX-02-F requires an actual absolute OCEANTWIN_LIVE_URL");
-}
-const base = origin.replace(/#.*$/, "");
 type Route = "explore"|"telemetry"|"compare"|"anomaly"|"data-lab"|"about";
 async function open(page: Page, route: Route, width: number) {
+  const origin = process.env.OCEANTWIN_LIVE_URL;
+  if (!origin || !(origin.startsWith("http://") || origin.startsWith("https://"))) {
+    throw new Error("UIX-02-F requires an actual absolute OCEANTWIN_LIVE_URL");
+  }
+  const base = origin.replace(/#.*$/, "");
   await page.setViewportSize({ width, height: width <= 390 ? 844 : 900 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(base + "#/" + route, { waitUntil: "domcontentloaded" });

@@ -2,13 +2,12 @@ import { expect, test, type Page } from "@playwright/test";
 
 // UIX-02-E: source-native depth, geometry-only exaggeration and linked renderer
 // acceptance. Real artifact and real React/Cesium/WaterColumn3D; no science mocks.
-const live = process.env.OCEANTWIN_LIVE_URL;
-if (!live || !(live.startsWith("https://") || live.startsWith("http://"))) {
-  throw new Error("UIX02-E requires an absolute OCEANTWIN_LIVE_URL");
-}
-const exploreUrl = live.replace(/#.*$/, "") + "#/explore";
-
 async function open(page: Page, width: number, pilot = false) {
+  const live = process.env.OCEANTWIN_LIVE_URL;
+  if (!live || !(live.startsWith("https://") || live.startsWith("http://"))) {
+    throw new Error("UIX02-E requires an absolute OCEANTWIN_LIVE_URL");
+  }
+  const exploreUrl = live.replace(/#.*$/, "") + "#/explore";
   await page.setViewportSize({ width, height: 900 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   if (pilot) {
