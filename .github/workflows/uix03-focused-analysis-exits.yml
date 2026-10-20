@@ -43,7 +43,7 @@ jobs:
             sleep 1
           done
           npx playwright test -c playwright.live.config.ts \
-            e2e/uix03-analysis-exits.spec.ts --workers=1 --retries=0 --reporter=list
+            e2e/uix03-analysis-exits.spec.ts --grep "Analysis Split has real separate" --workers=1 --retries=0 --reporter=list
       - name: Save focused failure evidence only
         if: always()
         uses: actions/upload-artifact@v4

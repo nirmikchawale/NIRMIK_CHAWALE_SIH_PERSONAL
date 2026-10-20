@@ -95,7 +95,7 @@
 /* The Analysis Split is an actual grid pair, never an overlay or a
    half-width absolute panel hidden behind the source-selector islands. */
 @media (min-width: 1121px) {
-  .ocean-workbench[data-page="explore"][data-workspace-mode="analysis"]:not(.focus-mode) .station-workspace {
+  .ocean-workbench[data-page="explore"][data-workspace-mode="analysis"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace[data-inspector="open"] {
     display: grid !important;
     grid-template-columns: minmax(0, 1.5fr) minmax(330px, 1fr) !important;
     grid-template-areas:
@@ -117,7 +117,7 @@
   }
 }
 @media (min-width: 761px) and (max-width: 1120px) {
-  .ocean-workbench[data-page="explore"][data-workspace-mode="analysis"]:not(.focus-mode) .station-workspace {
+  .ocean-workbench[data-page="explore"][data-workspace-mode="analysis"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace[data-inspector="open"] {
     grid-template-columns: minmax(0,1fr) !important;
     grid-template-areas: "directory" "dock" "geo-title" "scene" "inspector"
       "range" "controls" "block" "catalog" "water" "inspect" "evidence" !important;
@@ -125,7 +125,7 @@
   }
 }
 @media (max-width: 760px) {
-  .ocean-workbench[data-page="explore"][data-workspace-mode="analysis"]:not(.focus-mode) .station-workspace {
+  .ocean-workbench[data-page="explore"][data-workspace-mode="analysis"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace[data-inspector="open"] {
     grid-template-columns: minmax(0,1fr) !important;
     grid-template-areas: "directory" "dock" "geo-title" "scene" "inspector"
       "range" "controls" "block" "catalog" "water" "inspect" "evidence" !important;
