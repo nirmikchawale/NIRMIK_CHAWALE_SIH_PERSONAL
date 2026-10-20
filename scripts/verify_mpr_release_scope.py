@@ -28,6 +28,11 @@ EXACT_FILES = {
     # UIX-03 isolated navigation/exit recovery: ONE UI-only component.
     # No source, scientific, data, backend, or wildcard scope extension.
     "frontend/src/components/ExplorerWorkspaceModeIsland.tsx",
+    # UIX-03 consolidated scoped UI-only pilot provenance relocation.
+    # Exact component and two focused test paths only; no backend or data.
+    "frontend/src/components/PilotMainBlockRendererBridge.tsx",
+    "frontend/e2e/uix03-pilot-details-placement.spec.ts",
+    "frontend/e2e/uix03-water-hover-stability.spec.ts",
     "frontend/src/components/ExplorerConsolidationHost.tsx",
     "frontend/src/theme.ts",
     "frontend/index.html",
