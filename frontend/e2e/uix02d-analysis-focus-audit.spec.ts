@@ -60,7 +60,17 @@ for (const width of [320, 768, 1440]) {
     }
     await mode.getByTestId("exit-analysis-split").click();
     await expect(root).toHaveAttribute("data-workspace-mode", "explorer");
-    await expect(root).toHaveAttribute("data-control-dock", "open");
+    // In a mobile viewport the actual control sheet is closed after exiting
+    // Analysis Split. Desktop keeps the restored dock visible. Never claim
+    // controls are open when the real mobile sheet is not mounted.
+    if (width <= 760) {
+      await expect(root).toHaveAttribute("data-control-dock", "closed");
+      await mode.getByTestId("exit-hidden-controls").click();
+      await expect(root).toHaveAttribute("data-control-dock", "open");
+      await expect(page.locator(".station-workspace > .control-panel")).toHaveAttribute("data-mobile-open", "true");
+    } else {
+      await expect(root).toHaveAttribute("data-control-dock", "open");
+    }
     await expect(page.getByTestId("scientific-context-bar")).toHaveAttribute(
       "data-block-id", block || "BASE-GLORYS-001");
   });
