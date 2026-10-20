@@ -104,7 +104,7 @@ jobs:
           npx playwright test -c playwright.live.config.ts \
             e2e/uix04a-navigation-focus-ownership.spec.ts \
             --workers=1 --retries=0 --trace=retain-on-failure \
-            --screenshot=only-on-failure --reporter=list
+            --reporter=list
       - name: Retain only focused failure traces and results
         if: always()
         uses: actions/upload-artifact@v4
