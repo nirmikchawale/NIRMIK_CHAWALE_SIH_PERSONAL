@@ -1,0 +1,42 @@
+name: uix03-targeted-pilot-details-relocation
+on:
+  push:
+    branches:
+      - diagnostic/uix03-pilot-details-relocation-20261021
+permissions:
+  contents: read
+jobs:
+  genuine-pilot-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -r backend/requirements.txt
+      - run: python scripts/export_static_science.py --output frontend/public/science-static
+      - run: python scripts/fetch_incois_operational.py --output frontend/public/operational/incois-argo-10d-vam.json
+      - run: python scripts/fetch_incois_chlorophyll.py --output frontend/public/operational/incois-chlorophyll.json
+      - run: python scripts/verify_incois_opendap.py --output frontend/public/operational/opendap-verification.json
+      - run: python scripts/fetch_verified_observation_breadth.py --output frontend/public/observations/verified-profiles.json
+      - run: python scripts/create_netcdf_browser_fixture.py --output frontend/public/samples/cf-profile-fixture.nc
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - working-directory: frontend
+        run: npm ci && npm run typecheck && VITE_STATIC_SCIENCE=true npm run build && npx playwright install --with-deps chromium
+      - name: Only existing Phase 3.5D pilot synchronization real Chromium contract
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist >/tmp/uix03-pilot-home.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 35); do
+            if curl --fail --silent http://127.0.0.1:4174/ >/dev/null; then break; fi
+            sleep 1
+          done
+          npx playwright test -c playwright.live.config.ts e2e/phase35d-pilot-renderer-sync.spec.ts --workers=1 --retries=0 --reporter=list
