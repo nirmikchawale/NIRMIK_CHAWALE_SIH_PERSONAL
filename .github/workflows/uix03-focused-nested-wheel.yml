@@ -1,0 +1,41 @@
+name: uix03-focused-nested-wheel-diagnostic
+
+# UIX-03: one browser contract on an isolated branch. NO shards/96 PNG/merge.
+on:
+  push:
+    branches:
+      - diagnostic/uix03-nested-wheel-20261020
+
+permissions:
+  contents: read
+
+jobs:
+  nested-wheel-focused:
+    name: nested-wheel-real-chromium-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install frontend browser dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Install actual Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Verify the already certified public science source is reachable
+        run: |
+          curl --fail --silent --show-error --retry 2 \
+            https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/science-static/catalog.json \
+            -o /tmp/uix03-real-catalog.json
+          python3 -c 'import json; a=json.load(open("/tmp/uix03-real-catalog.json")); assert "GLORYS12V1" in a["dataset"]["label"]'
+      - name: Two independent, no-retry real Chromium wheel reproductions
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/
+        run: |
+          npx playwright test -c playwright.live.config.ts \
+            e2e/uix02-nested-wheel-scroll.spec.ts \
+            --workers=1 --retries=0 --repeat-each=2 --reporter=list

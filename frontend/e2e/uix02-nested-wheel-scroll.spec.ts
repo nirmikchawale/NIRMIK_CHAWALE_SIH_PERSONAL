@@ -49,17 +49,22 @@ test("UIX-02 nested scroll consumes wheel until boundary then delegates to Telem
 
   // Nested scroll at bottom must yield to the existing Telemetry page scroller.
   await inner.evaluate(el => { el.scrollTop = el.scrollHeight; });
-  const beforeDown = await owner.evaluate(el => el.scrollTop);
+  // Playwright hover may scroll an ancestor into view; establish the baseline
+  // only AFTER hit-testing has positioned the pointer on the real inner panel.
   await inner.hover();
+  const beforeDown = await owner.evaluate(el => el.scrollTop);
   await page.mouse.wheel(0, 160);
   await expect.poll(() => owner.evaluate(el => el.scrollTop)).toBeGreaterThan(beforeDown);
 
   // Nested scroll at top must yield upward to that SAME actual page scroller.
   await inner.evaluate(el => { el.scrollTop = 0; });
   await owner.evaluate(el => { el.scrollTop = 200; });
+  // Hover can auto-scroll the Telemetry ancestor; measuring beforehand gives
+  // a stale beforeUp (observed public CI: 160 before, 380 after the wheel).
+  await inner.hover();
+  expect(await inner.evaluate(el => el.scrollTop)).toBe(0);
   const beforeUp = await owner.evaluate(el => el.scrollTop);
   expect(beforeUp).toBeGreaterThan(0);
-  await inner.hover();
   await page.mouse.wheel(0, -100);
   await expect.poll(() => owner.evaluate(el => el.scrollTop)).toBeLessThan(beforeUp);
 
