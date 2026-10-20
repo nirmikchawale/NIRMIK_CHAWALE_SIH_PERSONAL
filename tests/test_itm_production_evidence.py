@@ -108,3 +108,51 @@ def test_production_evidence_always_requires_separate_human_stage_b():
     assert r["itm13_stage_a_handoff"] != "CERTIFIED"
     assert r["itm14_stage_b"] != "CERTIFIED"
     assert r["automatic_merge_or_deploy"] is False
+
+
+def test_live_audit_paginates_past_busy_conductor_runs(monkeypatch):
+    """Genuine Pages results may be on page 2 behind many conductor no-ops."""
+    expected = fixture()
+    queried = []
+    def fake_read(path, token):
+        assert token == "read-only-test"
+        queried.append(path)
+        if path == "branches/main":
+            return {"commit": {"sha": SHA}}
+        if path == "actions/runs?branch=main&per_page=100&page=1":
+            return {"workflow_runs": [
+                {"id": i, "name": "ocean-canvas-release-conductor",
+                 "head_sha": SHA, "event": "schedule"}
+                for i in range(1, 101)
+            ]}
+        if path == "actions/runs?branch=main&per_page=100&page=2":
+            return {"workflow_runs": expected["runs"]}
+        if path == "actions/runs/100/jobs?per_page=100":
+            return {"jobs": expected["jobs"]["100"]}
+        if path == "actions/runs/200/jobs?per_page=100":
+            return {"jobs": expected["jobs"]["200"]}
+        raise AssertionError(f"Unexpected GitHub endpoint: {path}")
+    monkeypatch.setattr(audit, "_github_read", fake_read)
+    snap = audit.capture_live("read-only-test")
+    assert any("page=2" in value for value in queried)
+    assert len(snap["runs"]) == 2
+    assert audit.assess_production(snap)["itm11_publication_certified"] is True
+
+
+def test_mid_read_main_sha_race_blocks_live_certification(monkeypatch):
+    expected = fixture()
+    calls = {"main": 0}
+    def fake_read(path, token):
+        if path == "branches/main":
+            calls["main"] += 1
+            return {"commit": {"sha": SHA if calls["main"] == 1 else OTHER}}
+        if path == "actions/runs?branch=main&per_page=100&page=1":
+            return {"workflow_runs": expected["runs"]}
+        if path == "actions/runs/100/jobs?per_page=100":
+            return {"jobs": expected["jobs"]["100"]}
+        if path == "actions/runs/200/jobs?per_page=100":
+            return {"jobs": expected["jobs"]["200"]}
+        raise AssertionError(f"Unexpected GitHub endpoint: {path}")
+    monkeypatch.setattr(audit, "_github_read", fake_read)
+    with pytest.raises(InvalidQueue, match="main advanced"):
+        audit.capture_live("read-only-test")
