@@ -8,7 +8,7 @@ permissions:
   actions: read
 jobs:
   responsive-audit:
-    name: Three isolated original failures: one Analysis desktop + two Focus
+    name: "Three isolated cases: desktop Analysis + two Focus, zero retries"
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
