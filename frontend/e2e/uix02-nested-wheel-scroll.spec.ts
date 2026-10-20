@@ -22,10 +22,26 @@ test("UIX-02 nested scroll consumes wheel until boundary then delegates to docum
     inner.append(content);
     outer.append(inner);
     document.body.append(outer);
-    document.documentElement.style.overflowY = "auto";
-    document.body.style.overflowY = "auto";
+    // The app intentionally starts with html/body overflow hidden and height
+    // 100%. Give this synthetic fixture a *document* scroll owner rather than
+    // turning body into a second nested scroller (which left html scrollTop=0).
+    document.body.style.height = "auto";
+    document.body.style.overflow = "visible";
+    document.documentElement.style.height = "auto";
+    document.documentElement.style.overflow = "auto";
     window.scrollTo(0, 0);
   });
+  const rootScroll = await page.evaluate(() => {
+    const scroller = document.scrollingElement!;
+    return {
+      available: scroller.scrollHeight - scroller.clientHeight,
+      owner: scroller.tagName,
+      bodyOverflow: getComputedStyle(document.body).overflowY
+    };
+  });
+  console.log("UIX-02 document scroll fixture:", rootScroll);
+  expect(rootScroll.owner).toBe("HTML");
+  expect(rootScroll.available).toBeGreaterThan(200);
   const inner = page.locator("#uix02-wheel-inner");
   await inner.scrollIntoViewIfNeeded();
   await inner.hover();
