@@ -1,0 +1,88 @@
+name: UIX-02-E native depth and geometry isolated Chromium
+on:
+  push:
+    branches:
+      - diagnostic/uix02e-native-depth-geometry-20261020
+permissions:
+  contents: read
+  actions: read
+jobs:
+  source-native-audit:
+    name: Four native scientific interaction cases with zero retries
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Enforce unchanged UIX-02-D runtime, science and rendering sources
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor 036a81b7314b8f24eeeefef4fa6ae2b1c7be5260 HEAD
+          test -z "$(git diff --name-only 036a81b7314b8f24eeeefef4fa6ae2b1c7be5260 HEAD -- frontend/src backend data)"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frozen frontend dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Reuse verified UIX-02 candidate scientific asset artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: final-mvp-verified-production-static
+          run-id: 39400125238
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: frontend/dist
+      - name: Verify immutable scientific catalog and compile current source
+        run: |
+          set -euo pipefail
+          test -s frontend/dist/science-static/catalog.json
+          sha256sum frontend/dist/science-static/catalog.json | awk '{print $1}' > /tmp/uix02e-catalog-sha
+          for dirname in science-static operational observations samples; do
+            if test -d "frontend/dist/$dirname"; then
+              mkdir -p "frontend/public/$dirname"
+              cp -a "frontend/dist/$dirname/." "frontend/public/$dirname/"
+            fi
+          done
+          cd frontend
+          npm run typecheck
+          VITE_STATIC_SCIENCE=true npm run build
+          test "$(sha256sum dist/science-static/catalog.json | awk '{print $1}')" = "$(cat /tmp/uix02e-catalog-sha)"
+      - name: Install authentic Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Require exactly four science-native browser scenarios
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
+        run: |
+          set -euo pipefail
+          npx playwright test -c playwright.live.config.ts e2e/uix02e-native-depth-exaggeration.spec.ts --list | tee /tmp/uix02e-selection.txt
+          grep -q 'Total: 4 tests' /tmp/uix02e-selection.txt
+      - name: Run 4 genuine Chromium cases once, no screenshots matrix
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > uix02e-preview.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for n in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4174/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4174/ > /dev/null
+          npx playwright test -c playwright.live.config.ts e2e/uix02e-native-depth-exaggeration.spec.ts --workers=1 --retries=0 --reporter=list --trace=on
+      - name: Retain only isolated science/depth browser traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uix02e-depth-science-four-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            frontend/uix02e-preview.log
+          if-no-files-found: warn
+          retention-days: 14
