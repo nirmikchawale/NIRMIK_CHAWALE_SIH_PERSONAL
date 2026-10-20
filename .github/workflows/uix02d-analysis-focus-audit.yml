@@ -1,0 +1,88 @@
+name: UIX-02-D isolated Analysis and Focus browser audit
+on:
+  push:
+    branches:
+      - diagnostic/uix02d-analysis-focus-audit-20261020
+permissions:
+  contents: read
+  actions: read
+jobs:
+  responsive-audit:
+    name: Five genuine native Analysis/Focus Chromium tests, zero retries
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify candidate runtime and science sources immutable
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor b228f0ff1094385be4a8f637c2db2ce857906f99 HEAD
+          test -z "$(git diff --name-only b228f0ff1094385be4a8f637c2db2ce857906f99 HEAD -- frontend/src backend data)"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install exact frozen Playwright dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Reuse original UIX-02 scientific production artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: final-mvp-verified-production-static
+          run-id: 39400125238
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: frontend/dist
+      - name: Restore immutable source-backed assets and build exact UIX-02-C code
+        run: |
+          set -euo pipefail
+          test -s frontend/dist/science-static/catalog.json
+          sha256sum frontend/dist/science-static/catalog.json | awk '{print $1}' > /tmp/uix02d-catalog-sha
+          for dirname in science-static operational observations samples; do
+            if test -d "frontend/dist/$dirname"; then
+              mkdir -p "frontend/public/$dirname"
+              cp -a "frontend/dist/$dirname/." "frontend/public/$dirname/"
+            fi
+          done
+          cd frontend
+          npm run typecheck
+          VITE_STATIC_SCIENCE=true npm run build
+          test "$(sha256sum dist/science-static/catalog.json | awk '{print $1}')" = "$(cat /tmp/uix02d-catalog-sha)"
+      - name: Install genuine Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Require only five targeted Analysis/Focus scenarios
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
+        run: |
+          set -euo pipefail
+          npx playwright test -c playwright.live.config.ts e2e/uix02d-analysis-focus-audit.spec.ts --list | tee /tmp/uix02d-selected.log
+          grep -q 'Total: 5 tests' /tmp/uix02d-selected.log
+      - name: Execute only five Chromium cases without retries
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > uix02d-preview.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            if curl --silent --fail http://127.0.0.1:4174/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4174/ > /dev/null
+          npx playwright test -c playwright.live.config.ts e2e/uix02d-analysis-focus-audit.spec.ts --workers=1 --retries=0 --reporter=list --trace=on
+      - name: Archive focused Chromium traces and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uix02d-five-case-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            frontend/uix02d-preview.log
+          retention-days: 14
+          if-no-files-found: warn
