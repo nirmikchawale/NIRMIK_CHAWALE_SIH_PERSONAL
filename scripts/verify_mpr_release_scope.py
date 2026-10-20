@@ -25,6 +25,9 @@ EXACT_FILES = {
     "frontend/src/components/ImmersiveFullscreenButton.tsx",
     "frontend/src/components/BlockDetailsWorkspace.tsx",
     "frontend/src/components/PresentationGuide.tsx",
+    # UIX-03 isolated navigation/exit recovery: ONE UI-only component.
+    # No source, scientific, data, backend, or wildcard scope extension.
+    "frontend/src/components/ExplorerWorkspaceModeIsland.tsx",
     "frontend/src/components/ExplorerConsolidationHost.tsx",
     "frontend/src/theme.ts",
     "frontend/index.html",

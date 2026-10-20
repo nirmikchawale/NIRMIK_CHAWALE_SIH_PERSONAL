@@ -1,0 +1,218 @@
+/* UIX-03 Layout Exit Recovery — imported last, scoped to Explorer only.
+   Preserve 16 glass tokens, original Cesium field/source, native depth/QC.
+   This retires obsolete absolute-position Analysis Split and clipped mode grid. */
+.ocean-workbench[data-page="explore"]:not([data-workspace-mode="presentation"]) .explorer-landing-islands {
+  grid-area: directory !important;
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+.ocean-workbench[data-page="explore"] .explorer-landing-islands > .mpr-workspace-mode-island {
+  display: flex !important;
+  flex-flow: row wrap !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 12px 18px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  box-sizing: border-box;
+}
+.ocean-workbench[data-page="explore"] .mpr-workspace-mode-heading {
+  flex: 1 1 200px !important;
+  min-width: min(200px,100%) !important;
+}
+.ocean-workbench[data-page="explore"] .mpr-workspace-mode-actions {
+  display: flex !important;
+  flex: 2 1 340px !important;
+  min-width: 0 !important;
+  width: auto !important;
+  grid-area: auto !important;
+  grid-column: auto !important;
+  grid-row: auto !important;
+  overflow: visible !important;
+  flex-wrap: nowrap !important;
+  justify-self: auto !important;
+}
+.ocean-workbench[data-page="explore"] .mpr-workspace-mode-actions > button {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  position: relative !important;
+  inset: auto !important;
+  transform: none !important;
+  white-space: normal !important;
+}
+.ocean-workbench[data-page="explore"] .mpr-workspace-mode-utilities {
+  display: flex !important;
+  flex: 0 1 auto !important;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+  justify-content: flex-end;
+}
+.ocean-workbench[data-page="explore"] .mpr-workspace-mode-utilities > button {
+  display: inline-flex !important;
+  position: static !important;
+  grid-area: auto !important;
+  grid-column: auto !important;
+  grid-row: auto !important;
+  inset: auto !important;
+  transform: none !important;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 0;
+  width: auto;
+  padding: 9px 13px;
+  border: 1px solid var(--mpr-border-active);
+  border-radius: var(--mpr-radius-control);
+  background: var(--mpr-surface-raised);
+  color: var(--mpr-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  white-space: normal;
+}
+.ocean-workbench[data-page="explore"] .mpr-workspace-mode-utilities > .mpr-mode-exit {
+  border-color: var(--mpr-accent);
+  background: color-mix(in srgb,var(--mpr-accent) 12%,var(--mpr-surface));
+}
+.ocean-workbench[data-page="explore"] .mpr-workspace-mode-utilities > .mpr-controls-exit {
+  border-color: var(--mpr-focus);
+}
+.ocean-workbench[data-page="explore"] .mpr-workspace-mode-utilities > button:hover {
+  background: color-mix(in srgb,var(--mpr-accent) 15%,var(--mpr-surface-raised));
+}
+.ocean-workbench[data-page="explore"] .mpr-workspace-mode-utilities > button:focus-visible {
+  outline: 2px solid var(--mpr-focus); outline-offset: 3px;
+}
+
+/* The Analysis Split is an actual grid pair, never an overlay or a
+   half-width absolute panel hidden behind the source-selector islands. */
+@media (min-width: 1121px) {
+  .ocean-workbench[data-page="explore"][data-workspace-mode="analysis"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace[data-inspector="open"] {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.5fr) minmax(330px, 1fr) !important;
+    grid-template-areas:
+      "directory directory"
+      "dock dock"
+      "geo-title geo-title"
+      "scene inspector"
+      "range inspector"
+      "controls controls"
+      "block block"
+      "catalog catalog"
+      "water water"
+      "inspect inspect"
+      "evidence evidence" !important;
+    grid-template-rows: auto auto auto minmax(570px,75dvh) auto auto auto auto auto auto auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+}
+@media (min-width: 761px) and (max-width: 1120px) {
+  .ocean-workbench[data-page="explore"][data-workspace-mode="analysis"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace[data-inspector="open"] {
+    grid-template-columns: minmax(0,1fr) !important;
+    grid-template-areas: "directory" "dock" "geo-title" "scene" "inspector"
+      "range" "controls" "block" "catalog" "water" "inspect" "evidence" !important;
+    grid-template-rows: auto auto auto minmax(510px,68dvh) auto auto auto auto auto auto auto auto !important;
+  }
+}
+@media (max-width: 760px) {
+  .ocean-workbench[data-page="explore"][data-workspace-mode="analysis"]:not(.focus-mode):not([data-workspace-mode="presentation"]) .station-workspace[data-inspector="open"] {
+    grid-template-columns: minmax(0,1fr) !important;
+    grid-template-areas: "directory" "dock" "geo-title" "scene" "inspector"
+      "range" "controls" "block" "catalog" "water" "inspect" "evidence" !important;
+    grid-template-rows: auto auto auto minmax(410px,66dvh) auto auto auto auto auto auto auto auto !important;
+  }
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="analysis"] .station-workspace > .analysis-split-panel {
+  grid-area: inspector !important;
+  grid-column: auto !important;
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important; right: auto !important; bottom: auto !important; left: auto !important;
+  display: block !important;
+  transform: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  box-sizing: border-box;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+  contain: none !important;
+  padding: clamp(14px,1.5vw,24px) !important;
+  border: 1px solid var(--mpr-border-active);
+  border-radius: var(--mpr-radius-island);
+  background: var(--mpr-surface);
+  color: var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="analysis"] .station-workspace > .visualization-stage {
+  grid-area: scene !important;
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important; right: auto !important; bottom: auto !important; left: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  min-height: 410px !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="analysis"] .station-workspace > .visualization-dock {
+  grid-area: dock !important;
+  right: auto !important; width: 100% !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="analysis"] .station-workspace > .control-panel {
+  grid-area: controls !important;
+  position: relative !important;
+}
+.ocean-workbench[data-page="explore"][data-workspace-mode="analysis"][data-control-dock="closed"] .station-workspace > .control-panel {
+  display: none !important;
+}
+/* The historic inspector modal/overlay must not obscure the analytical pane. */
+.ocean-workbench[data-page="explore"][data-workspace-mode="analysis"] .station-workspace > .analysis-split-panel .analysis-profile-chart svg {
+  max-width: 100%; touch-action: pan-y;
+}
+@media (max-width: 1120px) {
+  .ocean-workbench[data-page="explore"][data-workspace-mode="analysis"] .station-workspace > .analysis-split-panel {
+    height: auto !important;
+    min-height: 320px !important;
+    max-height: min(680px,75dvh) !important;
+  }
+  .ocean-workbench[data-page="explore"] .mpr-workspace-mode-utilities {
+    flex: 1 1 100% !important;
+    justify-content: flex-start;
+  }
+}
+@media (max-width: 600px) {
+  .ocean-workbench[data-page="explore"] .mpr-workspace-mode-heading {
+    flex: 1 1 100% !important;
+  }
+  .ocean-workbench[data-page="explore"] .mpr-workspace-mode-actions {
+    flex: 1 1 100% !important;
+  }
+  .ocean-workbench[data-page="explore"] .mpr-workspace-mode-actions button {
+    min-height: 50px !important; font-size: 11px !important; padding: 9px 6px !important;
+  }
+  .ocean-workbench[data-page="explore"] .mpr-workspace-mode-utilities > button {
+    font-size: 11px; padding: 9px 10px;
+  }
+}
+@media (forced-colors: active) {
+  .ocean-workbench[data-page="explore"] .mpr-workspace-mode-utilities > button {
+    background: Canvas; color: CanvasText; border-color: CanvasText;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ocean-workbench[data-page="explore"] .mpr-workspace-mode-utilities > button { transition: none !important; }
+}
