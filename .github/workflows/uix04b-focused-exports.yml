@@ -1,0 +1,110 @@
+name: uix04b-focused-evidence-export-development
+
+# Isolated development workflow: real science, four exports, no 96-image suite,
+# four-shard Chromium release, merge, dispatch, or deployment.
+on:
+  push:
+    branches:
+      - build/uix04b-evidence-export-integrity-20261021
+    paths:
+      - .github/workflows/uix04b-focused-exports.yml
+      - frontend/e2e/uix04b-evidence-export-integrity.spec.ts
+      - docs/UIX_04_B_EVIDENCE_EXPORT_INTEGRITY.md
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uix04b-focused-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  evidence-downloads:
+    name: four-source-backed-export-cases
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install native evidence export dependencies
+        run: python -m pip install -r backend/requirements.txt
+      - name: Generate original read-only static scientific evidence
+        run: |
+          set -euo pipefail
+          python scripts/export_static_science.py --output frontend/public/science-static
+          python scripts/fetch_incois_operational.py --output frontend/public/operational/incois-argo-10d-vam.json
+          python scripts/fetch_incois_chlorophyll.py --output frontend/public/operational/incois-chlorophyll.json
+          python scripts/verify_incois_opendap.py --output frontend/public/operational/opendap-verification.json
+          python scripts/fetch_verified_observation_breadth.py --output frontend/public/observations/verified-profiles.json
+          python scripts/create_netcdf_browser_fixture.py --output frontend/public/samples/cf-profile-fixture.nc
+      - name: Build exactly this React/Cesium development candidate
+        working-directory: frontend
+        env:
+          VITE_STATIC_SCIENCE: 'true'
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+      - name: Native source evidence must exist, never synthetic measurements
+        run: |
+          set -euo pipefail
+          test -s frontend/dist/science-static/manifest.json
+          test -s frontend/dist/science-static/catalog.json
+          test -s frontend/dist/observations/verified-profiles.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("frontend/dist/observations/verified-profiles.json")
+          d = json.loads(p.read_text())
+          assert d["integrity"]["synthetic_measurements"] is False
+          assert d["integrity"]["synthetic_timestamps"] is False
+          PY
+      - name: Install real Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Discover exactly four download-verification cases
+        working-directory: frontend
+        run: |
+          npx playwright test -c playwright.live.config.ts \
+            e2e/uix04b-evidence-export-integrity.spec.ts --list \
+            | tee /tmp/uix04b-test-list.txt
+          grep -q '4 tests in 1 file' /tmp/uix04b-test-list.txt
+      - name: Run only four actual browser-download tests, zero retries
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+        run: |
+          set -euo pipefail
+          python -m http.server 4174 --bind 127.0.0.1 --directory dist > /tmp/uix04b-preview.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" || true' EXIT
+          ok=0
+          for attempt in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4174/ >/dev/null; then ok=1; break; fi
+            sleep 1
+          done
+          if [ "$ok" -ne 1 ]; then cat /tmp/uix04b-preview.log; exit 1; fi
+          npx playwright test -c playwright.live.config.ts \
+            e2e/uix04b-evidence-export-integrity.spec.ts \
+            --workers=1 --retries=0 --trace=retain-on-failure --reporter=list
+      - name: Retain focused trace and run evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uix04b-four-export-cases-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            /tmp/uix04b-test-list.txt
+            /tmp/uix04b-preview.log
+          if-no-files-found: warn
+          retention-days: 14
