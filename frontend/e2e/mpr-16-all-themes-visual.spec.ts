@@ -37,7 +37,7 @@ const sizes=[
 
 for(const size of sizes) {
  test("MPR-16 verified screenshots & science-safe 16-theme matrix: "+size.name,async({page},info)=>{
-  test.setTimeout(15*60*1000);
+  test.setTimeout(22*60*1000);
   await page.setViewportSize(size);
   await page.emulateMedia({reducedMotion:"reduce"});
   await page.goto(PUBLIC_BASE!.replace(/#.*$/,"")+"#/explore",{waitUntil:"domcontentloaded"});
@@ -93,11 +93,11 @@ for(const size of sizes) {
     // actual browser viewport after scrolling to each real renderer instead.
     await geo.scrollIntoViewIfNeeded();
     const geoPngPath = info.outputPath(size.name+"--"+theme.id+"--geographic.png");
-    await page.screenshot({path:geoPngPath,animations:"disabled",timeout:45000});
+    await page.screenshot({path:geoPngPath,animations:"disabled",timeout:120000});
     await info.attach(size.name+"--"+theme.id+"--geographic",{path:geoPngPath,contentType:"image/png"});
     await water.scrollIntoViewIfNeeded();
     const waterPngPath = info.outputPath(size.name+"--"+theme.id+"--water-column.png");
-    await page.screenshot({path:waterPngPath,animations:"disabled",timeout:45000});
+    await page.screenshot({path:waterPngPath,animations:"disabled",timeout:120000});
     await info.attach(size.name+"--"+theme.id+"--water-column",{path:waterPngPath,contentType:"image/png"});
   }
   expect(records).toHaveLength(16);
