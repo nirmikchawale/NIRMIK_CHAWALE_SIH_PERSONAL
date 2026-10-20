@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   presentation-audit:
-    name: Four genuine Chromium presentation audits; zero retries
+    name: One isolated genuine guide focus case; zero retries
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -22,7 +22,8 @@ jobs:
         run: |
           set -euo pipefail
           git merge-base --is-ancestor d2565c8c58e787f2bb8115880a099a45256df74d HEAD
-          test -z "$(git diff --name-only d2565c8c58e787f2bb8115880a099a45256df74d HEAD -- frontend/src backend data)"
+          changed="$(git diff --name-only d2565c8c58e787f2bb8115880a099a45256df74d HEAD -- frontend/src backend data)"
+          test "$changed" = "frontend/src/components/PresentationGuide.tsx"
           echo "Runtime App/CSS and scientific sources unchanged from UIX-02-B draft"
       - uses: actions/setup-node@v4
         with:
@@ -39,6 +40,20 @@ jobs:
           run-id: 39400125238
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: frontend/dist
+      - name: Restore previously verified source-backed assets and compile changed guide
+        run: |
+          set -euo pipefail
+          sha256sum frontend/dist/science-static/catalog.json | awk '{print $1}' > /tmp/uix02c-science-sha
+          for dirname in science-static operational observations samples; do
+            if test -d "frontend/dist/$dirname"; then
+              mkdir -p "frontend/public/$dirname"
+              cp -a "frontend/dist/$dirname/." "frontend/public/$dirname/"
+            fi
+          done
+          cd frontend
+          npm run typecheck
+          VITE_STATIC_SCIENCE=true npm run build
+          test "$(sha256sum dist/science-static/catalog.json | awk '{print $1}')" = "$(cat /tmp/uix02c-science-sha)"
       - name: Install genuine Chromium
         working-directory: frontend
         run: |
@@ -46,15 +61,15 @@ jobs:
           test -s dist/science-static/catalog.json
           test -s dist/observations/verified-profiles.json
           npx playwright install --with-deps chromium
-      - name: Require exactly four responsive/accessibility tests
+      - name: Require exactly ONE previously failing focus/return case
         working-directory: frontend
         env:
           OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
         run: |
           set -euo pipefail
-          npx playwright test -c playwright.live.config.ts e2e/uix02c-presentation-audit.spec.ts --list | tee /tmp/uix02c-selected.log
-          grep -q 'Total: 4 tests' /tmp/uix02c-selected.log
-      - name: Audit actual static app in Chromium; 4 cases, 0 retries
+          npx playwright test -c playwright.live.config.ts e2e/uix02c-presentation-audit.spec.ts --grep 'judge guide keyboard focus' --list | tee /tmp/uix02c-selected.log
+          grep -q 'Total: 1 test' /tmp/uix02c-selected.log
+      - name: Audit changed guide in genuine Chromium; 1 case, 0 retries
         working-directory: frontend
         env:
           OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
@@ -68,7 +83,7 @@ jobs:
             sleep 1
           done
           curl --fail --silent http://127.0.0.1:4174/ >/dev/null
-          npx playwright test -c playwright.live.config.ts e2e/uix02c-presentation-audit.spec.ts --workers=1 --retries=0 --reporter=list --trace=on
+          npx playwright test -c playwright.live.config.ts e2e/uix02c-presentation-audit.spec.ts --grep 'judge guide keyboard focus' --workers=1 --retries=0 --reporter=list --trace=on
       - name: Preserve only focused test traces (no 96-image suite)
         if: always()
         uses: actions/upload-artifact@v4

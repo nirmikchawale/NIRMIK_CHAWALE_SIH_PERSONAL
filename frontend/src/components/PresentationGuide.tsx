@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const STEPS = [
   { title: "Start with the numerical ocean field", body: "Open the verified GLORYS temperature field in geographic 3D. Establish the Indian Ocean study window, model source and real coordinates before discussing analytics." },
@@ -11,6 +11,24 @@ const STEPS = [
 
 export function PresentationGuide({ onStep, onClose }: { onStep: (step: number) => void; onClose: () => void }) {
   const [step, setStep] = useState(0);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const originRef = useRef<HTMLElement | null>(null);
+
+  // Keyboard-accessible guide entry and exit: move focus into the visible
+  // guide, then return it to the user-invoked trigger. React StrictMode may
+  // re-run effects, so remember the first external focus owner only once.
+  useEffect(() => {
+    const current = document.activeElement;
+    if (!originRef.current && current instanceof HTMLElement &&
+        !current.closest('[data-testid="presentation-guide"]')) {
+      originRef.current = current;
+    }
+    closeButtonRef.current?.focus({ preventScroll: true });
+    return () => {
+      const origin = originRef.current;
+      if (origin?.isConnected) origin.focus({ preventScroll: true });
+    };
+  }, []);
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -32,7 +50,7 @@ export function PresentationGuide({ onStep, onClose }: { onStep: (step: number) 
           <span className="eyebrow">JUDGE PRESENTATION · {String(step + 1).padStart(2, "0")} / {STEPS.length}</span>
           <h2>{STEPS[step].title}</h2>
         </div>
-        <button type="button" className="presentation-guide-close" aria-label="Close presentation guide" onClick={onClose}>×</button>
+        <button type="button" ref={closeButtonRef} className="presentation-guide-close" aria-label="Close presentation guide" onClick={onClose}>×</button>
       </header>
       <progress className="presentation-guide-progress" aria-label="Presentation step progress" max={STEPS.length} value={step + 1} />
       <div className="presentation-guide-content"><p>{STEPS[step].body}</p></div>
