@@ -97,3 +97,47 @@ for (const width of [390, 1440]) {
       .toBeLessThanOrEqual(3);
   });
 }
+
+for (const width of [390, 1440]) {
+  test(`UIX03 controls actually restore into the accessible viewport at ${width}px`, async ({ page }) => {
+    test.setTimeout(150_000);
+    await open(page, width);
+    const root = page.locator(".ocean-workbench");
+    const source = await root.getAttribute("data-explore-source");
+    const block = await page.getByTestId("scientific-context-bar").getAttribute("data-block-id");
+    const panel = page.locator(".station-workspace > .control-panel");
+
+    if (width === 390) {
+      // Mobile dock is genuinely hidden until its drawer is open: its status,
+      // aria-expanded header and data-mobile-open must agree.
+      await expect(root).toHaveAttribute("data-control-dock", "closed");
+      await page.getByRole("button", { name: "Show explorer controls" }).click();
+      await expect(root).toHaveAttribute("data-control-dock", "open");
+      await expect(panel).toHaveAttribute("data-mobile-open", "true");
+      await expect(panel).toBeVisible();
+      await page.getByRole("button", { name: "Hide explorer controls" }).click();
+      await expect(root).toHaveAttribute("data-control-dock", "closed");
+      await page.getByTestId("exit-hidden-controls").click();
+      await expect(root).toHaveAttribute("data-control-dock", "open");
+      await expect(panel).toHaveAttribute("data-mobile-open", "true");
+      await expect(panel).toBeVisible();
+      await page.getByRole("button", { name: "Close explorer controls" }).click();
+      await expect(root).toHaveAttribute("data-control-dock", "closed");
+    } else {
+      await page.getByRole("button", { name: "Hide explorer controls" }).click();
+      await expect(root).toHaveAttribute("data-control-dock", "closed");
+      await page.getByTestId("exit-hidden-controls").click();
+      await expect(root).toHaveAttribute("data-control-dock", "open");
+      await expect(panel).toBeVisible();
+      await expect.poll(async () => {
+        const box = await panel.boundingBox();
+        return box?.y ?? Number.POSITIVE_INFINITY;
+      }, { timeout: 10_000 }).toBeLessThan(880);
+    }
+
+    await expect(root).toHaveAttribute("data-explore-source", source ?? "glorys");
+    await expect(page.getByTestId("scientific-context-bar")).toHaveAttribute(
+      "data-block-id", block ?? "BASE-GLORYS-001"
+    );
+  });
+}
