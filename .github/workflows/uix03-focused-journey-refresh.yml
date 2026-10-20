@@ -1,0 +1,36 @@
+name: uix03-focused-journey-refresh-diagnostic
+
+# UIX-03: test ONLY the pre-existing refresh journey contract, no retries.
+on:
+  push:
+    branches:
+      - diagnostic/uix03-journey-refresh-20261020
+
+permissions:
+  contents: read
+
+jobs:
+  journey-refresh:
+    name: journey-refresh-real-chromium-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Install Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Exercise only the genuine deployed refresh transition twice without retries
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/
+        run: |
+          npx playwright test -c playwright.live.config.ts \
+            e2e/journey.spec.ts \
+            --grep 'fresh refresh replays the Earth India ocean orientation' \
+            --workers=1 --retries=0 --repeat-each=2 --reporter=list
