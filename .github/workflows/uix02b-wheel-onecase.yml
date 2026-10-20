@@ -1,0 +1,79 @@
+name: UIX-02-B isolated real Chromium wheel test
+
+on:
+  push:
+    branches:
+      - diagnostic/uix02b-onecase-wheel-20261020
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  single-case:
+    name: One nested wheel Chromium case (zero retries)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm immutable candidate App and science code
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor 81df91fd45f47381f4aeb0ceb51ed8cb4204662a HEAD
+          test -z "$(git diff --name-only 81df91fd45f47381f4aeb0ceb51ed8cb4204662a HEAD -- frontend/src backend data)"
+          echo "UIX-02 candidate runtime source and scientific data unchanged"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frozen frontend test dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Download already-built exact candidate static artifact (NO rebuild)
+        uses: actions/download-artifact@v4
+        with:
+          name: final-mvp-verified-production-static
+          run-id: 39400125238
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: frontend/dist
+      - name: Validate candidate artifact and install genuine Chromium
+        working-directory: frontend
+        run: |
+          test -s dist/index.html
+          test -s dist/science-static/catalog.json
+          test -s dist/observations/verified-profiles.json
+          npx playwright install --with-deps chromium
+      - name: Ensure EXACTLY one Playwright test is selected
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
+        run: |
+          set -euo pipefail
+          npx playwright test -c playwright.live.config.ts e2e/uix02-nested-wheel-scroll.spec.ts --list | tee /tmp/uix02-selected.txt
+          grep -q 'Total: 1 test' /tmp/uix02-selected.txt
+      - name: Run one genuine Chromium wheel test against candidate with zero retries
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > uix02-preview.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for n in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4174/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4174/ >/dev/null
+          npx playwright test -c playwright.live.config.ts e2e/uix02-nested-wheel-scroll.spec.ts --workers=1 --retries=0 --reporter=list --trace=on
+      - name: Retain one-case genuine Chromium proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uix02b-real-single-wheel-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            frontend/uix02-preview.log
+          if-no-files-found: warn
+          retention-days: 14
