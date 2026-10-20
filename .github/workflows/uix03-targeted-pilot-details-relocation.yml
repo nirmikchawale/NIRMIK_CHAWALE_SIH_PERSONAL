@@ -26,7 +26,7 @@ jobs:
           node-version: "22"
       - working-directory: frontend
         run: npm ci && npm run typecheck && VITE_STATIC_SCIENCE=true npm run build && npx playwright install --with-deps chromium
-      - name: Only existing Phase 3.5D pilot synchronization real Chromium contract
+      - name: Only new pilot details canonical placement real Chromium geometry assertion
         working-directory: frontend
         env:
           OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
@@ -39,4 +39,4 @@ jobs:
             if curl --fail --silent http://127.0.0.1:4174/ >/dev/null; then break; fi
             sleep 1
           done
-          npx playwright test -c playwright.live.config.ts e2e/phase35d-pilot-renderer-sync.spec.ts --workers=1 --retries=0 --reporter=list
+          npx playwright test -c playwright.live.config.ts e2e/uix03-pilot-details-placement.spec.ts --workers=1 --retries=0 --reporter=list
