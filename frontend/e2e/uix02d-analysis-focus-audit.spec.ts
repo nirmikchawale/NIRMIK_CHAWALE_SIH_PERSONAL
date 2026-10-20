@@ -43,6 +43,7 @@ for (const width of [320, 768, 1440]) {
       expect(rectangle.x).toBeGreaterThanOrEqual(-2);
       expect(rectangle.x + rectangle.width).toBeLessThanOrEqual(width + 3);
     }
+    expect(a!.height, "Analysis inspector must be usable, not a 38px collapsed strip").toBeGreaterThan(300);
     const overlapW = Math.max(0, Math.min(a!.x+a!.width, g!.x+g!.width)-Math.max(a!.x,g!.x));
     const overlapH = Math.max(0, Math.min(a!.y+a!.height, g!.y+g!.height)-Math.max(a!.y,g!.y));
     expect(overlapW*overlapH, "Real analytic panel must not cover the native globe stage").toBeLessThanOrEqual(8);

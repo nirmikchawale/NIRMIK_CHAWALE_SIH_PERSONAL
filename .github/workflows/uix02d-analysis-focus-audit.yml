@@ -8,7 +8,7 @@ permissions:
   actions: read
 jobs:
   responsive-audit:
-    name: Five genuine native Analysis/Focus Chromium tests, zero retries
+    name: Three isolated original failures: one Analysis desktop + two Focus
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -19,7 +19,8 @@ jobs:
         run: |
           set -euo pipefail
           git merge-base --is-ancestor b228f0ff1094385be4a8f637c2db2ce857906f99 HEAD
-          test -z "$(git diff --name-only b228f0ff1094385be4a8f637c2db2ce857906f99 HEAD -- frontend/src backend data)"
+          changed="$(git diff --name-only b228f0ff1094385be4a8f637c2db2ce857906f99 HEAD -- frontend/src backend data)"
+          test "$changed" = "frontend/src/mpr-presentation-block-placement-v2.css"
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -53,15 +54,15 @@ jobs:
       - name: Install genuine Chromium
         working-directory: frontend
         run: npx playwright install --with-deps chromium
-      - name: Require only five targeted Analysis/Focus scenarios
+      - name: Select ONLY desktop Analysis and both Focus cases
         working-directory: frontend
         env:
           OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
         run: |
           set -euo pipefail
-          npx playwright test -c playwright.live.config.ts e2e/uix02d-analysis-focus-audit.spec.ts --list | tee /tmp/uix02d-selected.log
-          grep -q 'Total: 5 tests' /tmp/uix02d-selected.log
-      - name: Execute only five Chromium cases without retries
+          npx playwright test -c playwright.live.config.ts e2e/uix02d-analysis-focus-audit.spec.ts --grep 'Analysis Split.*1440px|Focus 3D maximizes' --list | tee /tmp/uix02d-selected.log
+          grep -q 'Total: 3 tests' /tmp/uix02d-selected.log
+      - name: Run the three repaired cases without retries
         working-directory: frontend
         env:
           OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
@@ -75,12 +76,12 @@ jobs:
             sleep 1
           done
           curl --fail --silent http://127.0.0.1:4174/ > /dev/null
-          npx playwright test -c playwright.live.config.ts e2e/uix02d-analysis-focus-audit.spec.ts --workers=1 --retries=0 --reporter=list --trace=on
+          npx playwright test -c playwright.live.config.ts e2e/uix02d-analysis-focus-audit.spec.ts --grep 'Analysis Split.*1440px|Focus 3D maximizes' --workers=1 --retries=0 --reporter=list --trace=on
       - name: Archive focused Chromium traces and failure evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: uix02d-five-case-${{ github.run_id }}
+          name: uix02d-three-isolated-${{ github.run_id }}
           path: |
             frontend/test-results
             frontend/uix02d-preview.log
