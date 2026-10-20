@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 5
+          fetch-depth: 0
       - name: Confirm immutable candidate App and science code
         run: |
           set -euo pipefail
