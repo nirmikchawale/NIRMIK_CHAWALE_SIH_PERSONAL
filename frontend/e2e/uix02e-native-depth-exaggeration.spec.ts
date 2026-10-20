@@ -41,7 +41,7 @@ test("UIX02-E GLORYS native depth selector synchronizes Geographic and Water Col
   for (const idx of [0, 18, options.length - 1]) {
     await selector.selectOption(String(idx));
     await expect(selector).toHaveValue(String(idx));
-    await expect.poll(() => Number(await water.getAttribute("data-native-depth"))).toBeCloseTo(native[idx], 1);
+    await expect.poll(async () => Number(await water.getAttribute("data-native-depth"))).toBeCloseTo(native[idx], 1);
     await expect(water.locator(".mpr-water-column-native-context")).toContainText(native[idx].toFixed(2) + " m");
     await expect(page.locator(".selected-depth-hero strong")).toContainText(native[idx].toFixed(2) + " m");
     await expect(shell.locator(".water-column-selected strong")).toContainText(native[idx].toFixed(2) + " m");
