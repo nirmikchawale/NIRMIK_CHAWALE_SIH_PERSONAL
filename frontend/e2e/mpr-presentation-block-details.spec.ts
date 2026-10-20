@@ -107,3 +107,32 @@ for (const width of [1440, 1024, 390]) {
     await expect(guide).toHaveCount(0);
   });
 }
+
+test("Source-backed pilot provenance launcher belongs to the canonical Block Details row", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript(() => localStorage.setItem("oceancanvas-active-main-block-v1", "IO-001"));
+  const details = await openExplorer(page);
+  const context = page.getByTestId("scientific-context-bar");
+  await expect(context).toHaveAttribute("data-block-id", "IO-001", { timeout: 60_000 });
+  const nav = details.getByRole("navigation", { name: "Block navigation and evidence actions" });
+  const pilotAction = nav.getByTestId("pilot-block-details-trigger");
+  await expect(pilotAction).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".pilot-block-details-control > .pilot-block-details-trigger")).toHaveCount(0);
+  const actual = await pilotAction.evaluate(node => {
+    const rect = node.getBoundingClientRect();
+    const parent = node.parentElement!.getBoundingClientRect();
+    return { position: getComputedStyle(node).position,
+      inside: rect.left >= parent.left - 2 && rect.right <= parent.right + 2 &&
+        rect.top >= parent.top - 2 && rect.bottom <= parent.bottom + 2 };
+  });
+  expect(actual.position).not.toBe("fixed");
+  expect(actual.inside).toBe(true);
+  await pilotAction.click();
+  const dialog = page.getByTestId("pilot-renderer-bridge");
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("No synthetic values");
+  await expect(dialog).toContainText("SYNCHRONIZED");
+  await dialog.getByRole("button", { name: "Close source-backed main block details" }).click();
+  await expect(dialog).toHaveCount(0);
+});

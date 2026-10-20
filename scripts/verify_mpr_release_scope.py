@@ -28,6 +28,8 @@ EXACT_FILES = {
     # UIX-03 isolated navigation/exit recovery: ONE UI-only component.
     # No source, scientific, data, backend, or wildcard scope extension.
     "frontend/src/components/ExplorerWorkspaceModeIsland.tsx",
+    # Relocated pilot provenance launcher: single exact UI component, not wildcard.
+    "frontend/src/components/PilotMainBlockRendererBridge.tsx",
     "frontend/src/components/ExplorerConsolidationHost.tsx",
     "frontend/src/theme.ts",
     "frontend/index.html",
