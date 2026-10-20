@@ -1,0 +1,41 @@
+name: uix03-focused-basemap-click-diagnostic
+
+# UIX-03: isolate one original button click contract; no release/shard/image loops.
+on:
+  push:
+    branches:
+      - diagnostic/uix03-basemap-click-20261020
+
+permissions:
+  contents: read
+
+jobs:
+  basemap-click:
+    name: original-basemap-control-real-Chromium-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - working-directory: frontend
+        run: npm ci
+      - working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Reproduce original High-res auto click twice; no retry masking
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/
+        run: |
+          npx playwright test -c playwright.live.config.ts \
+            e2e/3db15-stage-switch-basemap.spec.ts \
+            --workers=1 --retries=0 --repeat-each=2 --reporter=list
+      - name: Preserve precise failure context, if any
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uix03-basemap-click-diagnostic-evidence
+          path: frontend/test-results
+          if-no-files-found: warn
+          retention-days: 14
