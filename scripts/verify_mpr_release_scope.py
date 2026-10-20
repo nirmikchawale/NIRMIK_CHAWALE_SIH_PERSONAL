@@ -45,6 +45,15 @@ EXACT_FILES = {
     "frontend/e2e/live.spec.ts",
     "frontend/e2e/rui-nav-01-file-manager-shell.spec.ts",
     "frontend/e2e/document-layout.spec.ts",
+    # UIX-02-INTEGRATION-POLICY (20 October 2026): six exact document/test
+    # paths only. No UIX-02 prefix wildcard, science/data/API exception, or
+    # approval to start full release certification, merge, or deploy.
+    "docs/UIX_02_A_DEFECT_INVENTORY.md",
+    "frontend/e2e/uix02-nested-wheel-scroll.spec.ts",
+    "frontend/e2e/uix02c-presentation-audit.spec.ts",
+    "frontend/e2e/uix02d-analysis-focus-audit.spec.ts",
+    "frontend/e2e/uix02e-native-depth-exaggeration.spec.ts",
+    "frontend/e2e/uix02f-navigation-evidence-themes.spec.ts",
     "scripts/verify_mpr_release_scope.py",
     ".github/workflows/mpr-release-certification.yml",
 }

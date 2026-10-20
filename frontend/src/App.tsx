@@ -314,7 +314,14 @@ export default function App() {
         const canScrollY =
           /(auto|scroll)/.test(style.overflowY) &&
           node.scrollHeight > node.clientHeight + 1;
-        if (canScrollY) return;
+        if (canScrollY) {
+          // Let a nested panel consume wheel input only while it can move in
+          // the requested direction. At its boundary, continue to the page.
+          const remaining = event.deltaY > 0
+            ? node.scrollHeight - node.clientHeight - node.scrollTop
+            : node.scrollTop;
+          if (remaining > 1) return;
+        }
         node = node.parentElement;
       }
 

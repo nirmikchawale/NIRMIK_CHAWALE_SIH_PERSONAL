@@ -368,3 +368,59 @@
     justify-content: space-between;
   }
 }
+
+/* UIX-02-D focused fixes, sourced from 39415838120 real Chromium failures:
+   1. desktop Analysis Split inspector collapsed to 38px due contain:size;
+   2. Focus 3D native stage only 2px mobile/711px desktop because obsolete
+      implicit grid-area columns hijacked the modern full-width section.
+   Scoped to existing modes. No renderer/scientific/theme changes. */
+.ocean-workbench[data-page="explore"][data-workspace-mode="analysis"]
+  .station-workspace > .analysis-split-panel {
+  contain: none !important;
+  height: auto !important;
+  min-height: 360px !important;
+  max-height: min(80dvh,760px) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  align-self: stretch !important;
+}
+.ocean-workbench[data-page="explore"].focus-mode .station-workspace {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: clamp(10px,1.5vw,20px) !important;
+  grid-template-columns: none !important;
+  grid-template-areas: none !important;
+  grid-template-rows: none !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+.ocean-workbench[data-page="explore"].focus-mode .station-workspace > :is(
+  .explorer-landing-islands, .mpr-block-details-workspace, .control-panel,
+  .analysis-split-panel, .mpr-inspector-access, .evidence-rail,
+  .profile-panel, .mobile-explore-tray
+) {
+  display: none !important;
+}
+.ocean-workbench[data-page="explore"].focus-mode .station-workspace > .visualization-stage {
+  position: relative !important;
+  inset: auto !important;
+  display: block !important;
+  flex: 0 0 clamp(460px,75dvh,850px) !important;
+  align-self: stretch !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: clamp(460px,75dvh,850px) !important;
+  min-height: 460px !important;
+}
+.ocean-workbench[data-page="explore"].focus-mode .station-workspace >
+  :is(.visualization-dock, .mpr-geographic-heading, .mpr-water-column-section, .scientific-colorbar-hud) {
+  flex: 0 0 auto !important;
+  align-self: stretch !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
