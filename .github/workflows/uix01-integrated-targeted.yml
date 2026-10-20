@@ -1,0 +1,108 @@
+name: UIX-01 integrated five-case Chromium gate
+
+on:
+  push:
+    branches:
+      - diagnostic/uix01-integrated-final-five-20261020
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  focused-integrated:
+    name: Four toolbar widths and one MPR16 wide-desktop screenshot test
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install deterministic frontend dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Reuse exact prior verified scientific evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: final-mvp-verified-production-static
+          run-id: 39320367264
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: frontend/dist
+      - name: Retain byte-identical source-backed science for candidate build
+        run: |
+          set -euo pipefail
+          for name in science-static operational observations samples; do
+            if test -d "frontend/dist/$name"; then
+              cp -a "frontend/dist/$name" "frontend/public/$name"
+            fi
+          done
+          test -s frontend/public/science-static/catalog.json
+          test -s frontend/public/observations/verified-profiles.json
+      - name: Build integrated actual frontend and typecheck
+        working-directory: frontend
+        env:
+          VITE_STATIC_SCIENCE: 'true'
+        run: |
+          npm run typecheck
+          npm run build
+      - name: Install real Chromium and headless dependencies
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Confirm exactly five real browser scenarios are selected
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+        run: |
+          set -euo pipefail
+          npx playwright test -c playwright.live.config.ts \
+            e2e/mpr-geographic-toolbar-scroll.spec.ts \
+            e2e/mpr-16-all-themes-visual.spec.ts \
+            --grep 'Geographic toolbar is aligned and wheel-scrollable|MPR-16 verified screenshots & science-safe 16-theme matrix: wide-desktop' \
+            --list | tee /tmp/uix01-selected.txt
+          grep -q 'Total: 5 tests' /tmp/uix01-selected.txt
+      - name: Run ONLY four toolbar and one wide-desktop visual scenario
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+          PLAYWRIGHT_HTML_OPEN: never
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > integrated-preview.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            curl --silent --fail http://127.0.0.1:4174/ > /dev/null && break || sleep 1
+          done
+          curl --fail http://127.0.0.1:4174/ > /dev/null
+          npx playwright test -c playwright.live.config.ts \
+            e2e/mpr-geographic-toolbar-scroll.spec.ts \
+            e2e/mpr-16-all-themes-visual.spec.ts \
+            --grep 'Geographic toolbar is aligned and wheel-scrollable|MPR-16 verified screenshots & science-safe 16-theme matrix: wide-desktop' \
+            --workers=1 --retries=0 --reporter=html
+      - name: Validate 32 real nonempty PNGs for desktop visual matrix
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          pngs = [p for p in Path('frontend/test-results').rglob('*.png') if re.fullmatch(r'wide-desktop--[a-z0-9-]+--(geographic|water-column)\.png', p.name)]
+          unique = {p.name for p in pngs}
+          assert len(unique) == 32, f'Expected 32 unique PNGs, got {len(unique)}; count={len(pngs)}'
+          for p in pngs:
+            raw = p.read_bytes()
+            assert raw[:8] == bytes([137,80,78,71,13,10,26,10]) and len(raw) > 1024, f'Invalid real browser image {p}'
+          print('32 actual wide-desktop Chromium PNGs verified')
+          PY
+      - name: Archive genuine Chromium logs and images regardless of outcome
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uix01-integrated-5-reals-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            frontend/playwright-report
+            frontend/integrated-preview.log
+          retention-days: 14
+          if-no-files-found: warn
