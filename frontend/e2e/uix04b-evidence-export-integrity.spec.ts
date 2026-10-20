@@ -113,10 +113,10 @@ test("UIX04B user-file Data Lab JSON preserves exact measurements and local prov
   expect(payload.filtered_validated_rows).toBe(2);
   expect(payload.records).toHaveLength(2);
   const sourceRows = payload.records.map((r: {variable:string,value:number,source:string,timestamp:string,depth_m:number}) =>
-    [r.variable, Number(r.value), r.source, r.timestamp, Number(r.depth_m)]);
+    [r.variable, Number(r.value), r.source, new Date(r.timestamp).getTime(), Number(r.depth_m)]);
   expect(sourceRows).toEqual([
-    ["temperature", 28.2, "local_user_file", "2024-01-02T00:00:00Z", 10],
-    ["salinity", 35.1, "local_user_file", "2024-01-03T00:00:00Z", 30]
+    ["temperature", 28.2, "local_user_file", Date.parse("2024-01-02T00:00:00Z"), 10],
+    ["salinity", 35.1, "local_user_file", Date.parse("2024-01-03T00:00:00Z"), 30]
   ]);
   await expect(lab.locator("#data-lab-provenance")).toContainText("not independently authenticated");
 });
