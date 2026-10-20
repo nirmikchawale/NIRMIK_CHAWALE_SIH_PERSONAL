@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { blockBoundsLabel } from "../main-block-engine";
 import { fetchPilotMainBlockManifest, type PilotBlockManifest } from "../pilot-main-block-loader";
@@ -23,6 +24,9 @@ export function PilotMainBlockRendererBridge() {
   const [context, setContext] = useState<ScientificWorkspaceContext>(readScientificWorkspaceContext);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  // Reuse the existing, fully tested pilot-details trigger *inside* the
+  // canonical full-width Block Details actions. No second fixed launcher.
+  const [detailsActions, setDetailsActions] = useState<HTMLElement | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
   const onExplore = hash === "" || hash === "#" || hash.startsWith("#/explore");
@@ -41,6 +45,24 @@ export function PilotMainBlockRendererBridge() {
   }, []);
 
   useEffect(() => subscribeActiveMainBlock(setActiveId), []);
+  useEffect(() => {
+    if (!onExplore || !pilot) {
+      setDetailsActions(null);
+      return;
+    }
+    const selector = '.ocean-workbench[data-page="explore"] .mpr-block-details-actions';
+    const findHome = () => {
+      const next = document.querySelector<HTMLElement>(selector);
+      if (next) {
+        setDetailsActions((current) => current === next ? current : next);
+        observer.disconnect();
+      }
+    };
+    const observer = new MutationObserver(findHome);
+    observer.observe(document.body, { childList: true, subtree: true });
+    findHome();
+    return () => observer.disconnect();
+  }, [onExplore, pilot]);
   useEffect(() => subscribeScientificWorkspaceContext(setContext), []);
 
   // Full pilot provenance belongs to an on-demand inspector, not a permanent
@@ -153,20 +175,26 @@ export function PilotMainBlockRendererBridge() {
 
   return (
     <div className="pilot-block-details-control" data-testid="pilot-block-details-control">
-      <button
-        ref={triggerRef}
-        className="pilot-block-details-trigger"
-        data-testid="pilot-block-details-trigger"
-        type="button"
-        aria-label={detailsOpen ? "Close source-backed main block details" : "Open source-backed main block details"}
-        aria-expanded={detailsOpen}
-        aria-controls="pilot-block-details-panel"
-        title="Source-backed main block details"
-        onClick={() => setDetailsOpen((current) => !current)}
-      >
-        <span className="pilot-block-details-icon" aria-hidden="true">▦</span>
-        <span className="pilot-block-details-label">Block details</span>
-      </button>
+      {detailsActions && createPortal(
+        <button
+          ref={triggerRef}
+          className="pilot-block-details-trigger"
+          data-testid="pilot-block-details-trigger"
+          type="button"
+          aria-label={detailsOpen ? "Close source-backed main block details" : "Open source-backed main block details"}
+          aria-expanded={detailsOpen}
+          aria-controls="pilot-block-details-panel"
+          title="Source-backed pilot evidence"
+          // Legacy styling fixed this button at the top-right of the
+          // viewport. The canonical Block Details row owns its position now.
+          style={{ position: "static", inset: "auto", width: "100%", height: "100%", zIndex: "auto" }}
+          onClick={() => setDetailsOpen((current) => !current)}
+        >
+          <span className="pilot-block-details-icon" aria-hidden="true">▦</span>
+          <span className="pilot-block-details-label" style={{ display: "inline" }}>Pilot source evidence</span>
+        </button>,
+        detailsActions
+      )}
       {detailsOpen && (
         <>
           <button
