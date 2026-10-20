@@ -62,6 +62,13 @@ EXACT_FILES = {
     "frontend/e2e/uix02d-analysis-focus-audit.spec.ts",
     "frontend/e2e/uix02e-native-depth-exaggeration.spec.ts",
     "frontend/e2e/uix02f-navigation-evidence-themes.spec.ts",
+    # UIX-04A-SCOPE-APPROVAL (21 Oct 2026): exact four
+    # keyboard focus ownership surfaces on isolated certified-main integration.
+    # No wildcard, science, data/API, 3DB or extra workflow privileges.
+    "frontend/src/components/AppNavigation.tsx",
+    "frontend/e2e/uix04a-navigation-focus-ownership.spec.ts",
+    ".github/workflows/uix04a-focused-chromium.yml",
+    "docs/UIX_04_A_NAVIGATION_FOCUS_OWNERSHIP.md",
     "scripts/verify_mpr_release_scope.py",
     ".github/workflows/mpr-release-certification.yml",
 }
