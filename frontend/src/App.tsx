@@ -118,6 +118,16 @@ export default function App() {
   const [theme, setTheme] = useState<ThemeMode>(initialTheme);
   const [page, setPage] = useState<PageId>(() => routeFromHash(window.location.hash));
   const [mobileSheet, setMobileSheet] = useState<MobileSheet>("none");
+  // A mobile control dock is visible only when its actual sheet is open.
+  const [narrowControlsViewport, setNarrowControlsViewport] = useState(
+    () => window.matchMedia("(max-width: 760px)").matches
+  );
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 760px)");
+    const update = () => setNarrowControlsViewport(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
   const [profilePanelOpen, setProfilePanelOpen] = useState(false);
   const [profileCalloutOpen, setProfileCalloutOpen] = useState(false);
   const [sessionImportedProfiles, setSessionImportedProfiles] = useState<ImportedObservationProfile[]>(() =>
@@ -285,17 +295,44 @@ export default function App() {
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [logoOpen]);
 
+  const controlDockVisible = narrowControlsViewport ? mobileSheet === "controls" : controlDockOpen;
+
+  const showExplorerControls = useCallback(() => {
+    setControlDockOpen(true);
+    if (window.matchMedia("(max-width: 760px)").matches) {
+      setMobileSheet("controls");
+      return;
+    }
+    // The dock is below the source/feature cards. Merely toggling the state
+    // otherwise appears to do nothing at the top of the Explorer page.
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+      document.querySelector<HTMLElement>(
+        '.ocean-workbench[data-page="explore"] .station-workspace > .control-panel'
+      )?.scrollIntoView({ behavior: "auto", block: "center" });
+    }));
+  }, []);
+
+  const hideExplorerControls = useCallback(() => {
+    setControlDockOpen(false);
+    setMobileSheet((current) => current === "controls" ? "none" : current);
+  }, []);
+
+  const toggleExplorerControls = useCallback(() => {
+    if (controlDockVisible) hideExplorerControls();
+    else showExplorerControls();
+  }, [controlDockVisible, hideExplorerControls, showExplorerControls]);
+
   useEffect(() => {
     const handleDockShortcut = (event: KeyboardEvent) => {
       if (page !== "explore") return;
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "b") {
         event.preventDefault();
-        setControlDockOpen((open) => !open);
+        toggleExplorerControls();
       }
     };
     window.addEventListener("keydown", handleDockShortcut);
     return () => window.removeEventListener("keydown", handleDockShortcut);
-  }, [page]);
+  }, [page, toggleExplorerControls]);
 
   useEffect(() => {
     if (page === "explore") return;
@@ -1055,7 +1092,7 @@ export default function App() {
       data-page={page}
       data-explore-source={sourceMode}
       data-workspace-mode={workspaceMode}
-      data-control-dock={controlDockOpen ? "open" : "closed"}
+      data-control-dock={controlDockVisible ? "open" : "closed"}
       data-evidence-inspector={evidenceOpen ? "open" : "closed"}
     >
       <header className="app-header">
@@ -1128,12 +1165,12 @@ export default function App() {
               <button
                 type="button"
                 className="header-action-button"
-                aria-label={controlDockOpen ? "Hide explorer controls" : "Show explorer controls"}
-                aria-expanded={controlDockOpen}
+                aria-label={controlDockVisible ? "Hide explorer controls" : "Show explorer controls"}
+                aria-expanded={controlDockVisible}
                 title="Toggle Explorer controls · Ctrl+B"
-                onClick={() => setControlDockOpen((open) => !open)}
+                onClick={toggleExplorerControls}
               >
-                {controlDockOpen ? "Hide controls" : "Controls"}
+                {controlDockVisible ? "Hide controls" : "Controls"}
               </button>
             </div>
           )}
@@ -1254,11 +1291,8 @@ export default function App() {
                   workspaceMode={workspaceMode}
                   focusMode={focusMode}
                   onWorkspaceModeChange={handleWorkspaceModeChange}
-                  controlDockOpen={controlDockOpen}
-                  onRestoreControls={() => {
-                    setControlDockOpen(true);
-                    if (window.matchMedia("(max-width: 760px)").matches) setMobileSheet("controls");
-                  }}
+                  controlDockOpen={controlDockVisible}
+                  onRestoreControls={showExplorerControls}
                   onFocus3D={() => setFocusMode(true)}
                 />
                 <ExplorerDirectoryNav />
@@ -1270,10 +1304,7 @@ export default function App() {
                    evidenceLoading={scienceLoading} evidenceError={Boolean(error)}
                    evidenceDegraded={degradedWarnings.length > 0} />
               </div>
-              <BlockDetailsWorkspace onOpenControls={() => {
-                setControlDockOpen(true);
-                if (window.matchMedia("(max-width: 760px)").matches) setMobileSheet("controls");
-              }} />
+              <BlockDetailsWorkspace onOpenControls={showExplorerControls} />
               {workspaceMode === "presentation" && (
                 <button
                   type="button"
@@ -1600,7 +1631,7 @@ export default function App() {
                 <button
                   type="button"
                   aria-pressed={mobileSheet === "controls"}
-                  onClick={() => setMobileSheet("controls")}
+                  onClick={showExplorerControls}
                 >
                   <span>Layer</span>
                   <strong>{selectedVariable?.label ?? variable}</strong>
