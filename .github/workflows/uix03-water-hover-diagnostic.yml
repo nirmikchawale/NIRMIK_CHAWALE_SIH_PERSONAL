@@ -1,0 +1,31 @@
+name: uix03-one-hover-geometry-diagnostic
+on:
+  push:
+    branches:
+      - diagnostic/uix03-water-hover-stability-20261021
+permissions:
+  contents: read
+jobs:
+  actual-water-column-hover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - working-directory: frontend
+        run: npm ci && npx playwright install --with-deps chromium
+      - name: One original public Chromium hover inspection with no retries
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/
+        run: |
+          npx playwright test -c playwright.live.config.ts e2e/uix03-water-hover-stability.spec.ts --workers=1 --retries=0 --reporter=list
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uix03-water-hover-focused-evidence
+          path: frontend/test-results
+          retention-days: 7
+          if-no-files-found: warn
