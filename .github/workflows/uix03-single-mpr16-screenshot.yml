@@ -1,0 +1,41 @@
+name: uix03-single-genuine-MPR16-screenshot-diagnostic
+
+# One wide Chromium PNG per test repetition; NEVER the 96-image release matrix.
+on:
+  push:
+    branches:
+      - diagnostic/uix03-single-mpr16-screenshot-20261020
+
+permissions:
+  contents: read
+
+jobs:
+  single-screenshot:
+    name: single-MPR16-real-Chromium-screenshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - working-directory: frontend
+        run: npm ci
+      - working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Only one real Geographic 1440x900 screenshot, repeated twice without retries
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/
+        run: |
+          npx playwright test -c playwright.live.config.ts \
+            e2e/uix03-single-theme-screenshot.spec.ts \
+            --workers=1 --retries=0 --repeat-each=2 --reporter=list
+      - name: Retain the two actual Chromium PNGs for diagnosis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uix03-two-single-real-geographic-pngs
+          path: frontend/test-results
+          if-no-files-found: warn
+          retention-days: 14
