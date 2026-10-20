@@ -1,0 +1,31 @@
+name: uix03-hide-controls-baseline-reproduction
+on:
+  push:
+    branches:
+      - diagnostic/uix03-hide-controls-consistency-20261020
+permissions:
+  contents: read
+jobs:
+  original-browser-behavior:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - working-directory: frontend
+        run: npm ci && npx playwright install --with-deps chromium
+      - name: Two original real-site control contracts; no retries
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/
+        run: |
+          npx playwright test -c playwright.live.config.ts e2e/uix03-hide-controls-behavior.spec.ts --workers=1 --retries=0 --reporter=list
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uix03-hide-controls-original-reproduction
+          path: frontend/test-results
+          if-no-files-found: warn
+          retention-days: 7
