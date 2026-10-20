@@ -9,6 +9,7 @@ on:
     paths:
       - .github/workflows/uix04a-focused-chromium.yml
       - frontend/e2e/uix04a-navigation-focus-ownership.spec.ts
+      - frontend/src/components/AppNavigation.tsx
       - docs/UIX_04_A_NAVIGATION_FOCUS_OWNERSHIP.md
   workflow_dispatch:
 

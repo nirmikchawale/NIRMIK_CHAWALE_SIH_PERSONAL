@@ -96,7 +96,13 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
   useEffect(() => {
     if (!drawerOpen) return;
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const focusSelectedCategory = () => directoryRef.current?.querySelector<HTMLButtonElement>(".mpr-drawer-category.is-selected")?.focus();
+    const focusSelectedCategory = () => {
+      const directory = directoryRef.current;
+      // Opening the drawer may place initial focus here, but a delayed
+      // fallback must never steal focus from a user's Tab or route choice.
+      if (!directory || directory.contains(document.activeElement)) return;
+      directory.querySelector<HTMLButtonElement>(".mpr-drawer-category.is-selected")?.focus();
+    };
     const focusId = window.requestAnimationFrame(focusSelectedCategory);
     // Wait for the overlay to become focusable after its opening visibility transition.
     const focusFallbackId = window.setTimeout(focusSelectedCategory, 190);

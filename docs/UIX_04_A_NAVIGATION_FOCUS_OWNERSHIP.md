@@ -8,8 +8,8 @@ UIX-03 consolidated PR #230 has its own frozen candidate and mandatory exact-com
 ## Source and ownership
 - Independent development base: main 6abb29a1557b8e7a062df53f3a1bb6d4148fc106.
 - Isolated branch: build/uix04a-navigation-focus-audit-20261021.
-- Owned paths only: this document and frontend/e2e/uix04a-navigation-focus-ownership.spec.ts.
-- Frozen/unmodified: UIX-03 PR #230, Stage A PR #204, ITM queue PR #211, frontend/src/App.tsx, frontend/src/components/AppNavigation.tsx, all source, scientific, backend and dataset files.
+- Owned paths only: this document, frontend/e2e/uix04a-navigation-focus-ownership.spec.ts, the dedicated .github/workflows/uix04a-focused-chromium.yml, and ONE bounded focus-ownership correction in frontend/src/components/AppNavigation.tsx.
+- Frozen/unmodified: UIX-03 PR #230, Stage A PR #204, ITM queue PR #211, frontend/src/App.tsx, all numerical source, scientific, backend and dataset files. Only the separate UIX-04A navigation component is changed.
 - Existing implementation contract: frontend/src/components/AppNavigation.tsx exposes data-drawer-open, selected group buttons, aria-hidden + native inert, focus placement on opening, Escape to launcher, and keyboard navigation via true route controls.
 
 ## Acceptance inventory — read-only genuine Chromium
@@ -40,3 +40,10 @@ For real failures: record exact viewport/selector/first observation and source-v
 
 ## Handoff checklist
 Phase: UIX-04A. Owner: isolated navigation audit. Build base: 6abb29a1. Scope: doc + one new Playwright spec. Dependencies: none on UIX-03 *coding*; production promotion depends on release-order rules. First incomplete gate: genuine focused Chromium runs for the exact build-branch commit. Protected applications/scientific contracts: unchanged. Next action: run the 6 focused desktop/mobile Chromium cases with zero retries in a production preview; then triage only actual failures and request development integration review.
+
+## Genuine Chromium evidence and focused correction
+
+- Run 39493633452: source build and six-case discovery PASS; authentic Chromium 5/6 PASS, only 390px keyboard Tab wrap failed, retries=0. Original CLI harness mistake in first run 39493358239 was fixed without changing application behavior.
+- Diagnostic run 39494529775: authentic Chromium 4/6 PASS; 390px Tab wrap and 1440px keyboard route selection failures. Logged actual active element after Tab: **Explore**, while mobile close was first visible and 3D Explorer was last visible. Both failures occur while drawer-opening effect has a **190ms delayed focus fallback** that indiscriminately re-focuses the selected category, interrupting genuine keyboard activity. No app source or scientific data was changed to investigate.
+- Smallest correction: keep automatic focus when the drawer first opens, but **skip deferred focus whenever the active element is already inside the drawer**. This prevents stealing user keyboard focus while preserving first-open focus and Escape-to-launcher behavior.
+- Status is still DEVELOPMENT and requires a NEW genuine zero-retry focused 6/6 Chromium PASS on the exact correction SHA. Historic passes are not certification. UIX-03 release lane remains separate.

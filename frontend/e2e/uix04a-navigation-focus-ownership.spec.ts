@@ -75,32 +75,6 @@ for (const width of [390, 1440]) {
 
     await visibleButtons.last().focus();
     await page.keyboard.press("Tab");
-    if (width === 390) {
-      // Record actual focus and the difference between DOM rectangle and
-      // accessibility-visible button selection before touching production.
-      const focusEvidence = await page.evaluate(() => {
-        const nav = document.querySelector("#ocean-canvas-workspace-navigation");
-        const all = Array.from(nav?.querySelectorAll<HTMLButtonElement>(
-          'button:not(:disabled):not([hidden]):not([tabindex="-1"])'
-        ) ?? []);
-        const tag = (node: Element | null) => node
-          ? (node.getAttribute("aria-label") || node.textContent?.trim() || node.className).slice(0,100)
-          : null;
-        return {
-          active: tag(document.activeElement),
-          insideDrawer: !!nav?.contains(document.activeElement),
-          nodes: all.map(node => ({
-            label: tag(node), rects: node.getClientRects().length,
-            display: getComputedStyle(node).display,
-            visibility: getComputedStyle(node).visibility,
-            tabindex: node.tabIndex
-          })),
-          firstVisible: tag(all.find(node => node.getClientRects().length > 0 && getComputedStyle(node).visibility !== "hidden") || null),
-          lastRectOnly: tag(all.filter(node => node.getClientRects().length > 0).at(-1) || null)
-        };
-      });
-      console.log("UIX04A390-FOCUS-EVIDENCE", JSON.stringify(focusEvidence));
-    }
     await expect(visibleButtons.first()).toBeFocused();
     await page.keyboard.press("Shift+Tab");
     await expect(visibleButtons.last()).toBeFocused();
