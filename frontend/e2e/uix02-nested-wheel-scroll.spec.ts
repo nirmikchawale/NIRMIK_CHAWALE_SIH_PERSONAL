@@ -5,7 +5,7 @@ test("UIX-02 nested scroll consumes wheel until boundary then delegates to docum
   // Playwright's live config deliberately has no baseURL. Supply the actual
   // CI-hosted candidate origin, retaining the repository base path if present.
   const liveBase = process.env.OCEANTWIN_LIVE_URL;
-  if (!liveBase || !/^https?:\\/\\//.test(liveBase)) {
+  if (!liveBase || !(liveBase.startsWith("http://") || liveBase.startsWith("https://"))) {
     throw new Error("UIX-02 Chromium requires an absolute OCEANTWIN_LIVE_URL");
   }
   await page.goto(liveBase.replace(/#.*$/, "") + "#/telemetry", { waitUntil: "domcontentloaded" });
