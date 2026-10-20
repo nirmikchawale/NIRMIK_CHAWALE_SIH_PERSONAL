@@ -115,3 +115,44 @@ test("UIX02-E satellite chlorophyll never invents subsurface geometry", async ({
   await expect(water).toContainText("surface-only");
   await expect(page.getByRole("button",{name:"Switch to Water Column 3D"})).toBeDisabled();
 });
+
+test("UIX02-E Geographic controls drive native Water Column depth and visual geometry", async ({ page }) => {
+  test.setTimeout(180_000);
+  await open(page, 1440);
+  const root=page.locator(".ocean-workbench");
+  const water=page.getByTestId("mpr-12-water-column-section");
+  const shell=water.locator(".water-column-shell:not(.water-column-loading)");
+  const source=await root.getAttribute("data-explore-source");
+  const block=await page.getByTestId("scientific-context-bar").getAttribute("data-block-id");
+  await expect(shell).toBeVisible({timeout:90_000});
+  if (await root.getAttribute("data-control-dock") === "closed") {
+    await page.getByRole("button",{name:"Show explorer controls"}).click();
+  }
+  const geoDepth=page.locator('.control-panel input[aria-label="Model depth"]');
+  await expect(geoDepth).toBeVisible();
+  const waterDepth=water.getByRole("combobox",{name:"Water Column native depth level"});
+  await geoDepth.focus();
+  await page.keyboard.press("End");
+  await expect(waterDepth).toHaveValue("30");
+  await expect.poll(async()=>Number(await water.getAttribute("data-native-depth"))).toBeGreaterThan(450);
+  await expect(shell.locator(".water-column-selected strong")).toContainText("453.94 m");
+  await geoDepth.focus();
+  await page.keyboard.press("Home");
+  await expect(waterDepth).toHaveValue("0");
+  await expect(shell.locator(".water-column-selected strong")).toContainText("0.49 m");
+
+  const settings=page.locator(".control-panel details.advanced-control-group")
+    .filter({hasText:"View settings"}).first();
+  if (!(await settings.evaluate(el=>el.hasAttribute("open")))) await settings.locator("summary").click();
+  const geoVertical=settings.getByRole("slider",{name:/Visual vertical exaggeration/});
+  await expect(geoVertical).toBeVisible();
+  await geoVertical.focus();
+  await page.keyboard.press("End");
+  await expect(geoVertical).toHaveValue("100");
+  await expect(water.getByRole("slider",{name:"Water Column vertical exaggeration"})).toHaveValue("100");
+  await expect(shell).toContainText("visual depth ×100");
+  await expect(waterDepth).toHaveValue("0");
+  await expect(root).toHaveAttribute("data-explore-source",source||"glorys");
+  await expect(water).toHaveAttribute("data-linked-block",block||"BASE-GLORYS-001");
+  console.log("UIX02E Geographic -> Water Column: 453.94 to 0.49m, geometry 100x, science unchanged");
+});

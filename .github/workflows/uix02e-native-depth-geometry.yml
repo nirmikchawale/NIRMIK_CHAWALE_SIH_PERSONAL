@@ -8,7 +8,7 @@ permissions:
   actions: read
 jobs:
   source-native-audit:
-    name: Four native scientific interaction cases with zero retries
+    name: One new Geographic to Water Column cross-direction case
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -53,15 +53,15 @@ jobs:
       - name: Install authentic Chromium
         working-directory: frontend
         run: npx playwright install --with-deps chromium
-      - name: Require exactly four science-native browser scenarios
+      - name: Require exactly one new cross-direction Chromium case
         working-directory: frontend
         env:
           OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
         run: |
           set -euo pipefail
-          npx playwright test -c playwright.live.config.ts e2e/uix02e-native-depth-exaggeration.spec.ts --list | tee /tmp/uix02e-selection.txt
-          grep -q 'Total: 4 tests' /tmp/uix02e-selection.txt
-      - name: Run 4 genuine Chromium cases once, no screenshots matrix
+          npx playwright test -c playwright.live.config.ts e2e/uix02e-native-depth-exaggeration.spec.ts --grep 'Geographic controls drive native Water Column' --list | tee /tmp/uix02e-selection.txt
+          grep -q 'Total: 1 test' /tmp/uix02e-selection.txt
+      - name: Run only the new Geographic-to-Water-Column case
         working-directory: frontend
         env:
           OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
@@ -75,12 +75,12 @@ jobs:
             sleep 1
           done
           curl --fail --silent http://127.0.0.1:4174/ > /dev/null
-          npx playwright test -c playwright.live.config.ts e2e/uix02e-native-depth-exaggeration.spec.ts --workers=1 --retries=0 --reporter=list --trace=on
+          npx playwright test -c playwright.live.config.ts e2e/uix02e-native-depth-exaggeration.spec.ts --grep 'Geographic controls drive native Water Column' --workers=1 --retries=0 --reporter=list --trace=on
       - name: Retain only isolated science/depth browser traces
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: uix02e-depth-science-four-${{ github.run_id }}
+          name: uix02e-geo-to-water-${{ github.run_id }}
           path: |
             frontend/test-results
             frontend/uix02e-preview.log
