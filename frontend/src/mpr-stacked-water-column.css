@@ -178,3 +178,47 @@
 @media(prefers-reduced-motion:reduce) {
   .ocean-workbench[data-page="explore"] .mpr-water-column-section { scroll-behavior:auto !important; }
 }
+
+
+/* UIX-03: the real source-native 3D hover readout must NEVER enter the
+   wrapping renderer-tools flex row.  station.css makes every toolbar child
+   position:static!important; inserting/removing the full-width inspection
+   readout then resizes the row and its 2D canvas, causing visible flicker.
+   The shell is already position:relative and contains the readout. Anchor
+   it there, fully outside flex layout, and do not intercept 3D gestures. */
+.ocean-workbench[data-page="explore"] .station-workspace
+.mpr-water-column-section .water-column-shell .renderer-tools > .water-column-hover {
+  position: absolute !important;
+  inset: 14px 14px auto auto !important;
+  width: min(235px, calc(100% - 28px)) !important;
+  max-width: calc(100% - 28px) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 10px 12px !important;
+  z-index: 12;
+  display: grid !important;
+  flex: none !important;
+  pointer-events: none !important;
+  border: 1px solid var(--mpr-border-active) !important;
+  border-radius: var(--mpr-radius-control);
+  background: var(--mpr-surface-raised) !important;
+  color: var(--mpr-text);
+  box-shadow: var(--mpr-shadow);
+  gap: 4px;
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-section .water-column-hover strong {
+  color: var(--mpr-text);
+}
+.ocean-workbench[data-page="explore"] .mpr-water-column-section .water-column-hover span {
+  color: var(--mpr-text-muted);
+}
+@media(max-width: 760px) {
+  .ocean-workbench[data-page="explore"] .station-workspace
+  .mpr-water-column-section .water-column-shell .renderer-tools > .water-column-hover {
+    inset: 8px 8px auto auto !important;
+    width: min(220px,calc(100% - 16px)) !important;
+    max-width: calc(100% - 16px) !important;
+    padding: 8px 9px !important;
+  }
+}
