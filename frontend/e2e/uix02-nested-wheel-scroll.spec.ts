@@ -66,6 +66,6 @@ test("UIX-02 nested scroll consumes wheel until boundary then delegates to Telem
   // Existing UIX-01 page ownership and science identity are never rewritten.
   expect(await page.evaluate(() => document.scrollingElement?.scrollTop ?? 0)).toBe(0);
   await expect(workspace).toHaveAttribute("data-explore-source", sourceIdentity ?? "glorys");
-  await expect(page).toHaveURL(/#\\/telemetry$/);
+  await expect(page).toHaveURL(liveBase.replace(/#.*$/, "") + "#/telemetry");
   await page.locator("#uix02-wheel-outer").evaluate(el => el.remove());
 });
