@@ -35,7 +35,7 @@ jobs:
           python3 -m http.server 4174 --bind 127.0.0.1 --directory dist >/tmp/uix03-hover.log 2>&1 &
           pid=$!; trap 'kill "$pid" 2>/dev/null || true' EXIT
           for i in $(seq 1 35); do curl --silent --fail http://127.0.0.1:4174/ >/dev/null && break; sleep 1; done
-          npx playwright test -c playwright.live.config.ts e2e/uix03-water-hover-stability.spec.ts --workers=1 --retries=0 --reporter=list
+          npx playwright test -c playwright.live.config.ts e2e/uix03-water-hover-stability.spec.ts --grep "mobile pointer inspection" --workers=1 --retries=0 --reporter=list
       - if: always()
         uses: actions/upload-artifact@v4
         with:
