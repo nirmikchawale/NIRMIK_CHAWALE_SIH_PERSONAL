@@ -43,8 +43,17 @@ test("orientation replay, skip, explicit Water Column entry and return remain us
   await expect(geographicView).toHaveAttribute("aria-pressed", "true");
   await expect(waterColumnView).toHaveAttribute("aria-pressed", "false");
 
-  await hud.getByRole("button", { name: "Open in Water Column 3D" }).click();
-  await expect(page.locator(".water-column-shell")).toBeVisible();
+  // The MPR-09 explicit view navigator is the current accessible entry.
+  // The former dock HUD entry can be outside the active, scroll-owned stage.
+  await waterColumnView.scrollIntoViewIfNeeded();
+  await waterColumnView.click();
+  // MPR-12 now owns a separate genuine Water Column section, not the
+  // pre-MPR single-stage renderer. Verify native linked block/eligibility.
+  const waterSection = page.getByTestId("mpr-12-water-column-section");
+  await expect(waterSection).toBeVisible();
+  await expect(waterSection).toHaveAttribute("data-linked-block", "IO-073");
+  await expect(waterSection).toHaveAttribute("data-eligible", "true");
+  await expect(page.locator("#mpr-3d-stage")).toHaveAttribute("data-visualization-mode", "water-column");
   await expect(waterColumnView).toHaveAttribute("aria-pressed", "true");
   await geographicView.click();
   await expect(geographicView).toHaveAttribute("aria-pressed", "true");
@@ -58,7 +67,11 @@ test("fresh refresh replays the Earth India ocean orientation", async ({ page })
   await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 30_000 });
 
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(globe).toHaveAttribute("data-journey-phase", /^(earth|india|flying)$/, { timeout: 5_000 });
+  // On cold reload, the genuine scientific viewer can stay in "idle" while
+  // the first-open loading overlay owns the screen (up to 120 × 75 ms).
+  // Require the actual Earth→India→flying sequence after readiness, not
+  // an arbitrary 5-second deadline measured before Cesium is interactive.
+  await expect(globe).toHaveAttribute("data-journey-phase", /^(earth|india|flying)$/, { timeout: 25_000 });
   await expect(page.locator(".globe-intro-status")).toBeVisible();
   await expect(page.locator(".globe-intro-status")).toContainText(/EARTH|INDIA|VERIFIED OCEAN FIELD/);
   await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 30_000 });
