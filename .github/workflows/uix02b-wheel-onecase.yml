@@ -16,6 +16,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 5
       - name: Confirm immutable candidate App and science code
         run: |
           set -euo pipefail
