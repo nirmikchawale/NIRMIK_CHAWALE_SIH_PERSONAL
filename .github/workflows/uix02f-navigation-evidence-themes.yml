@@ -1,0 +1,88 @@
+name: UIX-02-F targeted navigation evidence and 16-theme browser audit
+on:
+  push:
+    branches:
+      - diagnostic/uix02f-navigation-science-themes-20261020
+permissions:
+  contents: read
+  actions: read
+jobs:
+  bounded-browser-audit:
+    name: "12 focused Chromium cases: routes evidence and 16 theme presets"
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Enforce frozen UIX-02-E application, science, theme and backend source
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor b144f6f17509a005d45cde27095d44bc14b5fa66 HEAD
+          test -z "$(git diff --name-only b144f6f17509a005d45cde27095d44bc14b5fa66 HEAD -- frontend/src backend data)"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frozen frontend dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Reuse original verified candidate scientific artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: final-mvp-verified-production-static
+          run-id: 39400125238
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: frontend/dist
+      - name: Preserve science SHA256 and compile exact current UIX-02-E code
+        run: |
+          set -euo pipefail
+          test -s frontend/dist/science-static/catalog.json
+          sha256sum frontend/dist/science-static/catalog.json | awk '{print $1}' > /tmp/uix02f-catalog-sha
+          for dirname in science-static operational observations samples; do
+            if test -d "frontend/dist/$dirname"; then
+              mkdir -p "frontend/public/$dirname"
+              cp -a "frontend/dist/$dirname/." "frontend/public/$dirname/"
+            fi
+          done
+          cd frontend
+          npm run typecheck
+          VITE_STATIC_SCIENCE=true npm run build
+          test "$(sha256sum dist/science-static/catalog.json | awk '{print $1}')" = "$(cat /tmp/uix02f-catalog-sha)"
+      - name: Install genuine Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Require exactly 12 isolated navigation, scientific and theme cases
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
+        run: |
+          set -euo pipefail
+          npx playwright test -c playwright.live.config.ts e2e/uix02f-navigation-evidence-themes.spec.ts --list | tee /tmp/uix02f-selected.log
+          grep -q 'Total: 12 tests' /tmp/uix02f-selected.log
+      - name: Execute only 12 cases, no retries or 96-image recapture
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > uix02f-preview.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for n in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4174/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4174/ > /dev/null
+          npx playwright test -c playwright.live.config.ts e2e/uix02f-navigation-evidence-themes.spec.ts --workers=1 --retries=0 --reporter=list --trace=retain-on-failure
+      - name: Retain only isolated failure logs and browser traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uix02f-12-focused-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            frontend/uix02f-preview.log
+          retention-days: 14
+          if-no-files-found: warn
