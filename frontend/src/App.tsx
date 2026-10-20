@@ -885,6 +885,21 @@ export default function App() {
       setGuideOpen(false);
       setVisualizationMode("globe");
     }
+    // Move directly to the genuine linked 3D + analytical workspace after mode
+    // selection. The ocean/source state and native depth coordinates are untouched.
+    if (nextMode === "analysis") {
+      window.requestAnimationFrame(() => window.requestAnimationFrame(() =>
+        document.querySelector<HTMLElement>(".mpr-geographic-heading")?.scrollIntoView({
+          block: "start", behavior: "auto"
+        })
+      ));
+    } else if (nextMode === "explorer") {
+      window.requestAnimationFrame(() => window.requestAnimationFrame(() =>
+        document.querySelector<HTMLElement>(".mpr-workspace-mode-island")?.scrollIntoView({
+          block: "start", behavior: "auto"
+        })
+      ));
+    }
   }, []);
 
   const handleAnalysisDepthSync = useCallback((observationDepthM: number) => {
@@ -1239,6 +1254,11 @@ export default function App() {
                   workspaceMode={workspaceMode}
                   focusMode={focusMode}
                   onWorkspaceModeChange={handleWorkspaceModeChange}
+                  controlDockOpen={controlDockOpen}
+                  onRestoreControls={() => {
+                    setControlDockOpen(true);
+                    if (window.matchMedia("(max-width: 760px)").matches) setMobileSheet("controls");
+                  }}
                   onFocus3D={() => setFocusMode(true)}
                 />
                 <ExplorerDirectoryNav />

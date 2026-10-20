@@ -10,14 +10,18 @@ type WorkspaceMode = "explorer" | "analysis" | "presentation";
 interface Props {
   workspaceMode: WorkspaceMode;
   focusMode: boolean;
+  controlDockOpen: boolean;
   onWorkspaceModeChange: (mode: WorkspaceMode) => void;
+  onRestoreControls: () => void;
   onFocus3D: () => void;
 }
 
 export function ExplorerWorkspaceModeIsland({
   workspaceMode,
   focusMode,
+  controlDockOpen,
   onWorkspaceModeChange,
+  onRestoreControls,
   onFocus3D
 }: Props) {
   if (focusMode) return null;
@@ -54,10 +58,24 @@ export function ExplorerWorkspaceModeIsland({
         </button>
       </div>
 
-      <button type="button" className="explorer-focus-button mpr-focus-3d-action"
-        aria-label="Focus 3D" onClick={onFocus3D}>
-        <MprIcon name="focus" size={18}/><span>Focus 3D</span>
-      </button>
+      <div className="mpr-workspace-mode-utilities" aria-label="Workspace exit and view actions">
+        {workspaceMode === "analysis" && (
+          <button type="button" className="mpr-mode-exit" data-testid="exit-analysis-split"
+            aria-label="Exit Analysis Split" onClick={() => onWorkspaceModeChange("explorer")}>
+            Exit Analysis Split
+          </button>
+        )}
+        {!controlDockOpen && (
+          <button type="button" className="mpr-controls-exit" data-testid="exit-hidden-controls"
+            aria-label="Exit hidden controls" onClick={onRestoreControls}>
+            Exit hidden controls
+          </button>
+        )}
+        <button type="button" className="explorer-focus-button mpr-focus-3d-action"
+          aria-label="Focus 3D" onClick={onFocus3D}>
+          <MprIcon name="focus" size={18}/><span>Focus 3D</span>
+        </button>
+      </div>
     </section>
   );
 }
