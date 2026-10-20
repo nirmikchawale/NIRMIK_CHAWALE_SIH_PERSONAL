@@ -30,6 +30,8 @@ for (const width of [320, 768, 1440]) {
     await expect(analysis).toHaveAttribute("aria-pressed", "true");
     const panel = page.getByRole("complementary", { name: "Analysis Split workspace" });
     await expect(panel).toBeVisible();
+    await expect(mode.getByTestId("exit-analysis-split")).toBeVisible();
+    await expect(mode.getByTestId("exit-hidden-controls")).toBeVisible();
     await expect(panel).toContainText("Source");
     await expect(panel).toContainText("Verified time");
     const stage = page.locator("#mpr-3d-stage");
@@ -50,8 +52,15 @@ for (const width of [320, 768, 1440]) {
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth-document.documentElement.clientWidth);
     expect(overflow, "No horizontal viewport loss").toBeLessThanOrEqual(3);
     await expect(root).toHaveAttribute("data-explore-source", source || "glorys");
-    await mode.getByRole("button", { name: "Explorer workspace" }).click();
+    // Exit controls without changing active science or leaving Analysis Split.
+    if (width === 1440) {
+      await mode.getByTestId("exit-hidden-controls").click();
+      await expect(root).toHaveAttribute("data-control-dock", "open");
+      await expect(root).toHaveAttribute("data-workspace-mode", "analysis");
+    }
+    await mode.getByTestId("exit-analysis-split").click();
     await expect(root).toHaveAttribute("data-workspace-mode", "explorer");
+    await expect(root).toHaveAttribute("data-control-dock", "open");
     await expect(page.getByTestId("scientific-context-bar")).toHaveAttribute(
       "data-block-id", block || "BASE-GLORYS-001");
   });
