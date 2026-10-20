@@ -2,8 +2,13 @@ import { test, expect } from "@playwright/test";
 
 // Focused UIX-02-B source-owned wheel regression. No science or network fixtures.
 test("UIX-02 nested scroll consumes wheel until boundary then delegates to document", async ({ page }) => {
-  await page.goto("/#/telemetry");
-  await page.waitForLoadState("domcontentloaded");
+  // Playwright's live config deliberately has no baseURL. Supply the actual
+  // CI-hosted candidate origin, retaining the repository base path if present.
+  const liveBase = process.env.OCEANTWIN_LIVE_URL;
+  if (!liveBase || !/^https?:\\/\\//.test(liveBase)) {
+    throw new Error("UIX-02 Chromium requires an absolute OCEANTWIN_LIVE_URL");
+  }
+  await page.goto(liveBase.replace(/#.*$/, "") + "#/telemetry", { waitUntil: "domcontentloaded" });
   await page.evaluate(() => {
     const outer = document.createElement("div");
     outer.id = "uix02-wheel-outer";
