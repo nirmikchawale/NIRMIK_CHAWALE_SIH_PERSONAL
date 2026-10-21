@@ -1,9 +1,16 @@
 name: backlog04-imported-observation-integrity
-# Development-only scientific input checks; no browser, release, merge or deploy.
+# Scoped development and draft-review checks; never merge, bypass MPR, or deploy.
 on:
   push:
     branches:
       - development/backlog04-imported-observation-numeric-integrity-20261021
+    paths:
+      - .github/workflows/backlog04-observation-integrity.yml
+      - frontend/src/observationSession.ts
+      - frontend/tests/observation-session-integrity.test.mjs
+  pull_request:
+    branches:
+      - main
     paths:
       - .github/workflows/backlog04-observation-integrity.yml
       - frontend/src/observationSession.ts
