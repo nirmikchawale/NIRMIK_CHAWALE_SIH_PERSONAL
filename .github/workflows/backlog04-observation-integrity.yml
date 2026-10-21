@@ -1,0 +1,34 @@
+name: backlog04-imported-observation-integrity
+# Development-only scientific input checks; no browser, release, merge or deploy.
+on:
+  push:
+    branches:
+      - development/backlog04-imported-observation-numeric-integrity-20261021
+    paths:
+      - .github/workflows/backlog04-observation-integrity.yml
+      - frontend/src/observationSession.ts
+      - frontend/tests/observation-session-integrity.test.mjs
+permissions:
+  contents: read
+jobs:
+  focused-source-integrity:
+    name: genuine-imported-observation-numeric-contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install original frontend dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Check production source TypeScript
+        working-directory: frontend
+        run: npm run typecheck
+      - name: Execute real numerical trust-boundary tests
+        run: node --experimental-strip-types --test frontend/tests/observation-session-integrity.test.mjs
