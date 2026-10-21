@@ -1,0 +1,116 @@
+name: uix04c-two-case-native-focus-diagnostic
+
+# Isolated diagnostics ONLY; never merges, deploys, waives MPR or captures 96 images.
+# TWO focused native focus cases and zero retries, on one owned branch.
+on:
+  push:
+    branches:
+      - diagnostics/uix04c-mpr03-focus-20261021
+    paths:
+      - .github/workflows/uix04c-focus-diagnostic.yml
+      - frontend/e2e/uix04c-mpr03-focus-diagnostic.spec.ts
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uix04c-focused-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  isolated-keyboard-accessibility:
+    name: two-native-Chromium-cases-1440
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install science export dependencies (original files only)
+        run: python -m pip install -r backend/requirements.txt
+      - name: Generate authentic local static scientific source evidence
+        run: |
+          set -euo pipefail
+          python scripts/export_static_science.py --output frontend/public/science-static
+          python scripts/fetch_incois_operational.py --output frontend/public/operational/incois-argo-10d-vam.json
+          python scripts/fetch_incois_chlorophyll.py --output frontend/public/operational/incois-chlorophyll.json
+          python scripts/verify_incois_opendap.py --output frontend/public/operational/opendap-verification.json
+          python scripts/fetch_verified_observation_breadth.py --output frontend/public/observations/verified-profiles.json
+          python scripts/create_netcdf_browser_fixture.py --output frontend/public/samples/cf-profile-fixture.nc
+      - name: Install and build exact candidate React/Cesium (no source changes)
+        working-directory: frontend
+        env:
+          VITE_STATIC_SCIENCE: 'true'
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+      - name: Require actual immutable science data in production build
+        run: |
+          set -euo pipefail
+          test -s frontend/dist/science-static/manifest.json
+          test -s frontend/dist/science-static/catalog.json
+          test -s frontend/dist/observations/verified-profiles.json
+          test -s frontend/dist/operational/incois-argo-10d-vam.json
+          test -s frontend/dist/cesiumStatic/Assets/Textures/NaturalEarthII/0/0/0.jpg
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('frontend/dist')
+          catalog=json.loads((root/'science-static/catalog.json').read_text())
+          obs=json.loads((root/'observations/verified-profiles.json').read_text())
+          assert catalog['capabilities']['current_vectors'] is True
+          assert obs['integrity']['synthetic_measurements'] is False
+          assert obs['integrity']['synthetic_timestamps'] is False
+          print("Native science integrity preserved")
+          PY
+      - name: Install real Chromium software renderer
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Discover exactly two UIX-04C cases (no other suites)
+        working-directory: frontend
+        run: |
+          npx playwright test -c playwright.live.config.ts \
+            e2e/uix04c-mpr03-focus-diagnostic.spec.ts --list \
+            | tee /tmp/uix04c-test-list.txt
+          grep -q '2 tests in 1 file' /tmp/uix04c-test-list.txt
+      - name: Run TWO native focus diagnostic Chromium cases only (zero retries)
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+        run: |
+          set -euo pipefail
+          python -m http.server 4174 --bind 127.0.0.1 --directory dist > /tmp/uix04c-preview.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          ready=0
+          for attempt in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4174/ > /dev/null; then
+              ready=1; break
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then cat /tmp/uix04c-preview.log; exit 1; fi
+          npx playwright test -c playwright.live.config.ts \
+            e2e/uix04c-mpr03-focus-diagnostic.spec.ts \
+            --workers=1 --retries=0 --trace=retain-on-failure \
+            --reporter=list
+      - name: Retain only focused failure traces and results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uix04c-two-case-focus-diagnostic-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            /tmp/uix04c-test-list.txt
+            /tmp/uix04c-preview.log
+          if-no-files-found: warn
+          retention-days: 14
