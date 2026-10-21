@@ -18,7 +18,44 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           persist-credentials: false
+      - name: Fail closed unless the complete source diff is the approved exact-three-file safety repair
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          python - <<'PY'
+          import subprocess
+          import sys
+
+          def git(*args):
+              return subprocess.check_output(["git", *args], text=True).strip()
+
+          main_sha = git("rev-parse", "origin/main")
+          candidate_sha = git("rev-parse", "HEAD")
+          # No drift from production: a stale/stacked candidate is not eligible.
+          if git("merge-base", "origin/main", "HEAD") != main_sha:
+              sys.exit("BLOCKED: development candidate does not descend from current main")
+
+          approved = {
+              ".github/workflows/backlog04-observation-integrity.yml": "A",
+              "frontend/src/observationSession.ts": "M",
+              "frontend/tests/observation-session-integrity.test.mjs": "A",
+          }
+          actual = {}
+          for entry in git("diff", "--name-status", "origin/main...HEAD").splitlines():
+              status, filename = entry.split("\t", 1)
+              actual[filename] = status
+          if actual != approved:
+              print("Actual source changes:", actual)
+              print("Approved exact-path changes:", approved)
+              sys.exit("BLOCKED: mixed/unexpected scientific-input-safety diff")
+          print("APPROVED THREE-PATH SOURCE SCOPE PASS")
+          print("Current production main:", main_sha)
+          print("Exact candidate SHA:", candidate_sha)
+          print("Diff paths:", sorted(actual))
+          print("NO production merge, generic MPR override or deployment authorized")
+          PY
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
