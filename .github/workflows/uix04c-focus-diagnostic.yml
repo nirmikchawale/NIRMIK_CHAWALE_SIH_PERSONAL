@@ -9,6 +9,7 @@ on:
     paths:
       - .github/workflows/uix04c-focus-diagnostic.yml
       - frontend/e2e/uix04c-mpr03-focus-diagnostic.spec.ts
+      - frontend/src/components/AppNavigation.tsx
 
 permissions:
   contents: read
