@@ -132,3 +132,44 @@ def test_stage_a_must_remain_owned_by_pr204():
     m["stage_a_exclusive_pr"] = 209
     with pytest.raises(q.InvalidQueue):
         q.validate_manifest(m)
+
+
+def test_live_snapshot_reports_main_delta_collisions_and_rejects_truncation(monkeypatch):
+    """Current production edits are not invisible to the build-ahead auditor."""
+    baseline, current = "a" * 40, "b" * 40
+    compare = {"status": "ahead", "total_commits": 2,
+               "files": [{"filename": "frontend/src/App.tsx"}]}
+
+    monkeypatch.setattr(q, "load_json", lambda _path: {"main_baseline_sha": baseline})
+
+    def fake_github(path, _token):
+        if path == "branches/main":
+            return {"commit": {"sha": current}}
+        if path.startswith("compare/"):
+            assert path == f"compare/{baseline}...{current}"
+            return compare
+        if path.startswith("pulls/") and path.endswith("/files?per_page=100"):
+            pr = int(path.split("/")[1])
+            return [{"filename": "frontend/src/App.tsx"}] if pr == 211 else []
+        if path.startswith("pulls/"):
+            return {"head": {"sha": current}, "base": {"sha": baseline},
+                    "draft": True, "merged": False, "state": "open"}
+        if path.startswith("commits/"):
+            return {"check_runs": []}
+        raise AssertionError(f"Unexpected GitHub request: {path}")
+
+    monkeypatch.setattr(q, "_github_read", fake_github)
+    snapshot = q.live_snapshot("readonly-token")
+    assert snapshot["main_sha"] == current
+    assert snapshot["main_baseline_sha"] == baseline
+    assert snapshot["main_changed_files"] == ["frontend/src/App.tsx"]
+    assert snapshot["main_collisions"]["211"] == ["frontend/src/App.tsx"]
+    assert snapshot["main_collisions"]["204"] == []
+
+    compare["files"] = [{"filename": f"file-{i}"} for i in range(300)]
+    with pytest.raises(q.InvalidQueue, match="truncated"):
+        q.live_snapshot("readonly-token")
+
+    compare.update({"status": "diverged", "total_commits": 2, "files": []})
+    with pytest.raises(q.InvalidQueue, match="divergent"):
+        q.live_snapshot("readonly-token")

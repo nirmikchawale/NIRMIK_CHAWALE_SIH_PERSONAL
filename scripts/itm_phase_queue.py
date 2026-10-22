@@ -159,6 +159,22 @@ def _github_read(path: str, token: str) -> dict[str, Any]:
 def live_snapshot(token: str) -> dict[str, Any]:
     """Retrieve current immutable evidence; no GitHub mutation endpoint."""
     main = _github_read("branches/main", token)
+    main_head = main["commit"]["sha"]
+    baseline = load_json(DEFAULT_MANIFEST).get("main_baseline_sha")
+    if not isinstance(baseline, str) or not SHA_PATTERN.fullmatch(baseline):
+        raise InvalidQueue("Missing valid immutable integration baseline SHA")
+    delta = _github_read(f"compare/{baseline}...{main_head}", token)
+    if (delta.get("status") not in {"ahead", "identical"}
+            or not isinstance(delta.get("total_commits"), int)
+            or delta["total_commits"] > 250):
+        raise InvalidQueue("Unverifiable or divergent main-baseline comparison")
+    main_files = delta.get("files")
+    if not isinstance(main_files, list) or len(main_files) >= 300:
+        raise InvalidQueue("Main comparison may be truncated; refuse collision certification")
+    if any(not isinstance(f, dict) or not isinstance(f.get("filename"), str)
+           for f in main_files):
+        raise InvalidQueue("Malformed main comparison file evidence")
+    main_paths = {f["filename"] for f in main_files}
     pr_refs = {}
     check_runs = {}
     paths_by_pr: dict[str, set[str]] = {}
@@ -188,7 +204,10 @@ def live_snapshot(token: str) -> dict[str, Any]:
     # certificates. ITM-02 is security PR #209; ITM-03/04 recovery PR #210;
     # prebuilt ITM-05..09 comes from draft #211. Controlled/production and
     # Stage B phases eventually use exact main only AFTER authorized merges.
-    main_head = main["commit"]["sha"]
+    main_collisions = {str(pr): sorted(paths & main_paths)
+                       for pr, paths in ((int(k), v) for k, v in paths_by_pr.items())}
+    if _github_read("branches/main", token)["commit"]["sha"] != main_head:
+        raise InvalidQueue("main advanced during collision evidence collection")
     phase_current_heads = {
         **{"ITM-02": pr_refs["209"]["head_sha"]},
         **{f"ITM-{i:02d}": pr_refs["210"]["head_sha"] for i in (3, 4)},
@@ -201,6 +220,9 @@ def live_snapshot(token: str) -> dict[str, Any]:
         "main_sha": main_head,
         "prs": pr_refs, "checks": check_runs,
         "collisions": collisions,
+        "main_baseline_sha": baseline,
+        "main_changed_files": sorted(main_paths),
+        "main_collisions": main_collisions,
         "phase_current_heads": phase_current_heads,
         "ready_for_release": False,  # human approval and public evidence are separate
     }
