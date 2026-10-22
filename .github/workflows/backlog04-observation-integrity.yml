@@ -1,0 +1,78 @@
+name: backlog04-imported-observation-integrity
+# Scoped development and draft-review checks; never merge, bypass MPR, or deploy.
+on:
+  push:
+    branches:
+      - development/backlog04-imported-observation-numeric-integrity-20261021
+    paths:
+      - .github/workflows/backlog04-observation-integrity.yml
+      - frontend/src/observationSession.ts
+      - frontend/tests/observation-session-integrity.test.mjs
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/backlog04-observation-integrity.yml
+      - frontend/src/observationSession.ts
+      - frontend/tests/observation-session-integrity.test.mjs
+permissions:
+  contents: read
+jobs:
+  focused-source-integrity:
+    name: genuine-imported-observation-numeric-contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Fail closed unless the complete source diff is the approved exact-three-file safety repair
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          python - <<'PY'
+          import subprocess
+          import sys
+
+          def git(*args):
+              return subprocess.check_output(["git", *args], text=True).strip()
+
+          main_sha = git("rev-parse", "origin/main")
+          candidate_sha = git("rev-parse", "HEAD")
+          # No drift from production: a stale/stacked candidate is not eligible.
+          if git("merge-base", "origin/main", "HEAD") != main_sha:
+              sys.exit("BLOCKED: development candidate does not descend from current main")
+
+          approved = {
+              ".github/workflows/backlog04-observation-integrity.yml": "A",
+              "frontend/src/observationSession.ts": "M",
+              "frontend/tests/observation-session-integrity.test.mjs": "A",
+          }
+          actual = {}
+          for entry in git("diff", "--name-status", "origin/main...HEAD").splitlines():
+              status, filename = entry.split("\t", 1)
+              actual[filename] = status
+          if actual != approved:
+              print("Actual source changes:", actual)
+              print("Approved exact-path changes:", approved)
+              sys.exit("BLOCKED: mixed/unexpected scientific-input-safety diff")
+          print("APPROVED THREE-PATH SOURCE SCOPE PASS")
+          print("Current production main:", main_sha)
+          print("Exact candidate SHA:", candidate_sha)
+          print("Diff paths:", sorted(actual))
+          print("NO production merge, generic MPR override or deployment authorized")
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install original frontend dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Check production source TypeScript
+        working-directory: frontend
+        run: npm run typecheck
+      - name: Execute real numerical trust-boundary tests
+        run: node --experimental-strip-types --test frontend/tests/observation-session-integrity.test.mjs

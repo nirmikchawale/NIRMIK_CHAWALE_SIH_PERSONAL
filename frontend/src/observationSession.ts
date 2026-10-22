@@ -16,8 +16,15 @@ function sensorType(value: unknown): ImportedSensorType {
     : "other";
 }
 
+// Never turn missing provider values into fabricated scientific zeros.
+const DECIMAL_MEASUREMENT = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/;
+
 function finite(value: unknown): number | null {
-  const numeric = Number(value);
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!DECIMAL_MEASUREMENT.test(trimmed)) return null;
+  const numeric = Number(trimmed);
   return Number.isFinite(numeric) ? numeric : null;
 }
 
