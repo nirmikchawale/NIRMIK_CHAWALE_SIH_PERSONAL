@@ -33,12 +33,12 @@ BASELINE_ROLLBACK_SHA_KEY = "rollback_baseline_sha"
 
 def normalize_jobs(jobs: list[dict[str, Any]]) -> dict[str, Any]:
     """Summarize exact job conclusions without losing missing/duplicate shards."""
-    public = [j for j in jobs if re.match(r"^verify-public(?: \([1-4]\))?$", j.get("name", ""))]
+    public = [j for j in jobs if re.fullmatch(r"verify-public(?: \(\d+\))?", str(j.get("name", "")))]
     shard_names = [x.get("name") for x in public]
-    # A single bare verify-public job is NOT equivalent to four separate
-    # browser shards, and duplicate shard names are not evidence.
-    unique = len(set(shard_names)) == EXPECTED_PUBLIC_SHARDS
-    all_green = (len(public) == EXPECTED_PUBLIC_SHARDS and unique and
+    # Require all four numbered shards; bare or out-of-range names cannot substitute.
+    expected_names = {f"{PUBLIC_PREFIX} ({i})" for i in range(1, EXPECTED_PUBLIC_SHARDS + 1)}
+    all_green = (len(public) == EXPECTED_PUBLIC_SHARDS and
+                 set(shard_names) == expected_names and
                  all(j.get("status") == "completed" and
                      j.get("conclusion") == "success" for j in public))
     return {
@@ -95,12 +95,15 @@ def assess_production(snapshot: dict[str, Any]) -> dict[str, Any]:
         names = {x.get("name"): x for x in v}
         required = {"react-cesium", "science-api-and-fallback", "static-hosted-failsafe"}
         # Browser matrix is named 'static-browser-acceptance' in final-mvp.
-        browser_jobs = [x for x in v if str(x.get("name", "")).startswith("static-browser-acceptance")]
+        browser_jobs = [x for x in v if re.fullmatch(
+            r"static-browser-acceptance(?: \(\d+\))?", str(x.get("name", "")))]
+        expected_browser = {f"static-browser-acceptance ({i})" for i in range(1, 5)}
         is_valid = (run.get("status") == "completed" and run.get("conclusion") == "success"
                     and all(names.get(name, {}).get("conclusion") == "success" for name in required)
                     and len(browser_jobs) == 4
-                    and len({j["name"] for j in browser_jobs}) == 4
-                    and all(j.get("conclusion") == "success" for j in browser_jobs))
+                    and {j["name"] for j in browser_jobs} == expected_browser
+                    and all(j.get("status") == "completed" and
+                            j.get("conclusion") == "success" for j in browser_jobs))
         final_ok.append({"run_id": run["id"], "success": is_valid,
                          "browser_shards": [j.get("name") for j in browser_jobs]})
     publication = bool(pages_ok and pages_ok[0]["success"] and final_ok and final_ok[0]["success"])

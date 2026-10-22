@@ -108,3 +108,23 @@ def test_production_evidence_always_requires_separate_human_stage_b():
     assert r["itm13_stage_a_handoff"] != "CERTIFIED"
     assert r["itm14_stage_b"] != "CERTIFIED"
     assert r["automatic_merge_or_deploy"] is False
+
+
+def test_bare_or_out_of_range_public_shard_never_substitutes_for_shard_four():
+    for substitute in ("verify-public", "verify-public (5)"):
+        x = fixture()
+        x["jobs"]["100"][-1]["name"] = substitute
+        assert audit.assess_production(x)["itm11_publication_certified"] is False
+
+
+def test_bare_or_out_of_range_final_mvp_shard_never_substitutes_for_shard_four():
+    for substitute in ("static-browser-acceptance", "static-browser-acceptance (5)"):
+        x = fixture()
+        x["jobs"]["200"][-1]["name"] = substitute
+        assert audit.assess_production(x)["itm11_publication_certified"] is False
+
+
+def test_pending_final_mvp_shard_never_certifies():
+    x = fixture()
+    x["jobs"]["200"][-1]["status"] = "in_progress"
+    assert audit.assess_production(x)["itm11_publication_certified"] is False
