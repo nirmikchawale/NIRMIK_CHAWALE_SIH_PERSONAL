@@ -1,0 +1,55 @@
+name: m01618-current-main-focused-refresh
+# Read-only focused diagnosis of already observed main Chromium shard-1 ERR_ABORTED.
+# Never merges, deploys or restarts the four-shard suite.
+on:
+  push:
+    branches:
+      - diagnostic/m01618-main-refresh-artifact-20261023
+permissions:
+  contents: read
+  actions: read
+jobs:
+  exact-main-refresh:
+    name: exact-main-artifact-single-refresh-no-retries
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: e588e91dbada1c718b484713f44b95c675be4955
+      - name: Assert exact prior-production source commit
+        run: test "$(git rev-parse HEAD)" = "e588e91dbada1c718b484713f44b95c675be4955"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install exact original test dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Download the ALREADY BUILT genuine prior-main science artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: final-mvp-verified-production-static
+          path: frontend/dist
+          run-id: 39886683632
+          github-token: ${{ github.token }}
+      - name: Install browser without touching source data
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Run ONLY the originally failing refresh test on exact main twice; zero retries
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+        run: |
+          set -euo pipefail
+          test -s dist/science-static/manifest.json
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > /tmp/m01618-focused-server.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" || true' EXIT
+          for n in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4174/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4174/science-static/manifest.json >/dev/null
+          npx playwright test -c playwright.live.config.ts e2e/journey.spec.ts \
+            --grep 'fresh refresh replays the Earth India ocean orientation' \
+            --workers=1 --retries=0 --repeat-each=2 --reporter=list
