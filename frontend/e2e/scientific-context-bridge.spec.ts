@@ -21,8 +21,8 @@ test("Phase 5.0 keeps block truth visible while analytics use verified evidence"
 
   const hud = page.getByTestId("integrated-main-block-hud");
   await expect(hud).toBeVisible();
-  await hud.getByLabel("Active main block").selectOption("IO-047");
-  await expect(context).toHaveAttribute("data-block-id", "IO-047");
+  await hud.getByLabel("Active main block").selectOption("IO-087");
+  await expect(context).toHaveAttribute("data-block-id", "IO-087");
   await expect(context).toHaveAttribute("data-block-materialization", "planned");
   await context.locator("details").evaluate((element: HTMLDetailsElement) => { element.open = true; });
   await expect(context).toContainText("Geographic selection only");
