@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.export_static_science import _build_model_source_evidence
+from src.source_integrity_export import build_model_source_evidence as _build_model_source_evidence
 
 
 def _setup(tmp_path: Path) -> tuple[Path, Path]:
