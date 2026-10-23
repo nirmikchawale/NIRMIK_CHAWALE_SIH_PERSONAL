@@ -1,0 +1,115 @@
+name: aud-cln-readonly-inventory
+on:
+  push:
+    branches: ['audit/aud-cln-20261023-d1e251c']
+    paths: ['.github/workflows/aud-cln-readonly.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: aud-cln-20261023-exact-tree
+  cancel-in-progress: false
+jobs:
+  evidence:
+    if: github.ref == 'refs/heads/audit/aud-cln-20261023-d1e251c'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Generate exact-source evidence without modifications
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import csv, hashlib, json, posixpath, re, subprocess
+          from collections import defaultdict
+          from pathlib import Path
+          OLD='79b51d83aa8db5c86192b68a31cf0d16b5d5afbc'
+          HEAD='d1e251cca7a42b7882963f421d2a8c6158e33aca'
+          families=[('AUD-GH','.github/',10,4),('AUD-RT','',14,5),('AUD-DA','data/',35,12),('AUD-BE','backend/',8,3),('AUD-FE','frontend/',254,85),('AUD-SR','src/',11,4),('AUD-OC','oceantwin/',11,4),('AUD-SC','scripts/',16,6),('AUD-TS','tests/',20,7),('AUD-AP','api/',2,1),('AUD-ST','.streamlit/',1,1),('AUD-DC','docs/',101,34),('AUD-AS','assets/',1,1),('AUD-SS','screenshots/',1,1)]
+          def tree(ref):
+              out={}
+              raw=subprocess.check_output(['git','ls-tree','-r','-l','-z',ref])
+              for part in raw.split(b'\0'):
+                  if not part: continue
+                  info,path=part.split(b'\t',1)
+                  mode,kind,sha,size=info.decode().split()
+                  if kind=='blob': out[path.decode()]={'sha':sha,'size':int(size),'mode':mode}
+              return out
+          def family(path):
+              if '/' not in path: return 'AUD-RT'
+              return next(code for code,prefix,_,_ in families if prefix and path.startswith(prefix))
+          old,new=tree(OLD),tree(HEAD)
+          added=sorted(set(new)-set(old)); removed=sorted(set(old)-set(new))
+          changed=sorted(p for p in old.keys()&new.keys() if old[p]['sha']!=new[p]['sha'])
+          assert (len(old),len(new),len(added),len(removed),len(changed))==(485,508,23,0,25)
+          phase={}; batches=[]
+          for code,prefix,num,count in families:
+              paths=sorted(p for p in old if family(p)==code)
+              assert len(paths)==num and (len(paths)+2)//3==count
+              for i in range(0,len(paths),3):
+                  key=f'{code}-{i//3+1:03}'
+                  bunch=paths[i:i+3]
+                  batches.append((key,'ORIGINAL_168',bunch))
+                  phase.update({p:key for p in bunch})
+          assert len(batches)==168
+          for i in range(0,len(added),3):
+              key=f'AUD-DELTA-{i//3+1:03}'
+              bunch=added[i:i+3]
+              batches.append((key,'ADDED_SINCE_BASELINE',bunch))
+              phase.update({p:key for p in bunch})
+          assert len(batches)==176 and len(phase)==508
+          all_paths=set(new); incoming=defaultdict(set); edges=[]; text_scanned=0
+          token=re.compile(r'''(?:\.\.?/|(?:frontend|docs|data|scripts|tests|backend|oceantwin|src|api|assets|screenshots)/)[A-Za-z0-9_./-]+''')
+          dupes=defaultdict(list)
+          for p,v in new.items(): dupes[v['sha']].append(p)
+          for path,meta in sorted(new.items()):
+              content=Path(path).read_bytes()
+              expected=hashlib.sha1(b'blob '+str(len(content)).encode()+b'\0'+content).hexdigest()
+              assert expected==meta['sha'] and len(content)==meta['size'],path
+              if b'\0' in content[:1024] or Path(path).suffix in {'.png','.nc','.jpg','.jpeg','.gif','.b64','.pdf'}:continue
+              try: body=content.decode('utf-8')
+              except UnicodeDecodeError: continue
+              text_scanned+=1
+              for match in set(token.findall(body)):
+                  candidate=posixpath.normpath(posixpath.join(posixpath.dirname(path),match)) if match.startswith('.') else match
+                  for cand in (candidate,candidate+'.ts',candidate+'.tsx',candidate+'.js',candidate+'.py',candidate+'.css',candidate+'.json',candidate+'/index.ts',candidate+'/index.tsx'):
+                      if cand in all_paths and cand!=path:
+                          incoming[cand].add(path); edges.append((path,cand,'STATIC_TOKEN_ONLY'))
+          def keep_class(path):
+              if path.startswith('.github/') or path in {'.gitignore','.gitattributes'} or path.endswith(('.lock','-lock.json')):return 'PROTECTED_CI'
+              if path.startswith('data/') or path.startswith('frontend/public/main-blocks/'):return 'PROTECTED_SCIENCE'
+              if path.startswith(('frontend/e2e/','frontend/tests/','tests/')):return 'PROTECTED_TEST'
+              if path.startswith(('backend/','api/','src/','oceantwin/','.streamlit/')):return 'PROTECTED_RUNTIME_FALLBACK'
+              if path.startswith('frontend/'):return 'PROTECTED_UI'
+              if path.startswith('scripts/'):return 'PROTECTED_TOOLING'
+              if path.startswith('docs/'):return 'PROTECTED_DOCUMENTATION'
+              return 'KEEP_UNKNOWN_OR_ASSET'
+          out=Path('audit-evidence');out.mkdir(exist_ok=True)
+          with (out/'AUD_508_PATH_LEDGER.csv').open('w',newline='') as f:
+              w=csv.writer(f);w.writerow(['path','phase','blob_sha','bytes','baseline_change','owner_scope_inferred','incoming_static_count','incoming_examples','same_hash_other_paths','safelist','disposition','deletion_proven'])
+              for p,v in sorted(new.items()):
+                  change='ADDED' if p not in old else 'MODIFIED' if old[p]['sha']!=v['sha'] else 'UNCHANGED'
+                  w.writerow([p,phase[p],v['sha'],v['size'],change,p.split('/')[0] if '/' in p else 'root',len(incoming[p]),' ; '.join(sorted(incoming[p])[:4]),' ; '.join(q for q in dupes[v['sha']] if q!=p),keep_class(p),'KEEP','NO'])
+          with (out/'AUD_176_PHASE_LEDGER.csv').open('w',newline='') as f:
+              w=csv.writer(f);w.writerow(['phase','family','paths','all_present'])
+              for code,kind,paths in batches:w.writerow([code,kind,' | '.join(paths),all(p in new for p in paths)])
+          with (out/'AUD_REFERENCE_GRAPH.csv').open('w',newline='') as f:
+              w=csv.writer(f);w.writerow(['from','to','type']);w.writerows(sorted(set(edges)))
+          with (out/'CLN_SAFELIST.csv').open('w',newline='') as f:
+              w=csv.writer(f);w.writerow(['path','protection'])
+              for p in sorted(new):w.writerow([p,keep_class(p)])
+          summary={'baseline':OLD,'exact_main':HEAD,'original':485,'current':508,'added':added,'removed':removed,'modified':changed,'original_batches':168,'delta_batches':8,'verified_blobs':508,'UTF8_scanned':text_scanned,'static_edges':len(set(edges)),'deletion_candidates_approved':[],'CLN-01':'STATIC_EVIDENCE_COLLECTED_DYNAMIC_USES_UNRESOLVED','CLN-02':'SCIENCE_SAFELIST_RECORDED','CLN-03':'CI_SAFELIST_RECORDED','CLN-04':'UI_AND_FALLBACK_SAFELIST_RECORDED','CLN-05':'ZERO_PROVEN_CANDIDATES','CLN-06':'N_A_NO_CANDIDATES','CLN-07':'NOT_EXECUTED_NO_SEPARATE_APPROVAL','CLN-08':'BLOCKED_EXISTING_PUBLIC_CHROMIUM_2_RED_AND_NO_MERGE','limitations':['Static matches alone do not prove a file unused','Duplicate hashes alone do not justify deletion','No scientific semantic validation from file hashes','No cleanup was deleted, merged or deployed']}
+          (out/'AUD_CLN_SUMMARY.json').write_text(json.dumps(summary,indent=2)+'\n')
+          print(json.dumps({'files':508,'phases':176,'verified_blobs':508,'UTF8_scanned':text_scanned,'static_edges':len(set(edges)),'approved_deletions':0}))
+          PY
+      - name: Preserve evidence as an artifact (no releases)
+        uses: actions/upload-artifact@v4
+        with:
+          name: aud-cln-inventory-d1e251c
+          path: audit-evidence/
+          retention-days: 90
+          if-no-files-found: error
