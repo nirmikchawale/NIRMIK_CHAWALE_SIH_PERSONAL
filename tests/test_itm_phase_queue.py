@@ -173,3 +173,22 @@ def test_live_snapshot_reports_main_delta_collisions_and_rejects_truncation(monk
     compare.update({"status": "diverged", "total_commits": 2, "files": []})
     with pytest.raises(q.InvalidQueue, match="divergent"):
         q.live_snapshot("readonly-token")
+
+    # A concurrent PR update between metadata and file enumeration must
+    # invalidate the collision snapshot, even if production main is stable.
+    compare.update({"status": "ahead", "total_commits": 2,
+                    "files": [{"filename": "frontend/src/App.tsx"}]})
+    seen_211 = 0
+
+    def moving_pr(path, token):
+        nonlocal seen_211
+        result = fake_github(path, token)
+        if path == "pulls/211":
+            seen_211 += 1
+            if seen_211 == 2:
+                result["head"]["sha"] = "c" * 40
+        return result
+
+    monkeypatch.setattr(q, "_github_read", moving_pr)
+    with pytest.raises(q.InvalidQueue, match="PR #211 changed"):
+        q.live_snapshot("readonly-token")

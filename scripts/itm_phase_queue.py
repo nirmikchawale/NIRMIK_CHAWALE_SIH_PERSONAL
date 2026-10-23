@@ -208,6 +208,13 @@ def live_snapshot(token: str) -> dict[str, Any]:
                        for pr, paths in ((int(k), v) for k, v in paths_by_pr.items())}
     if _github_read("branches/main", token)["commit"]["sha"] != main_head:
         raise InvalidQueue("main advanced during collision evidence collection")
+    # PR file lists and CI must refer to the same immutable heads recorded
+    # earlier; a force-push during collection invalidates this snapshot.
+    for pr_number, recorded in pr_refs.items():
+        current_pr = _github_read(f"pulls/{pr_number}", token)
+        if (current_pr["head"]["sha"] != recorded["head_sha"]
+                or current_pr["base"]["sha"] != recorded["base_sha"]):
+            raise InvalidQueue(f"PR #{pr_number} changed during collision evidence collection")
     phase_current_heads = {
         **{"ITM-02": pr_refs["209"]["head_sha"]},
         **{f"ITM-{i:02d}": pr_refs["210"]["head_sha"] for i in (3, 4)},
