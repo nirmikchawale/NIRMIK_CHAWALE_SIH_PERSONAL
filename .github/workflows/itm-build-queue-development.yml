@@ -171,7 +171,10 @@ jobs:
 
   itm-handoff:
     name: itm08-15-build-artifacts-staged-no-release
-    needs: [itm-queue-contract, itm-argo-compile, itm-pr-collision-snapshot, itm-main-public-readout]
+    # Development handoff is independent of the read-only production evidence API.
+    # A 502/pending public readout remains visibly failed/pending, never certified,
+    # but cannot suppress successfully completed independent build-ahead work.
+    needs: [itm-queue-contract, itm-argo-compile, itm-pr-collision-snapshot]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
