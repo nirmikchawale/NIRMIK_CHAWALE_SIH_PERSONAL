@@ -1,14 +1,8 @@
 name: x69-genuine-parallel-source-acquisition
 
+# Original 10/10 source acquisitions complete. No automatic re-acquisition loops.
+# Manual archival invocation remains fail-closed against the promoted manifest.
 on:
-  push:
-    branches:
-      - science/x69-parallel-genuine-source-20261023
-    paths:
-      - scripts/materialize_x69_parallel.py
-      - tests/test_x69_parallel.py
-      - docs/X69_PARALLEL_EXPANSION.md
-      - .github/workflows/x69-parallel-acquisition.yml
   workflow_dispatch:
 
 permissions:
