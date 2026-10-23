@@ -47,6 +47,8 @@ jobs:
           path: x69-staged/data
           merge-multiple: true
       - name: Validate all original source bytes and promote only on this branch
+        env:
+          PYTHONPATH: .
         run: |
           python scripts/materialize_x69_parallel.py --promote --staging x69-staged
           python scripts/materialize_x69_parallel.py --verify
