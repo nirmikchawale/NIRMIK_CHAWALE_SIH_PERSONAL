@@ -11,6 +11,9 @@ permissions:
   actions: read
   contents: write
 
+env:
+  PYTHONPATH: .
+
 concurrency:
   group: x69-genuine-source-promotion-only
   cancel-in-progress: false
