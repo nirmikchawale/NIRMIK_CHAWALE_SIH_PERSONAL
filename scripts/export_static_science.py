@@ -43,6 +43,12 @@ def _write_json(root: Path, relative: str, payload: Any) -> dict[str, Any]:
 
 
 def export_static_science(output: Path) -> dict[str, Any]:
+    # Verify immutable source bytes BEFORE writing even one output file.
+    # A mismatch must never leave a partly generated static science bundle.
+    model_source_evidence = _build_model_source_evidence(
+        repository_root=ROOT, model_file=api.MODEL_FILE,
+        dataset_id=api.DATASET_ID,
+    )
     output.mkdir(parents=True, exist_ok=True)
 
     catalog = api.catalog()
@@ -167,10 +173,7 @@ def export_static_science(output: Path) -> dict[str, Any]:
         "profiles": len(profile_items),
         "files": records,
         # Independent facet statuses do not authorize new ocean/sensor claims.
-        "model_source_integrity": _build_model_source_evidence(
-            repository_root=ROOT, model_file=api.MODEL_FILE,
-            dataset_id=api.DATASET_ID,
-        ),
+        "model_source_integrity": model_source_evidence,
     }
     _write_json(output, "manifest.json", manifest)
     return manifest
