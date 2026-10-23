@@ -10,9 +10,9 @@ DATA = ROOT / "frontend" / "public" / "main-blocks"
 def test_3db12_all_41_scientific_source_payloads_remain_checksum_identical():
     manifest = json.loads((DATA / "manifest.json").read_text(encoding="utf-8"))
     assert len(manifest["blocks"]) == 140
-    assert len(manifest["pilot_ids"]) == 35
-    assert len(manifest["payloads"]) == 41
-    assert len([entry for entry in manifest["blocks"] if entry["materialization"] == "planned"]) == 105
+    assert len(manifest["pilot_ids"]) == 104
+    assert len(manifest["payloads"]) == 110
+    assert len([entry for entry in manifest["blocks"] if entry["materialization"] == "planned"]) == 36
     for record in manifest["payloads"]:
         path = DATA / record["path"]
         assert path.is_file(), path

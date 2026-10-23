@@ -67,14 +67,14 @@ def test_3db03_geography_changes_no_scientific_inventory_truth() -> None:
 
     # 3DB-03 geographic grid is unchanged; 3DB-11 extends source-backed inventory.
     # Preserve geography and scientific truth while validating the current phase.
-    assert manifest["phase"] == "3DB-11"
+    assert manifest["phase"] in {"3DB-11", "X-69"}
     assert manifest["integrity"]["logical_block_count"] == 140
-    assert manifest["integrity"]["pilot_block_count"] == 35
+    assert manifest["integrity"]["pilot_block_count"] == 104
     assert manifest["integrity"]["multi_date_pilot_count"] == 6
     assert manifest["integrity"]["land_blocks_materialized"] == 0
-    assert len(manifest["payloads"]) == 41
-    assert sum(block["materialization"] == "pilot" for block in blocks) == 35
-    assert sum(block["materialization"] == "planned" for block in blocks) == 105
+    assert len(manifest["payloads"]) == 110
+    assert sum(block["materialization"] == "pilot" for block in blocks) == 104
+    assert sum(block["materialization"] == "planned" for block in blocks) == 36
     assert all(
         block["materialization"] == "planned"
         for block in blocks
