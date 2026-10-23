@@ -45,7 +45,7 @@ jobs:
           old,new=tree(OLD),tree(HEAD)
           added=sorted(set(new)-set(old)); removed=sorted(set(old)-set(new))
           changed=sorted(p for p in old.keys()&new.keys() if old[p]['sha']!=new[p]['sha'])
-          assert (len(old),len(new),len(added),len(removed),len(changed))==(485,508,23,0,25)
+          assert (len(old),len(new),len(added),len(removed),len(changed))==(485,508,23,0,26)
           phase={}; batches=[]
           for code,prefix,num,count in families:
               paths=sorted(p for p in old if family(p)==code)
