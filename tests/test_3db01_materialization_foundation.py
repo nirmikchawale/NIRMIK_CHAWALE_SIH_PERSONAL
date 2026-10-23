@@ -44,10 +44,10 @@ def _first_payload(manifest: dict) -> tuple[dict, dict, dict]:
 def test_3db01_reusable_foundation_validates_current_inventory() -> None:
     snapshot = validate_manifest(BLOCK_ROOT)
     assert snapshot.logical_blocks == 140
-    assert snapshot.materialized_pilots == 35
-    assert snapshot.planned_blocks == 105
+    assert snapshot.materialized_pilots == 104
+    assert snapshot.planned_blocks == 36
     assert snapshot.multi_date_pilots == 6
-    assert snapshot.payloads == 41
+    assert snapshot.payloads == 110
     assert snapshot.land_blocks_materialized == 0
 
 

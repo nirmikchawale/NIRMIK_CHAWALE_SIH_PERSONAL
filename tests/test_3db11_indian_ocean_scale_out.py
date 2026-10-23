@@ -14,16 +14,16 @@ DATA = ROOT / "frontend" / "public" / "main-blocks"
 def test_3db11_exact_source_backed_scale_out_inventory():
     manifest = json.loads((DATA / "manifest.json").read_text(encoding="utf-8"))
     snapshot = validate_manifest(DATA, deep_payloads=True)
-    assert manifest["phase"] == "3DB-11"
+    assert manifest["phase"] in {"3DB-11", "X-69"}
     assert snapshot.logical_blocks == 140
-    assert snapshot.materialized_pilots == 35
-    assert snapshot.planned_blocks == 105
+    assert snapshot.materialized_pilots == 104
+    assert snapshot.planned_blocks == 36
     assert snapshot.multi_date_pilots == 6
-    assert snapshot.payloads == 41
+    assert snapshot.payloads == 110
     assert snapshot.land_blocks_materialized == 0
-    assert len(manifest["pilot_ids"]) == 35
-    assert len(manifest["payloads"]) == 41
-    assert sum(block["materialization"] == "planned" for block in manifest["blocks"]) == 105
+    assert len(manifest["pilot_ids"]) == 104
+    assert len(manifest["payloads"]) == 110
+    assert sum(block["materialization"] == "planned" for block in manifest["blocks"]) == 36
     assert manifest["integrity"]["synthetic_measurements"] is False
     assert manifest["integrity"]["synthetic_timestamps"] is False
     assert manifest["integrity"]["synthetic_coordinates"] is False
@@ -39,7 +39,7 @@ def test_3db11_ten_new_payloads_are_real_region_diverse_and_scientifically_bound
     assert "tds.gdex.ucar.edu/thredds/dodsC" in record["service_url"]
     ids = record["block_ids"]
     assert len(ids) == len(set(ids)) == 10
-    assert manifest["pilot_ids"][-10:] == ids
+    assert manifest["pilot_ids"][25:35] == ids
     by_id = {block["id"]: block for block in manifest["blocks"]}
     assert len({by_id[block_id]["region"] for block_id in ids}) >= 6
     assert len(record["records"]) == 10
@@ -89,7 +89,7 @@ def test_3db11_legacy_baseline_and_genuine_pilot_io029_remain_untouched():
 def test_3db11_remaining_planned_blocks_still_cannot_claim_source_data():
     manifest = json.loads((DATA / "manifest.json").read_text(encoding="utf-8"))
     planned = [b for b in manifest["blocks"] if b["materialization"] == "planned"]
-    assert len(planned) == 105
+    assert len(planned) == 36
     for block in planned:
         assert block["available_dates"] == []
         assert block["payloads"] == []

@@ -18,16 +18,16 @@ def test_all_140_logical_blocks_and_reference_are_disjoint_and_source_backed():
     audit = build_audit()
     summary = audit["summary"]
     assert summary["logicalBlocks"] == 140
-    assert summary["sourceBackedPilots"] == 35
-    assert summary["plannedBlocks"] == 105
+    assert summary["sourceBackedPilots"] == 104
+    assert summary["plannedBlocks"] == 36
     assert summary["multiDatePilots"] == 6
-    assert summary["sourcePayloadFrames"] == 41
+    assert summary["sourcePayloadFrames"] == 110
     assert summary["landBlocksMaterialized"] == 0
     assert summary["independentlyObservationValidatedPilots"] == 0
     assert len(audit["blocks"]) == 140
     assert audit["verifiedBaselineSeparateFrom140"]["id"] == "BASE-GLORYS-001"
-    assert sum(b["materialized"] for b in audit["blocks"]) == 35
-    assert sum(len(b["sourcePayloads"]) for b in audit["blocks"]) == 41
+    assert sum(b["materialized"] for b in audit["blocks"]) == 104
+    assert sum(len(b["sourcePayloads"]) for b in audit["blocks"]) == 110
     assert sum(len(b["availableDates"]) == 2 for b in audit["blocks"]) == 6
     assert_snapshot_matches(audit, json.loads(REPORT.read_text(encoding="utf-8")))
 
@@ -59,7 +59,7 @@ def test_audit_fails_closed_on_runtime_drift():
     manifest = load_manifest()
     source = RUNTIME.read_text(encoding="utf-8")
     assert_runtime_manifest_parity(manifest, source)
-    tampered = source.replace('"IO-001", "IO-002"', '"IO-003", "IO-002"', 1)
+    tampered = source.replace('"IO-001", "IO-002"', '"IO-087", "IO-002"', 1)
     with pytest.raises(MaterializationContractError, match="Runtime pilot IDs"):
         assert_runtime_manifest_parity(manifest, tampered)
     tampered_multi = source.replace(

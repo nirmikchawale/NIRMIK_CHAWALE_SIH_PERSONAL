@@ -1,0 +1,79 @@
+name: x69-reuse-verified-science-promotion
+
+on:
+  push:
+    branches:
+      - science/x69-parallel-genuine-source-20261023
+    paths:
+      - .github/workflows/x69-promotion-recovery.yml
+
+permissions:
+  actions: read
+  contents: write
+
+env:
+  PYTHONPATH: .
+
+concurrency:
+  group: x69-genuine-source-promotion-only
+  cancel-in-progress: false
+
+jobs:
+  promote-from-original-validated-shards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact recovery branch commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Check original 69-source pipeline is unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code f4ccdf3b0783822d157d6d9d927d969bd494116e HEAD -- \
+            scripts/materialize_x69_parallel.py \
+            frontend/public/main-blocks/manifest.json \
+            frontend/src/main-block-runtime.ts \
+            scripts/main_block_materialization.py \
+            scripts/materialize_phase35b_pilots_opendap.py
+          echo "Pinned candidate acquisition and native validator unchanged."
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Fix only missing scientific-promotion runtime dependencies
+        run: python -m pip install "numpy>=2.2,<3" "xarray>=2025.1,<2027" "netCDF4>=1.7,<2" "pytest>=8,<10"
+      - name: Revalidate original source plan without reacquisition
+        run: |
+          python -m pytest -q tests/test_x69_parallel.py
+          python scripts/materialize_x69_parallel.py --plan
+      - name: Reuse ten immutable artifact bundles from successful source run 39883624747
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 39883624747
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: x69-verified-shard-*
+          path: x69-staged/data
+          merge-multiple: true
+      - name: Independently deep-validate all 69 and promote only branch source files
+        run: |
+          python scripts/materialize_x69_parallel.py --promote --staging x69-staged
+          python scripts/materialize_x69_parallel.py --verify
+          python scripts/main_block_materialization.py verify
+          python scripts/audit_3db14_capabilities.py --check
+      - name: Record only original science evidence and canonical registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/public/main-blocks/manifest.json \
+            frontend/public/main-blocks/capability-audit.json \
+            frontend/public/main-blocks/data \
+            frontend/src/main-block-runtime.ts
+          git diff --cached --check
+          git diff --cached --quiet && { echo "No source-data changes to record"; exit 1; }
+          git commit -m "data(x69): promote 69 original-source-verified ocean blocks for review"
+          git push origin HEAD:science/x69-parallel-genuine-source-20261023
+          echo "BRANCH DATA ONLY: merge, MPR applicability, production and public Chromium still pending."
