@@ -1,0 +1,129 @@
+name: x69-focused-context-recovery
+
+# Isolated, one-test diagnostic. Not a release/merge certificate. Run once.
+on:
+  push:
+    branches:
+      - diagnostics/x69-scientific-context-20261023
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: write
+
+jobs:
+  cancel-only-superseded-x69:
+    name: guarded-cancel-obsolete-runs
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Cancel four concrete superseded X69 final-mvp runs only
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = 'nirmikchawale';
+            const repo = 'NIRMIK_CHAWALE_SIH_PERSONAL';
+            const pinned = '29c6b951c98f73a9ccf59fee559ae3f1af3235ed';
+            const expected = new Map([
+              [39885144015, '008a4a46f67790aa8634b5dcfe8d1cb867a323f9'],
+              [39885963027, '7cc242030829cbf4f68f05bd27f4e16b3b7b1f06'],
+              [39886004871, '55a281bc0a187856a84ffa4eb9fc5be07976bee1'],
+              [39884930290, '128f8be4364f46b2bdfdca7bf64d1d3defd8d4bd']
+            ]);
+            const pr = (await github.rest.pulls.get({owner, repo, pull_number: 246})).data;
+            if (pr.head.sha !== pinned || pr.state !== 'open' || !pr.draft) {
+              throw new Error('Fail closed: X69 PR head/state changed; cancel nothing');
+            }
+            for (const [run_id, sha] of expected) {
+              const run = (await github.rest.actions.getWorkflowRun({owner, repo, run_id})).data;
+              if (run.head_sha !== sha || run.head_branch !== 'science/x69-parallel-genuine-source-20261023'
+                  || run.name !== 'final-mvp') {
+                throw new Error('Fail closed: run identity mismatch: '+run_id);
+              }
+              if (run.status === 'completed') {
+                core.info('Preserve already terminal historical evidence: '+run_id+' '+run.conclusion);
+                continue;
+              }
+              if (!['queued','in_progress','waiting','pending','requested'].includes(run.status)) {
+                throw new Error('Unexpected run state '+run.status+' for '+run_id);
+              }
+              await github.rest.actions.cancelWorkflowRun({owner, repo, run_id});
+              core.info('Cancel accepted for OBSOLETE run '+run_id+' at '+sha);
+            }
+            core.info('Current exact-head run 39887745603 was not touched.');
+
+  focused-real-chromium:
+    name: one-scientific-context-case-zero-retries
+    if: always()
+    needs: cancel-only-superseded-x69
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install original offline science-export dependencies
+        run: python -m pip install -r backend/requirements.txt
+      - name: Export real immutable science baseline and labeled browser fixture
+        run: |
+          set -euo pipefail
+          python scripts/export_static_science.py --output frontend/public/science-static
+          python scripts/create_netcdf_browser_fixture.py --output frontend/public/samples/cf-profile-fixture.nc
+          python scripts/materialize_x69_parallel.py --verify
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend and build actual X69 source
+        working-directory: frontend
+        env:
+          VITE_STATIC_SCIENCE: 'true'
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+      - name: Install genuine Chromium browser
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Discover exact target before running (prevent No tests found)
+        working-directory: frontend
+        run: |
+          npx playwright test -c playwright.live.config.ts \
+            e2e/scientific-context-bridge.spec.ts \
+            --grep 'Phase 5.0 keeps block truth visible while analytics use verified evidence' \
+            --list | tee /tmp/x69-context-test-list.txt
+          grep -q '1 test in 1 file' /tmp/x69-context-test-list.txt
+      - name: Run one real Chromium science-context test, zero retries
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/#/explore
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > /tmp/x69-preview.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          ready=0
+          for attempt in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4174/ >/dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then cat /tmp/x69-preview.log; exit 1; fi
+          npx playwright test -c playwright.live.config.ts \
+            e2e/scientific-context-bridge.spec.ts \
+            --grep 'Phase 5.0 keeps block truth visible while analytics use verified evidence' \
+            --workers=1 --retries=0 --trace=retain-on-failure --reporter=list
+      - name: Preserve real browser test evidence and failure traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: x69-focused-scientific-context
+          path: |
+            frontend/test-results
+            /tmp/x69-context-test-list.txt
+            /tmp/x69-preview.log
+          if-no-files-found: warn
+          retention-days: 14
