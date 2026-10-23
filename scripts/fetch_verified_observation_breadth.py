@@ -16,7 +16,7 @@ from pathlib import Path
 import time
 from urllib.parse import quote
 from urllib.error import HTTPError
-from urllib.request import Request, urlopen
+from urllib.request import Request, urlopen, HTTPRedirectHandler, build_opener
 
 USER_AGENT = "OceanTwin-SIH26067/1.0 (+https://github.com/nirmikchawale/NIRMIK_CHAWALE_SIH_PERSONAL)"
 
@@ -28,6 +28,18 @@ AOML_TRAJECTORY = "SG683-20250910T0000"
 CCHDO_DATASET = "cchdo_ctd"
 CCHDO_BASE = f"https://data.pmel.noaa.gov/generic/erddap/tabledap/{CCHDO_DATASET}.csv"
 CCHDO_INFO = f"https://data.pmel.noaa.gov/generic/erddap/info/{CCHDO_DATASET}/index.html"
+
+
+class _RejectProviderRedirect(HTTPRedirectHandler):
+    """Prevent unchecked redirect-following from bypassing the provider allowlist."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise ValueError("Unapproved scientific provider redirect")
+
+
+def _provider_urlopen(request: Request, *, timeout: int):
+    """Open an allowlisted scientific source without following any redirects."""
+    return build_opener(_RejectProviderRedirect()).open(request, timeout=timeout)
 
 
 def _request_text(url: str, attempts: int = 5, timeout: int = 60) -> str:
@@ -50,7 +62,7 @@ def _request_text(url: str, attempts: int = 5, timeout: int = 60) -> str:
     for attempt in range(1, attempts + 1):
         request = Request(url, headers={"User-Agent": USER_AGENT, "Accept": "text/csv,*/*;q=0.8"})
         try:
-            with urlopen(request, timeout=timeout) as response:
+            with _provider_urlopen(request, timeout=timeout) as response:
                 if response.status != 200:
                     raise RuntimeError(f"HTTP {response.status} for {url}")
                 # Bounded read prevents accidental giant server responses or HTML
