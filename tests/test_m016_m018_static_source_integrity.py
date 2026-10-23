@@ -16,7 +16,7 @@ from src.source_integrity_export import build_model_source_evidence as _build_mo
 
 def _setup(tmp_path: Path) -> tuple[Path, Path]:
     model = tmp_path / "data" / "fixture.nc"
-    model.parent.mkdir(parents=True)
+    model.parent.mkdir(parents=True, exist_ok=True)
     model.write_bytes(b"TEST_ONLY_NOT_OCEAN_DATA")
     digest = sha256(model.read_bytes()).hexdigest()
     (tmp_path / "data_manifest.json").write_text(
