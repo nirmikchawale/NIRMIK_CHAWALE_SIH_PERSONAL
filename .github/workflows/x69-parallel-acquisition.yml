@@ -27,6 +27,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Install plan-test runner
+        run: python -m pip install "pytest>=8,<10"
       - name: Check source-native inventory and 69 distinct targets
         run: |
           python -m pytest -q tests/test_x69_parallel.py
