@@ -133,7 +133,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Independently verify live manifest and every published original frame
         env:
-          PAGE_URL: \${{ needs.deploy.outputs.page_url }}
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
         run: |
           python - <<'PY'
           import hashlib
