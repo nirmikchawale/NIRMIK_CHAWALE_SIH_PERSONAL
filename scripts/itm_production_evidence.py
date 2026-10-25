@@ -123,7 +123,7 @@ def assess_production(snapshot: dict[str, Any]) -> dict[str, Any]:
         "pages": pages_ok,
         "final_mvp": final_ok,
         "itm11_publication_certified": publication,
-        "itm12_repeat_certified": repeated and bool(baseline),
+        "itm12_repeat_certified": publication and repeated and bool(baseline),
         "itm13_stage_a_handoff": "NOT_AUTHORIZED_BY_THIS_TOOL",
         "itm14_stage_b": "NOT_AUTHORIZED_BY_THIS_TOOL",
         "itm15_final": "NOT_AUTHORIZED_BY_THIS_TOOL",
