@@ -57,6 +57,21 @@ def test_repeated_independent_runs_and_rollback_sha_pass_itm12_only():
     assert r["itm15_final"] == "NOT_AUTHORIZED_BY_THIS_TOOL"
 
 
+
+@pytest.mark.parametrize("failed_workflow", [audit.PAGES_NAME, audit.FINAL_NAME])
+def test_itm12_cannot_pass_when_latest_publication_is_red(failed_workflow):
+    """Two older green runs cannot certify a failed latest exact-main run."""
+    x = fixture(repeats=3)
+    newest = max(
+        (run for run in x["runs"] if run["name"] == failed_workflow),
+        key=lambda run: run["created_at"],
+    )
+    newest["conclusion"] = "failure"
+    r = audit.assess_production(x)
+    assert r["itm11_publication_certified"] is False
+    assert r["itm12_repeat_certified"] is False
+
+
 def test_skipped_or_missing_public_shard_cannot_certify():
     for kind in ("skip", "remove", "duplicate"):
         x = fixture()
