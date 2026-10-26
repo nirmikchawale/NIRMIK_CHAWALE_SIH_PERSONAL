@@ -1,0 +1,97 @@
+# Development-only focused execution; never certifies release, Pages, MPR or 96 PNG.
+# Workflow lives on a validation branch but checks out the immutable ITM-08 source.
+name: itm08-argo-focused-source-validation
+
+on:
+  push:
+    branches:
+      - validation/itm08-argo-focused-20261026
+
+permissions:
+  contents: read
+
+concurrency:
+  group: itm08-focused-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exact-source-argo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout immutable three-file ITM-08 candidate
+        uses: actions/checkout@v4
+        with:
+          ref: 34a608d0a3cee3674832af19ec57c3e274738297
+          persist-credentials: false
+
+      - name: Fail closed on source drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "34a608d0a3cee3674832af19ec57c3e274738297"
+          git status --porcelain
+          test -z "$(git status --porcelain)"
+          echo "Immutable ITM-08 source: $(git rev-parse HEAD)"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install canonical static-science exporter dependencies
+        run: python -m pip install -r backend/requirements.txt
+
+      - name: Export real bundled science without changing protected sources
+        run: |
+          python scripts/export_static_science.py --output frontend/public/science-static
+          test -s frontend/public/science-static/profiles/index.json
+          test -s frontend/public/science-static/health.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install locked frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Typecheck exact ITM-08 source
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Build static hosted candidate
+        working-directory: frontend
+        env:
+          VITE_STATIC_SCIENCE: "true"
+        run: npm run build
+
+      - name: Install Chromium for four focused real-browser cases
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Execute genuine Argo browser cases (no diagnostic retry)
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4173/
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m http.server 4173 --bind 127.0.0.1 --directory dist > /tmp/itm08-static.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/science-static/health.json > /dev/null; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then
+            cat /tmp/itm08-static.log
+            exit 1
+          fi
+          npx playwright test -c playwright.live.config.ts e2e/mpr-default-verified-argo-5907092.spec.ts --workers=1 --retries=0 --reporter=line
