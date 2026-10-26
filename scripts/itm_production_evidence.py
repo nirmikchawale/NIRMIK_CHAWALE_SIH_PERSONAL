@@ -114,8 +114,9 @@ def assess_production(snapshot: dict[str, Any]) -> dict[str, Any]:
     if not repeated:
         reasons.append("ITM-12 requires two independent successful live certification runs")
     baseline = snapshot.get(BASELINE_ROLLBACK_SHA_KEY)
-    if not isinstance(baseline, str) or not SHA_PATTERN.fullmatch(baseline):
-        reasons.append("recorded exact rollback main SHA missing")
+    baseline_valid = isinstance(baseline, str) and bool(SHA_PATTERN.fullmatch(baseline))
+    if not baseline_valid:
+        reasons.append("recorded exact rollback main SHA missing or invalid")
     # Explicit human approvals cannot be inferred from repository checks.
     # Both are always separate from this read-only machine report.
     return {
@@ -123,7 +124,7 @@ def assess_production(snapshot: dict[str, Any]) -> dict[str, Any]:
         "pages": pages_ok,
         "final_mvp": final_ok,
         "itm11_publication_certified": publication,
-        "itm12_repeat_certified": repeated and bool(baseline),
+        "itm12_repeat_certified": publication and repeated and baseline_valid,
         "itm13_stage_a_handoff": "NOT_AUTHORIZED_BY_THIS_TOOL",
         "itm14_stage_b": "NOT_AUTHORIZED_BY_THIS_TOOL",
         "itm15_final": "NOT_AUTHORIZED_BY_THIS_TOOL",
