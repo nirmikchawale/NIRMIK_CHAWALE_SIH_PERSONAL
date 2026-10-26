@@ -148,3 +148,17 @@ def test_latest_failed_run_blocks_repeat_even_when_two_older_runs_pass(latest_wo
     result = audit.assess_production(x)
     assert result["itm11_publication_certified"] is False
     assert result["itm12_repeat_certified"] is False
+
+
+@pytest.mark.parametrize("duplicated_workflow", [audit.PAGES_NAME, audit.FINAL_NAME])
+def test_duplicate_run_ids_cannot_satisfy_independent_repeat(duplicated_workflow):
+    """One successful workflow run repeated in a snapshot is not two independent runs."""
+    x = fixture(repeats=2)
+    first_id = 100 if duplicated_workflow == audit.PAGES_NAME else 200
+    second_id = first_id + 1
+    original = next(r for r in x["runs"] if r["id"] == first_id)
+    x["runs"] = [r for r in x["runs"] if r["id"] != second_id]
+    x["runs"].append(deepcopy(original))
+    result = audit.assess_production(x)
+    assert result["itm11_publication_certified"] is True
+    assert result["itm12_repeat_certified"] is False

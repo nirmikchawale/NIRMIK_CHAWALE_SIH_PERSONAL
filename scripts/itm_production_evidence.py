@@ -109,8 +109,10 @@ def assess_production(snapshot: dict[str, Any]) -> dict[str, Any]:
     publication = bool(pages_ok and pages_ok[0]["success"] and final_ok and final_ok[0]["success"])
     if not publication:
         reasons.append("latest exact-main Pages and final-mvp are not BOTH fully green")
-    repeated = (len([p for p in pages_ok if p["success"]]) >= 2
-                and len([f for f in final_ok if f["success"]]) >= 2)
+    # Each independent acceptance must have a distinct immutable GitHub run ID.
+    # Duplicated entries in imported snapshots cannot manufacture a second run.
+    repeated = (len({p["run_id"] for p in pages_ok if p["success"]}) >= 2
+                and len({f["run_id"] for f in final_ok if f["success"]}) >= 2)
     if not repeated:
         reasons.append("ITM-12 requires two independent successful live certification runs")
     baseline = snapshot.get(BASELINE_ROLLBACK_SHA_KEY)
