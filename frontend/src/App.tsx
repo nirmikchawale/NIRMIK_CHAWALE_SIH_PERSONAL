@@ -91,6 +91,30 @@ type WorkspaceMode = "explorer" | "analysis" | "presentation";
 const THEME_STORAGE_KEY = "oceantwin-theme";
 const ARGO_COMPASS_LOGO_SRC = `data:image/png;base64,${argoLogo0}${argoLogo1}${argoLogo2}${argoLogo3a}${argoLogo3b}${argoLogo4a}${argoLogo4b}`;
 
+// ITM-05: genuine baseline observation selection. A model reference is never
+// mistaken for an Argo observation, and a pilot never borrows a GLORYS matchup.
+const VERIFIED_ARGO_FLOAT_ID = "5907092";
+const VERIFIED_ARGO_DEMO_ID = "20240102_indian_ocean_prof:23";
+function selectInitialVerifiedArgo(
+  profiles: readonly ProfileSummary[],
+  requestedProfileId: string | null,
+  blockId: string
+): { profileId: string; autoSelectedDemo: boolean } {
+  if (blockId !== "BASE-GLORYS-001") return { profileId: "", autoSelectedDemo: false };
+  const requested = requestedProfileId
+    ? profiles.find((profile) => profile.profile_id === requestedProfileId)
+    : null;
+  if (requested) return { profileId: requested.profile_id, autoSelectedDemo: false };
+  const verified = profiles.find((profile) =>
+    profile.profile_id === VERIFIED_ARGO_DEMO_ID &&
+    profile.platform_id === VERIFIED_ARGO_FLOAT_ID &&
+    profile.cycle === 13 &&
+    profile.direction.toUpperCase() === "D" &&
+    profile.matched_level_count === 50
+  );
+  return { profileId: verified?.profile_id ?? "", autoSelectedDemo: Boolean(verified) };
+}
+
 function initialTheme(): ThemeMode {
   // The Appearance Lab's explicit 16-preset selection is authoritative.
   // For new visitors the initial scheme matches Arctic Mist, not the
@@ -517,7 +541,12 @@ export default function App() {
     let cancelled = false;
     api.provenance()
       .then((payload) => {
-        if (!cancelled) setProvenance(payload);
+        if (!cancelled) {
+          setProvenance(payload);
+          setDegradedWarnings((current) => current.filter((warning) =>
+            warning !== "Provenance metadata unavailable"
+          ));
+        }
       })
       .catch(() => {
         if (!cancelled) {
@@ -561,22 +590,34 @@ export default function App() {
 
         if (healthResult.status === "rejected") {
           setDegradedWarnings((current) => current.includes("Health check unavailable") ? current : [...current, "Health check unavailable"]);
+        } else {
+          setDegradedWarnings((current) => current.filter((warning) =>
+            warning !== "Health check unavailable"
+          ));
         }
 
         if (profilesResult.status === "fulfilled") {
           const nextProfiles = profilesResult.value.profiles;
           setProfiles(nextProfiles);
-          if (nextProfiles.length > 0) {
-            const requestedProfileId = readScientificWorkspaceContext().selectedProfileId;
-            const requestedProfileExists = requestedProfileId
-              ? nextProfiles.some((profile) => profile.profile_id === requestedProfileId)
-              : false;
-            setSelectedProfileId(requestedProfileExists ? requestedProfileId! : nextProfiles[0].profile_id);
-          } else {
-            setSelectedProfileId("");
-            setProfileDetail(null);
-            setDegradedWarnings((current) => current.includes("No eligible Argo comparison profiles") ? current : [...current, "No eligible Argo comparison profiles"]);
-          }
+          const selected = selectInitialVerifiedArgo(
+            nextProfiles,
+            readScientificWorkspaceContext().selectedProfileId,
+            readActiveMainBlockId()
+          );
+          setSelectedProfileId(selected.profileId);
+          // A verified default selects the observation, but does not open a floating
+          // overlay until the visitor explicitly interacts with an Argo pin.
+          setProfileCalloutOpen(false);
+          if (!selected.profileId) setProfileDetail(null);
+          // Planned/pilot blocks do not have the baseline Argo matchup.
+          // Missing baseline data remains an explicit degraded condition.
+          const baselineMissing = readActiveMainBlockId() === "BASE-GLORYS-001" && !selected.profileId;
+          setDegradedWarnings((current) => {
+            const prior = current.filter((warning) =>
+              !["No eligible Argo comparison profiles", "Argo comparison layer unavailable",
+                "Verified Argo 5907092 Cycle 13 unavailable"].includes(warning));
+            return baselineMissing ? [...prior, "Verified Argo 5907092 Cycle 13 unavailable"] : prior;
+          });
         } else {
           setProfiles([]);
           setDegradedWarnings((current) => current.includes("Argo comparison layer unavailable") ? current : [...current, "Argo comparison layer unavailable"]);
@@ -608,7 +649,12 @@ export default function App() {
     api
       .profile(selectedProfileId)
       .then((payload) => {
-        if (!cancelled) setProfileDetail(payload);
+        if (!cancelled) {
+          setProfileDetail(payload);
+          setDegradedWarnings((current) => current.filter((warning) =>
+            warning !== "Selected Argo comparison unavailable"
+          ));
+        }
       })
       .catch(() => {
         if (!cancelled) {
@@ -1348,6 +1394,9 @@ export default function App() {
                 data-linked-evidence={geographicStatus}
                 data-linked-source={sourceMode}
                 data-linked-block={activeMainBlockId}
+                data-selected-argo-float={activeMainBlockId === "BASE-GLORYS-001" && sourceMode === "glorys" && activeSelectedProfile?.platform_id === VERIFIED_ARGO_FLOAT_ID ? VERIFIED_ARGO_FLOAT_ID : ""}
+                data-selected-argo-profile={activeMainBlockId === "BASE-GLORYS-001" && sourceMode === "glorys" ? activeSelectedProfile?.profile_id ?? "" : ""}
+                data-selected-argo-cycle={activeMainBlockId === "BASE-GLORYS-001" && sourceMode === "glorys" ? activeSelectedProfile?.cycle ?? "" : ""}
                 data-linked-time={linkedExpectation.time}
                 data-linked-variable={variable}
                 aria-label="Connected geographic and water-column visualization stage"
@@ -1361,7 +1410,7 @@ export default function App() {
                     volume={geographicReady && viewMode === "volume" ? volume : null}
                     currents={geographicReady ? currents : null}
                     profiles={activeComparisonProfiles}
-                    selectedProfileId={sourceMode === "glorys" ? selectedProfileId : ""}
+                    selectedProfileId={sourceMode === "glorys" && activeMainBlockId === "BASE-GLORYS-001" ? selectedProfileId : ""}
                     importedProfiles={importedProfiles}
                     verifiedObservationProfiles={verifiedObservationProfiles}
                     selectedImportedProfileId={selectedImportedProfileId}
