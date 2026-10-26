@@ -114,9 +114,12 @@ def assess_production(snapshot: dict[str, Any]) -> dict[str, Any]:
     if not repeated:
         reasons.append("ITM-12 requires two independent successful live certification runs")
     baseline = snapshot.get(BASELINE_ROLLBACK_SHA_KEY)
-    baseline_valid = isinstance(baseline, str) and bool(SHA_PATTERN.fullmatch(baseline))
+    # A rollback target must differ from the published commit. This guard is
+    # necessary but not sufficient: release owners must verify ancestry and rehearsal.
+    baseline_valid = (isinstance(baseline, str) and bool(SHA_PATTERN.fullmatch(baseline))
+                      and baseline != sha)
     if not baseline_valid:
-        reasons.append("recorded exact rollback main SHA missing or invalid")
+        reasons.append("recorded rollback SHA missing, invalid, or equal to current main")
     # Explicit human approvals cannot be inferred from repository checks.
     # Both are always separate from this read-only machine report.
     return {

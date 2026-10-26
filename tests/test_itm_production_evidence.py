@@ -128,3 +128,23 @@ def test_pending_final_mvp_shard_never_certifies():
     x = fixture()
     x["jobs"]["200"][-1]["status"] = "in_progress"
     assert audit.assess_production(x)["itm11_publication_certified"] is False
+
+
+@pytest.mark.parametrize("rollback", ["invalid", "", None, SHA])
+def test_invalid_or_current_main_rollback_never_certifies_repeat(rollback):
+    x = fixture(repeats=2)
+    x["rollback_baseline_sha"] = rollback
+    result = audit.assess_production(x)
+    assert result["itm11_publication_certified"] is True
+    assert result["itm12_repeat_certified"] is False
+
+
+@pytest.mark.parametrize("latest_workflow", [audit.PAGES_NAME, audit.FINAL_NAME])
+def test_latest_failed_run_blocks_repeat_even_when_two_older_runs_pass(latest_workflow):
+    x = fixture(repeats=3)
+    latest = next(run for run in x["runs"]
+                  if run["name"] == latest_workflow and run["id"] in {102, 202})
+    latest["conclusion"] = "failure"
+    result = audit.assess_production(x)
+    assert result["itm11_publication_certified"] is False
+    assert result["itm12_repeat_certified"] is False
