@@ -1,0 +1,106 @@
+name: itm06-cchdo-native-source-focused-development
+
+on:
+  push:
+    branches:
+      - validation/itm06-cchdo-native-20261027
+
+permissions:
+  contents: read
+
+jobs:
+  source-native-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out immutable scientific source without changing it
+        uses: actions/checkout@v4
+        with:
+          ref: 9541eb3a91595ee9cfc62cb7770922925761971e
+          persist-credentials: false
+
+      - name: Verify exact source SHA
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "9541eb3a91595ee9cfc62cb7770922925761971e"
+
+      - name: Install existing scientific dependencies
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend requirements including netCDF4
+        run: python -m pip install -r backend/requirements.txt
+
+      - name: Exercise real official CCHDO archive fallback and fail-closed errors
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import math
+          from pathlib import Path
+          from unittest.mock import patch
+
+          from scripts import fetch_verified_observation_breadth as source
+
+          # Force only the authentic 'no matching provider records' condition;
+          # the archive download and NetCDF parsing remain entirely REAL.
+          no_rows = RuntimeError(
+              "CCHDO discovery returned no eligible source-backed Indian Ocean CTD "
+              "profiles for any inspected authentic provider time window (2005–2026)."
+          )
+          with patch.object(source, "_candidate_ctd_profiles", side_effect=no_rows):
+              records, meta = source.fetch_cchdo_ctd()
+
+          assert meta["service"] == "Official CCHDO CF-netCDF publication"
+          assert meta["query_url"] == source.CCHDO_I09N_CTD_NETCDF
+          digest = meta.get("original_source_sha256", "")
+          assert len(digest) == 64 and all(c in "0123456789abcdef" for c in digest)
+          assert len(records) >= 16
+          assert {r["variable"] for r in records} == {"temperature", "salinity"}
+          assert all(r["sensor_type"] == "ctd" and r["qc_flag"] == "2" for r in records)
+          assert all(r["source"] == "CCHDO GO-SHIP I09N 2016 CF-netCDF" for r in records)
+          assert all(r["timestamp"].startswith("2016-") and r["timestamp"].endswith("Z") for r in records)
+          assert all(-40 <= r["latitude"] <= 30 and 40 <= r["longitude"] <= 120 for r in records)
+          assert all(math.isfinite(r["depth_m"]) and r["depth_m"] >= 0 for r in records)
+          assert all(math.isfinite(r["value"]) for r in records)
+          assert all(r["units"] == ("degree_C" if r["variable"] == "temperature" else "1") for r in records)
+
+          # A provider outage must not be reclassified as an empty search and
+          # must never silently trigger an archive substitute.
+          with patch.object(source, "_candidate_ctd_profiles", side_effect=RuntimeError("provider unavailable")):
+              with patch.object(source, "_fetch_official_cchdo_cf_netcdf", side_effect=AssertionError("unexpected fallback")):
+                  try:
+                      source.fetch_cchdo_ctd()
+                  except RuntimeError as exc:
+                      assert str(exc) == "provider unavailable"
+                  else:
+                      raise AssertionError("Provider failure was silently accepted")
+
+          report = {
+              "classification": "FOCUSED_NATIVE_SOURCE_VALIDATION_NOT_RELEASE_CERTIFICATION",
+              "source_commit_sha": "9541eb3a91595ee9cfc62cb7770922925761971e",
+              "official_url": meta["query_url"],
+              "original_source_sha256": digest,
+              "record_count": len(records),
+              "temperature_count": sum(r["variable"] == "temperature" for r in records),
+              "salinity_count": sum(r["variable"] == "salinity" for r in records),
+              "accepted_qc_flags": sorted({r["qc_flag"] for r in records}),
+              "source_time_year": 2016,
+              "provider_error_fail_closed": True,
+              "no_synthetic_source_values": True,
+          }
+          Path("itm06-native-source-evidence.json").write_text(
+              json.dumps(report, indent=2) + "\n", encoding="utf-8"
+          )
+          print(json.dumps(report, sort_keys=True))
+          PY
+
+      - name: Preserve focused evidence without authorizing release
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: itm06-cchdo-native-source-focused-evidence
+          path: itm06-native-source-evidence.json
+          if-no-files-found: error
