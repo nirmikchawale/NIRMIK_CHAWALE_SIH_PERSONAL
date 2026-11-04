@@ -60,8 +60,8 @@ test("RUI-02 desktop moves shared science context out of navigation into compact
 
   const hud = page.getByTestId("integrated-main-block-hud");
   await expect(hud).toBeVisible();
-  await hud.getByLabel("Active main block").selectOption("IO-047");
-  await expect(context).toHaveAttribute("data-block-id", "IO-047");
+  await hud.getByLabel("Active main block").selectOption("IO-087");
+  await expect(context).toHaveAttribute("data-block-id", "IO-087");
   await expect(context).toHaveAttribute("data-block-materialization", "planned");
   await expect(header).toContainText("Geographic selection only");
   await expect(header).toContainText(/remain anchored to verified source evidence/i);
@@ -70,7 +70,7 @@ test("RUI-02 desktop moves shared science context out of navigation into compact
   await sidebar.locator('[data-workspace-id="telemetry"]').click();
   await expect(page).toHaveURL(/#\/telemetry$/);
   await expect(header).toBeVisible();
-  await expect(context).toHaveAttribute("data-block-id", "IO-047");
+  await expect(context).toHaveAttribute("data-block-id", "IO-087");
   await expect(details).not.toHaveAttribute("open", "");
 });
 

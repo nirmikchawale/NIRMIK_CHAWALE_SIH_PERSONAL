@@ -33,8 +33,8 @@ test("3DB-05 freezes baseline, pilot and planned Water Column synchronization st
   expect(pilot.validationLevel).toBe("source-integrity-renderer");
   expect(pilot.availableDates).toEqual(["2004-03-15", "2004-07-28"]);
 
-  const planned = deriveMainBlockWaterColumnSyncContext("IO-003");
-  expect(planned.blockId).toBe("IO-003");
+  const planned = deriveMainBlockWaterColumnSyncContext("IO-087");
+  expect(planned.blockId).toBe("IO-087");
   expect(planned.materialization).toBe("planned");
   expect(planned.mode).toBe("geographic-shell");
   expect(planned.geographicReady).toBe(true);
@@ -99,10 +99,10 @@ test("3DB-05 keeps a planned geographic block synchronized as an empty Water Col
   if (!liveUrl) throw new Error("OCEANTWIN_LIVE_URL is required for 3DB-05 browser verification.");
 
   await page.setViewportSize({ width: 1280, height: 720 });
-  await page.addInitScript(({ key }) => localStorage.setItem(key, "IO-003"), { key: ACTIVE_BLOCK_KEY });
+  await page.addInitScript(({ key }) => localStorage.setItem(key, "IO-087"), { key: ACTIVE_BLOCK_KEY });
   await page.goto(liveUrl, { waitUntil: "domcontentloaded" });
 
-  await expect(page.getByTestId("scientific-context-bar")).toHaveAttribute("data-block-id", "IO-003", { timeout: 30_000 });
+  await expect(page.getByTestId("scientific-context-bar")).toHaveAttribute("data-block-id", "IO-087", { timeout: 30_000 });
   const openWaterColumn = page.getByRole("button", { name: "Open in Water Column 3D" });
   await expect(openWaterColumn).toBeEnabled({ timeout: 30_000 });
   await openWaterColumn.click();
@@ -111,7 +111,7 @@ test("3DB-05 keeps a planned geographic block synchronized as an empty Water Col
   // A planned block must withhold evidence, never render copied/synthetic data.
   const water = page.getByTestId("mpr-12-water-column-section");
   await expect(water).toBeVisible({ timeout: 30_000 });
-  await expect(water).toHaveAttribute("data-linked-block", "IO-003");
+  await expect(water).toHaveAttribute("data-linked-block", "IO-087");
   await expect(water).toHaveAttribute("data-linked-evidence", "planned");
   await expect(water.locator(".mpr-water-column-unavailable")).toContainText("Planned block · water-column evidence withheld");
   await expect(water).toContainText("No copied, extrapolated or synthetic ocean values are displayed.");

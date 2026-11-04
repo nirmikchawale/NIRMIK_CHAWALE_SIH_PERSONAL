@@ -18,7 +18,7 @@ async function clearPersistedScientificContext(page: import("@playwright/test").
 
 test("Phase 6 materialized-block controls are live across workspaces and deep-link safe", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto(`${process.env.OCEANTWIN_LIVE_URL!}#/telemetry`);
+  await page.goto(`${process.env.OCEANTWIN_LIVE_URL!.replace(/#.*$/, "")}#/telemetry`);
   await clearPersistedScientificContext(page);
   await page.reload();
 
@@ -34,7 +34,7 @@ test("Phase 6 materialized-block controls are live across workspaces and deep-li
   const blockControl = page.getByTestId("scientific-context-materialized-control");
   await expect(blockControl).toBeVisible();
   const select = page.getByLabel("Active materialized scientific block");
-  await expect(select.locator("option")).toHaveCount(36);
+  await expect(select.locator("option")).toHaveCount(105);
 
   await select.selectOption("IO-001");
   await expect(bar).toHaveAttribute("data-block-id", "IO-001", { timeout: 30_000 });
@@ -69,7 +69,7 @@ test("Phase 6 materialized-block controls are live across workspaces and deep-li
 
 test("Phase 6 context controls remain contained on a phone viewport", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(`${process.env.OCEANTWIN_LIVE_URL!}#/anomaly`);
+  await page.goto(`${process.env.OCEANTWIN_LIVE_URL!.replace(/#.*$/, "")}#/anomaly`);
 
   const bar = page.getByTestId("scientific-context-bar");
   await expect(bar).toBeVisible();

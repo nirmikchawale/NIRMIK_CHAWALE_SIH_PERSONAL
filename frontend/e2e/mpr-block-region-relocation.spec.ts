@@ -40,8 +40,8 @@ for (const width of [1440, 1024, 390, 320]) {
     expect(hudBox!.x).toBeGreaterThanOrEqual(dockBox!.x - 2);
     expect(hudBox!.x + hudBox!.width).toBeLessThanOrEqual(dockBox!.x + dockBox!.width + 2);
 
-    await hud.getByLabel("Active main block").selectOption("IO-047");
-    await expect(globe).toHaveAttribute("data-active-main-block", "IO-047");
+    await hud.getByLabel("Active main block").selectOption("IO-087");
+    await expect(globe).toHaveAttribute("data-active-main-block", "IO-087");
     await expect(globe).toHaveAttribute("data-active-main-block-materialization", "planned");
     await expect(hud).toContainText(/no copied or synthetic ocean values/i);
 
