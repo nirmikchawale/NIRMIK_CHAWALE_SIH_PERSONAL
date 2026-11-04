@@ -44,12 +44,12 @@ test("3DB-08 resolves only genuine native pilot variables and keeps planned bloc
   expect(assertMainBlockVariableSelection(integration, "currents")).toBe("currents");
   expect(() => assertMainBlockVariableSelection(integration, "chlorophyll")).toThrow(/unsupported main-block scientific variable/);
 
-  const planned = deriveMainBlockVariableIntegration(resolveMainBlock("IO-003"));
+  const planned = deriveMainBlockVariableIntegration(resolveMainBlock("IO-087"));
   expect(planned.ready).toBe(false);
   expect(planned.mode).toBe("locked");
   expect(planned.availableVariables).toEqual([]);
   expect(planned.sourceComponents).toEqual([]);
-  expect(() => deriveMainBlockVariableIntegration(resolveMainBlock("IO-003"), {
+  expect(() => deriveMainBlockVariableIntegration(resolveMainBlock("IO-087"), {
     shape: source.shape,
     variables: source.variables
   })).toThrow(/planned block IO-003 cannot receive scientific variable evidence/);

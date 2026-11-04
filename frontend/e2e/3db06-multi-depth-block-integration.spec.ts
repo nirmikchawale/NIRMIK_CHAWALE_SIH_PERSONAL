@@ -58,12 +58,12 @@ test("3DB-06 resolves exact source-backed pilot depth axes and keeps planned blo
   expect(resolveNativeDepthSelection("IO-001", first.coordinates.depth_m, "down", 30, first.shape.depth).depthM)
     .toBeCloseTo(453.937714, 6);
 
-  const planned = deriveMainBlockDepthIntegration(resolveMainBlock("IO-003"));
+  const planned = deriveMainBlockDepthIntegration(resolveMainBlock("IO-087"));
   expect(planned.ready).toBe(false);
   expect(planned.mode).toBe("locked");
   expect(planned.levelCount).toBe(0);
   expect(planned.depthsM).toEqual([]);
-  expect(() => deriveMainBlockDepthIntegration(resolveMainBlock("IO-003"), {
+  expect(() => deriveMainBlockDepthIntegration(resolveMainBlock("IO-087"), {
     depthsM: first.coordinates.depth_m,
     depthPositive: "down",
     declaredLevelCount: first.shape.depth

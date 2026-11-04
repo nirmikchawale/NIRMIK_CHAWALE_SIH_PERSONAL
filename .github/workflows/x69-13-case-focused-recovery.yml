@@ -1,0 +1,79 @@
+name: x69-13-case-focused-recovery
+# Read-only source-backed browser diagnosis of previously failed exact-head cases.
+# This is NOT a full Chromium or visual release certificate.
+on:
+  push:
+    branches: [diagnostics/x69-13-case-recovery-20261104]
+permissions:
+  contents: read
+jobs:
+  focused-science-13:
+    name: thirteen-real-chromium-science-contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install original source-export dependencies
+        run: python -m pip install -r backend/requirements.txt
+      - name: Verify native X69 manifests, GLORYS data digests and original science
+        run: |
+          set -euo pipefail
+          python -m scripts.audit_3db14_capabilities --check
+          python scripts/export_static_science.py --output frontend/public/science-static
+          python scripts/create_netcdf_browser_fixture.py --output frontend/public/samples/cf-profile-fixture.nc
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Build the unmodified application and changed tests
+        working-directory: frontend
+        env:
+          VITE_STATIC_SCIENCE: 'true'
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+      - name: Install real Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Discover only historical X69 failed test cases
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          npx playwright test -c playwright.live.config.ts e2e/mpr-block-region-relocation.spec.ts e2e/phase6-interaction-completion.spec.ts e2e/rui-context-header.spec.ts e2e/3db04-cesium-rendering-engine.spec.ts e2e/3db05-geographic-water-column-sync.spec.ts e2e/3db06-multi-depth-block-integration.spec.ts e2e/3db08-multi-variable-block-integration.spec.ts e2e/main-block-globe-integration.spec.ts \
+            --grep 'Block & Region owns the real globe controls|Phase 6 materialized-block controls|RUI-02 desktop moves|3DB-04 freezes a fail-closed|3DB-05 freezes baseline|3DB-05 keeps a planned|3DB-06 resolves exact source-backed|3DB-08 resolves only genuine|3DB-07 integrates 112|planned target enters the same Water Column' --list | tee /tmp/x69-thirteen-tests.txt
+          grep -q 'Total: 13 tests in 8 files' /tmp/x69-thirteen-tests.txt
+      - name: Run exactly thirteen source-backed Chromium acceptance cases (zero retries)
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174/#/explore
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > /tmp/x69-preview.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          ready=0
+          for attempt in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4174/ >/dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then cat /tmp/x69-preview.log; exit 1; fi
+          npx playwright test -c playwright.live.config.ts e2e/mpr-block-region-relocation.spec.ts e2e/phase6-interaction-completion.spec.ts e2e/rui-context-header.spec.ts e2e/3db04-cesium-rendering-engine.spec.ts e2e/3db05-geographic-water-column-sync.spec.ts e2e/3db06-multi-depth-block-integration.spec.ts e2e/3db08-multi-variable-block-integration.spec.ts e2e/main-block-globe-integration.spec.ts \
+            --grep 'Block & Region owns the real globe controls|Phase 6 materialized-block controls|RUI-02 desktop moves|3DB-04 freezes a fail-closed|3DB-05 freezes baseline|3DB-05 keeps a planned|3DB-06 resolves exact source-backed|3DB-08 resolves only genuine|3DB-07 integrates 112|planned target enters the same Water Column' --workers=1 --retries=0 --trace=retain-on-failure --reporter=list
+      - name: Preserve targeted original traces and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: x69-thirteen-science-tests
+          path: |
+            frontend/test-results
+            /tmp/x69-thirteen-tests.txt
+            /tmp/x69-preview.log
+          retention-days: 14
+          if-no-files-found: warn

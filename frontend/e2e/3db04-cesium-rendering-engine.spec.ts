@@ -104,7 +104,7 @@ test("3DB-04 freezes a fail-closed Cesium scientific rendering contract", () => 
 
   const baseline = resolveMainBlock(CURRENT_VERIFIED_BASELINE.id);
   const pilot = resolveMainBlock("IO-001");
-  const planned = resolveMainBlock("IO-003");
+  const planned = resolveMainBlock("IO-087");
 
   expect(canCesiumRenderMainBlock(baseline)).toBe(true);
   expect(canCesiumRenderMainBlock(pilot)).toBe(true);
