@@ -23,18 +23,41 @@ def test_all_41_source_frames_and_140_geographic_cells_are_immutable():
     cells = audit["blocks"]
     assert len(cells) == len(manifest["blocks"]) == 140
     assert len({cell["id"] for cell in cells}) == 140
-    assert len(manifest["payloads"]) == 41
-    assert len({(frame["block_id"], frame["date"]) for frame in manifest["payloads"]}) == 41
-    assert sum(cell["materialized"] for cell in cells) == 35
-    assert sum(not cell["materialized"] for cell in cells) == 105
-    assert sum(not cell["materialized"] and cell["geographicallyEligibleForMaterialization"] for cell in cells) == 70
+    # Preserve the original scientific snapshot on main, while also accepting
+    # the independently source-verified X69 native data expansion. Never
+    # reclassify land blocks, invent timestamps, or relax SHA verification.
+    expanded = manifest["phase"] == "X-69"
+    if not expanded:
+        assert manifest["phase"] == "3DB-11"
+    expected_pilots = 104 if expanded else 35
+    expected_frames = 110 if expanded else 41
+    expected_planned = 36 if expanded else 105
+    expected_eligible_planned = 1 if expanded else 70
+    assert len(manifest["payloads"]) == expected_frames
+    assert len({(frame["block_id"], frame["date"]) for frame in manifest["payloads"]}) == expected_frames
+    assert sum(cell["materialized"] for cell in cells) == expected_pilots
+    assert sum(not cell["materialized"] for cell in cells) == expected_planned
+    assert sum(not cell["materialized"] and cell["geographicallyEligibleForMaterialization"] for cell in cells) == expected_eligible_planned
     assert sum(not cell["materialized"] and not cell["geographicallyEligibleForMaterialization"] for cell in cells) == 35
     assert sum(len(cell["availableDates"]) > 1 for cell in cells) == 6
     assert not any(cell["materialized"] and cell["oceanRelevance"] == "land" for cell in cells)
     assert all(cell["independentModelObservationValidated"] is False for cell in cells)
     assert audit["verifiedBaselineSeparateFrom140"]["id"] == "BASE-GLORYS-001"
     indexed = {(block["id"], p["date"]): p for block in cells for p in block["sourcePayloads"]}
-    assert len(indexed) == 41
+    assert len(indexed) == expected_frames
+    if expanded:
+        x69 = manifest["x69_parallel"]
+        original_41 = x69["original_41_payload_sha256"]
+        assert len(original_41) == 41
+        assert len(x69["block_ids"]) == len(set(x69["block_ids"])) == 69
+        assert "IO-087" not in x69["block_ids"]
+        reserved = next(cell for cell in manifest["blocks"] if cell["id"] == "IO-087")
+        assert reserved["materialization"] == "planned"
+        assert reserved["available_dates"] == reserved["payloads"] == []
+        indexed_by_path = {item["path"]: item["sha256"] for item in manifest["payloads"]}
+        for path, original_digest in original_41.items():
+            assert indexed_by_path[path] == original_digest, path
+            assert hashlib.sha256((BLOCKS / path).read_bytes()).hexdigest() == original_digest, path
     for frame in manifest["payloads"]:
         name = (frame["block_id"], frame["date"])
         assert indexed[name]["sha256"] == frame["sha256"]

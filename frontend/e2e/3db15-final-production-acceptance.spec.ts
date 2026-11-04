@@ -27,15 +27,15 @@ const locked = blocks.filter((block) => !block.materialized);
 
 test("3DB-15 accepts only canonical source-backed render contracts; missing blocks remain locked", () => {
   expect(report.summary).toMatchObject({
-    logicalBlocks: 140, sourceBackedPilots: 35, plannedBlocks: 105,
-    multiDatePilots: 6, sourcePayloadFrames: 41, landBlocksMaterialized: 0,
+    logicalBlocks: 140, sourceBackedPilots: 104, plannedBlocks: 36,
+    multiDatePilots: 6, sourcePayloadFrames: 110, landBlocksMaterialized: 0,
     independentlyObservationValidatedPilots: 0
   });
   expect(blocks).toHaveLength(140);
   expect(new Set(blocks.map((block) => block.id)).size).toBe(140);
-  expect(pilots).toHaveLength(35);
-  expect(locked).toHaveLength(105);
-  expect(pilots.reduce((count, block) => count + block.sourcePayloads.length, 0)).toBe(41);
+  expect(pilots).toHaveLength(104);
+  expect(locked).toHaveLength(36);
+  expect(pilots.reduce((count, block) => count + block.sourcePayloads.length, 0)).toBe(110);
   for (const block of pilots) {
     const runtime = deriveMainBlockCapabilities(resolveMainBlock(block.id));
     expect(block.sourceSha256VerifiedByAudit).toBe(true);
@@ -67,7 +67,7 @@ test("3DB-15 accepts only canonical source-backed render contracts; missing bloc
   expect(blocks.some((block) => block.id === "BASE-GLORYS-001")).toBe(false);
 });
 
-test("3DB-15 published production serves each of the 41 authentic pilot frames unchanged", async ({ request }) => {
+test("3DB-15 published production serves each of the 110 authentic pilot frames unchanged", async ({ request }) => {
   test.setTimeout(180_000);
   const url = process.env.OCEANTWIN_LIVE_URL;
   if (!url) throw new Error("OCEANTWIN_LIVE_URL is required for 3DB-15 production proof");
@@ -87,7 +87,7 @@ test("3DB-15 published production serves each of the 41 authentic pilot frames u
       validated += 1;
     }
   }
-  expect(validated).toBe(41);
+  expect(validated).toBe(110);
 });
 
 test("3DB-15 renders a geographically distinct genuine pilot in synchronized Water Column", async ({ page }) => {

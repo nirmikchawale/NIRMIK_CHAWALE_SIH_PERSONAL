@@ -6,21 +6,21 @@ async function startFromBaseline(page: Page) {
   await page.addInitScript((storageKey) => localStorage.removeItem(storageKey), ACTIVE_BLOCK_KEY);
 }
 
-test("3DB-07 exposes 112 ocean-intersecting blocks and exactly 35 source-backed pilots", async ({ page }) => {
+test("3DB-07 exposes 112 ocean-intersecting blocks and exactly 104 source-backed pilots", async ({ page }) => {
   await startFromBaseline(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(process.env.OCEANTWIN_LIVE_URL!);
 
   const launcher = page.getByTestId("phase35-block-launcher");
   await expect(launcher).toBeVisible();
-  await expect(launcher).toContainText("35 source-backed pilots");
+  await expect(launcher).toContainText("104 source-backed pilots");
   await launcher.click();
 
   const dialog = page.getByRole("dialog", { name: "Indian Ocean Main Block Engine" });
   await expect(dialog).toBeVisible();
   await expect(dialog.locator(".phase35-block-cell")).toHaveCount(112);
   await expect(dialog.getByTestId("phase35-materialization-summary")).toContainText("SOURCE-BACKED PILOTS");
-  await expect(dialog.getByTestId("phase35-materialization-summary")).toContainText("35");
+  await expect(dialog.getByTestId("phase35-materialization-summary")).toContainText("104");
   await expect(dialog.getByTestId("phase35-materialization-summary")).toContainText("MULTI-DATE PILOTS");
   await expect(dialog.getByText("LAND-ONLY EXCLUDED")).toBeVisible();
   await expect(dialog.getByText("28", { exact: true })).toBeVisible();
@@ -33,10 +33,10 @@ test("3DB-07 exposes 112 ocean-intersecting blocks and exactly 35 source-backed 
   await expect(dialog.getByText("MATERIALIZED · SOURCE-BACKED")).toBeVisible();
   await expect(dialog.getByText("2004-03-15 · 2004-07-28")).toBeVisible();
 
-  const target = dialog.locator('[data-block-id="IO-047"]');
+  const target = dialog.locator('[data-block-id="IO-087"]');
   await expect(target).toHaveAttribute("data-materialization", "planned");
   await target.click();
-  await expect(dialog.getByText("IO-047", { exact: true })).toBeVisible();
+  await expect(dialog.getByText("IO-087", { exact: true })).toBeVisible();
   await expect(dialog.getByText("LOGICAL TARGET · NOT YET DOWNLOADED")).toBeVisible();
   await expect(dialog.getByText(/SCIENTIFIC RENDERER LOCKED/)).toBeVisible();
 });
@@ -49,13 +49,14 @@ test("planned-region browsing cannot replace the active scientific renderer sour
   const sourceBefore = await page.locator(".ocean-workbench").getAttribute("data-explore-source");
   await page.getByTestId("phase35-block-launcher").click();
   const dialog = page.getByRole("dialog", { name: "Indian Ocean Main Block Engine" });
-  await dialog.getByLabel("Region").selectOption({ label: "Bay of Bengal" });
+  await dialog.getByLabel("Region").selectOption({ label: "Central Arabian Sea" });
 
   const filteredCount = await dialog.locator(".phase35-block-cell").count();
   expect(filteredCount).toBeGreaterThan(0);
   expect(filteredCount).toBeLessThan(112);
 
-  const planned = dialog.locator('[data-materialization="planned"]').first();
+  const planned = dialog.locator('[data-block-id="IO-087"]');
+  await expect(planned).toHaveAttribute("data-materialization", "planned");
   await planned.click();
   await expect(page.locator(".ocean-workbench")).toHaveAttribute("data-explore-source", sourceBefore ?? "glorys");
   const activeStored = await page.evaluate((storageKey) => localStorage.getItem(storageKey), ACTIVE_BLOCK_KEY);

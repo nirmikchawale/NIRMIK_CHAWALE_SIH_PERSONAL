@@ -18,7 +18,7 @@ def test_phase35b_manifest_scientific_contract() -> None:
     manifest = _load(MANIFEST_PATH)
 
     assert manifest["schema"] == "oceancanvas-main-block-manifest-v1"
-    assert manifest["phase"] in {"3DB-02", "3DB-11"}
+    assert manifest["phase"] in {"3DB-02", "3DB-11", "X-69"}
     assert manifest["target_domain"] == {
         "west": 60.0,
         "east": 100.0,

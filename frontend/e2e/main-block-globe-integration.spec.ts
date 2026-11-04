@@ -20,15 +20,15 @@ test("3DB-07 integrates 112 ocean-intersecting targets into the primary Cesium E
   await expect(globe).toHaveAttribute("data-main-block-count", "112");
   await expect(globe).toHaveAttribute("data-active-main-block", "BASE-GLORYS-001");
   await expect(hud.getByText("112 retained", { exact: true })).toBeVisible();
-  await expect(hud.getByText("35 materialized", { exact: true })).toBeVisible();
+  await expect(hud.getByText("104 materialized", { exact: true })).toBeVisible();
   await expect(hud.getByText("28", { exact: true })).toBeVisible();
 
   const selector = hud.getByLabel("Active main block");
   await expect(selector.locator("option")).toHaveCount(113);
   await expect(selector.locator('option[value="BASE-GLORYS-001"]')).toHaveCount(0);
-  await selector.selectOption("IO-047");
+  await selector.selectOption("IO-087");
 
-  await expect(globe).toHaveAttribute("data-active-main-block", "IO-047");
+  await expect(globe).toHaveAttribute("data-active-main-block", "IO-087");
   await expect(globe).toHaveAttribute("data-active-main-block-materialization", "planned");
   await expect(hud.getByText("Planned target", { exact: true })).toBeVisible();
   await expect(hud.getByText(/no copied or synthetic ocean values/i)).toBeVisible();
@@ -39,14 +39,14 @@ test("planned target enters the same Water Column 3D workflow without fabricated
   await openExplore(page);
 
   const hud = page.getByTestId("integrated-main-block-hud");
-  await hud.getByLabel("Active main block").selectOption("IO-047");
+  await hud.getByLabel("Active main block").selectOption("IO-087");
   await hud.getByRole("button", { name: "Open in Water Column 3D" }).click();
 
   // The canonical MPR-12 Water Column section replaces the removed legacy
   // placeholder renderer. Planned geometry must NEVER show synthetic values.
   const water = page.getByTestId("mpr-12-water-column-section");
   await expect(water).toBeVisible();
-  await expect(water).toHaveAttribute("data-linked-block", "IO-047");
+  await expect(water).toHaveAttribute("data-linked-block", "IO-087");
   await expect(water).toHaveAttribute("data-linked-evidence", "planned");
   await expect(water.locator(".mpr-water-column-unavailable")).toContainText("Planned block · water-column evidence withheld");
   await expect(water).toContainText("No copied, extrapolated or synthetic ocean values are displayed.");

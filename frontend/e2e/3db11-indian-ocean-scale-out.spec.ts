@@ -6,7 +6,7 @@ import { INDIAN_OCEAN_MAIN_BLOCKS } from "../src/main-block-engine";
 const ADDED_REGION_BLOCKS = ["IO-082", "IO-066", "IO-059", "IO-122", "IO-130", "IO-030"] as const;
 
 test("3DB-11 newly acquired Indian Ocean regions resolve to independent render-ready pilots", () => {
-  expect(PHASE35B_PILOT_IDS).toHaveLength(35);
+  expect(PHASE35B_PILOT_IDS).toHaveLength(104);
   for (const id of ADDED_REGION_BLOCKS) {
     const block = resolveMainBlock(id);
     const ability = deriveMainBlockCapabilities(block);
@@ -21,7 +21,7 @@ test("3DB-11 newly acquired Indian Ocean regions resolve to independent render-r
 });
 
 test("3DB-11 keeps unmaterialized regions locked and the baseline separate", () => {
-  const planned = resolveMainBlock("IO-047");
+  const planned = resolveMainBlock("IO-087");
   expect(planned.materialization).toBe("planned");
   const ability = deriveMainBlockCapabilities(planned);
   expect(ability.renderReady).toBe(false);

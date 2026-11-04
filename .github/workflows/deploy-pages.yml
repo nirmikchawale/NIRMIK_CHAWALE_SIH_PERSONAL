@@ -122,6 +122,83 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+
+  verify-published-native-blocks:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: deploy
+    steps:
+      - name: Checkout exact published main source manifest
+        uses: actions/checkout@v4
+      - name: Independently verify live manifest and every published original frame
+        env:
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          import time
+          from pathlib import Path
+          from urllib.error import HTTPError, URLError
+          from urllib.request import urlopen
+
+          root = Path("frontend/public/main-blocks")
+          original_manifest = (root / "manifest.json").read_bytes()
+          manifest = json.loads(original_manifest)
+          base = os.environ["PAGE_URL"].rstrip("/") + "/main-blocks/"
+
+          def published(path, *, expected_sha=None):
+              last = None
+              for attempt in range(1, 11):
+                  try:
+                      with urlopen(base + path, timeout=30) as response:
+                          if response.status != 200:
+                              raise RuntimeError(f"HTTP {response.status}: {path}")
+                          data = response.read()
+                      if expected_sha is not None and hashlib.sha256(data).hexdigest() != expected_sha:
+                          raise ValueError("Deployed SHA differs from exact checked-out main")
+                      return data
+                  except (OSError, HTTPError, URLError, RuntimeError, ValueError) as exc:
+                      last = exc
+                      if attempt < 10:
+                          time.sleep(2)
+              raise RuntimeError(f"Live Pages evidence mismatch: {path}: {last}")
+
+          original_manifest_sha = hashlib.sha256(original_manifest).hexdigest()
+          remote_manifest = published("manifest.json", expected_sha=original_manifest_sha)
+          assert remote_manifest == original_manifest, "Deployed manifest byte identity drift"
+          blocks = manifest["blocks"]
+          pilots = set(manifest["pilot_ids"])
+          payloads = manifest["payloads"]
+          assert len(blocks) == 140 and len(pilots) == manifest["integrity"]["pilot_block_count"]
+          assert len(payloads) == len(pilots) + manifest["integrity"]["multi_date_pilot_count"]
+          assert manifest["integrity"]["land_blocks_materialized"] == 0
+          for flag in ("synthetic_measurements", "synthetic_timestamps",
+                       "synthetic_coordinates", "synthetic_depths",
+                       "vertical_component_available"):
+              assert manifest["integrity"][flag] is False, flag
+          paths = set()
+          for record in payloads:
+              path = record["path"]
+              assert path.startswith("data/") and ".." not in Path(path).parts
+              assert path not in paths, "Duplicate source asset"
+              paths.add(path)
+              expected = record["sha256"]
+              assert hashlib.sha256((root / path).read_bytes()).hexdigest() == expected
+              published(path, expected_sha=expected)
+          if manifest.get("phase") == "X-69":
+              assert len(pilots) == 104 and len(payloads) == 110
+              assert len(manifest["x69_parallel"]["block_ids"]) == 69
+              io087 = next(block for block in blocks if block["id"] == "IO-087")
+              assert io087["materialization"] == "planned"
+              assert io087["payloads"] == io087["available_dates"] == []
+              assert len(manifest["x69_parallel"]["original_41_payload_sha256"]) == 41
+          print(f"Live Pages source originals verified: {len(payloads)}/{len(payloads)}; "
+                f"exact manifest SHA256 {original_manifest_sha}; phase {manifest['phase']}.")
+          PY
+
   verify-public:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest

@@ -99,12 +99,12 @@ function currentsSlice(
 
 test("3DB-04 freezes a fail-closed Cesium scientific rendering contract", () => {
   expect(MAIN_BLOCK_CESIUM_RENDERER_VERSION).toBe("3db-04-v1");
-  expect(PHASE35B_PILOT_IDS).toHaveLength(35);
+  expect(PHASE35B_PILOT_IDS).toHaveLength(104);
   expect(PHASE35B_MULTI_DATE_PILOT_IDS).toHaveLength(6);
 
   const baseline = resolveMainBlock(CURRENT_VERIFIED_BASELINE.id);
   const pilot = resolveMainBlock("IO-001");
-  const planned = resolveMainBlock("IO-003");
+  const planned = resolveMainBlock("IO-087");
 
   expect(canCesiumRenderMainBlock(baseline)).toBe(true);
   expect(canCesiumRenderMainBlock(pilot)).toBe(true);

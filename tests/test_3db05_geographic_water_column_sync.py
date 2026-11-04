@@ -18,14 +18,14 @@ def test_3db05_preserves_materialization_and_scientific_integrity_truth() -> Non
     manifest = _manifest()
     blocks = manifest["blocks"]
 
-    assert manifest["phase"] == "3DB-11"
+    assert manifest["phase"] in {"3DB-11", "X-69"}
     assert manifest["integrity"]["logical_block_count"] == 140
-    assert manifest["integrity"]["pilot_block_count"] == 35
+    assert manifest["integrity"]["pilot_block_count"] == 104
     assert manifest["integrity"]["multi_date_pilot_count"] == 6
     assert manifest["integrity"]["land_blocks_materialized"] == 0
-    assert len(manifest["payloads"]) == 41
-    assert sum(block["materialization"] == "pilot" for block in blocks) == 35
-    assert sum(block["materialization"] == "planned" for block in blocks) == 105
+    assert len(manifest["payloads"]) == 110
+    assert sum(block["materialization"] == "pilot" for block in blocks) == 104
+    assert sum(block["materialization"] == "planned" for block in blocks) == 36
 
     integrity = manifest["integrity"]
     assert integrity["synthetic_measurements"] is False

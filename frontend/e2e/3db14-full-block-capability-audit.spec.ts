@@ -9,8 +9,8 @@ const report = JSON.parse(readFileSync(new URL("../public/main-blocks/capability
 
 test("3DB-14 audits every logical block against the live TS scientific render gates", () => {
   expect(report.summary).toMatchObject({
-    logicalBlocks: 140, sourceBackedPilots: 35, plannedBlocks: 105,
-    multiDatePilots: 6, sourcePayloadFrames: 41, landBlocksMaterialized: 0,
+    logicalBlocks: 140, sourceBackedPilots: 104, plannedBlocks: 36,
+    multiDatePilots: 6, sourcePayloadFrames: 110, landBlocksMaterialized: 0,
     independentlyObservationValidatedPilots: 0
   });
   expect(INDIAN_OCEAN_MAIN_BLOCKS).toHaveLength(140);

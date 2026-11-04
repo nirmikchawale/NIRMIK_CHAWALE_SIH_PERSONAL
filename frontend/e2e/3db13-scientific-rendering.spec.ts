@@ -20,8 +20,8 @@ async function openExplore(page: import("@playwright/test").Page) {
 
 test("3DB-13 real source SHA-256 passes; corrupted bytes and missing manifest digest fail closed", async () => {
   expect(MAIN_BLOCK_FRAME_INTEGRITY_VERSION).toBe("3db-13-v1");
-  expect(PHASE35B_PILOT_IDS).toHaveLength(35);
-  expect(manifest.integrity).toMatchObject({ logical_block_count: 140, pilot_block_count: 35 });
+  expect(PHASE35B_PILOT_IDS).toHaveLength(104);
+  expect(manifest.integrity).toMatchObject({ logical_block_count: 140, pilot_block_count: 104 });
   await expect(assertPilotFrameSha256(buffer(bytes), record.sha256, "IO-001", record.date)).resolves.toBeUndefined();
   const corrupt = Uint8Array.from(bytes);
   corrupt[128] ^= 1;
@@ -33,7 +33,7 @@ test("3DB-13 globe pilot inventory and Water Column show scientifically truthful
   if (!process.env.OCEANTWIN_LIVE_URL) throw new Error("OCEANTWIN_LIVE_URL required");
   await openExplore(page);
   const hud = page.getByTestId("integrated-main-block-hud");
-  await expect(hud.getByText("35 materialized", { exact: true })).toBeVisible({ timeout: 30_000 });
+  await expect(hud.getByText("104 materialized", { exact: true })).toBeVisible({ timeout: 30_000 });
   await hud.getByLabel("Active main block").selectOption("IO-001");
   const enter = page.getByRole("button", { name: "Open in Water Column 3D" });
   await expect(enter).toBeEnabled({ timeout: 30_000 });
