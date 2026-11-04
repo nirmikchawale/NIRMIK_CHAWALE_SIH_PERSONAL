@@ -52,7 +52,7 @@ test("3DB-08 resolves only genuine native pilot variables and keeps planned bloc
   expect(() => deriveMainBlockVariableIntegration(resolveMainBlock("IO-087"), {
     shape: source.shape,
     variables: source.variables
-  })).toThrow(/planned block IO-003 cannot receive scientific variable evidence/);
+  })).toThrow(/planned block IO-087 cannot receive scientific variable evidence/);
 });
 
 test("3DB-08 fails closed on missing current components, unsupported variables and corrupt source metadata", () => {

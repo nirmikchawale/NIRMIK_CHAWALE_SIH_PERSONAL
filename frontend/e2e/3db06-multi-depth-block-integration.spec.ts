@@ -67,7 +67,7 @@ test("3DB-06 resolves exact source-backed pilot depth axes and keeps planned blo
     depthsM: first.coordinates.depth_m,
     depthPositive: "down",
     declaredLevelCount: first.shape.depth
-  })).toThrow(/planned block IO-003 cannot receive scientific depth values/);
+  })).toThrow(/planned block IO-087 cannot receive scientific depth values/);
 });
 
 test("3DB-06 live pilot Water Column uses the complete native depth axis", async ({ page }) => {

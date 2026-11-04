@@ -18,7 +18,7 @@ async function clearPersistedScientificContext(page: import("@playwright/test").
 
 test("Phase 6 materialized-block controls are live across workspaces and deep-link safe", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto(`${process.env.OCEANTWIN_LIVE_URL!}#/telemetry`);
+  await page.goto(`${process.env.OCEANTWIN_LIVE_URL!.replace(/#.*$/, "")}#/telemetry`);
   await clearPersistedScientificContext(page);
   await page.reload();
 
@@ -69,7 +69,7 @@ test("Phase 6 materialized-block controls are live across workspaces and deep-li
 
 test("Phase 6 context controls remain contained on a phone viewport", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(`${process.env.OCEANTWIN_LIVE_URL!}#/anomaly`);
+  await page.goto(`${process.env.OCEANTWIN_LIVE_URL!.replace(/#.*$/, "")}#/anomaly`);
 
   const bar = page.getByTestId("scientific-context-bar");
   await expect(bar).toBeVisible();
