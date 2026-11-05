@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { ComparisonDirectoryNav } from "../components/ComparisonDirectoryNav";
+import { CURRENT_VERIFIED_BASELINE } from "../main-block-engine";
+import {
+  isPhase35bPilotId,
+  publishActiveMainBlockId,
+  readActiveMainBlockId,
+  subscribeActiveMainBlock
+} from "../main-block-runtime";
 
 import type {
   ComparisonLevel,
@@ -303,8 +310,12 @@ export function ComparisonPage({
   provenance,
   onProfileChange
 }: Props) {
+  const [activeBlockId, setActiveBlockId] = useState(readActiveMainBlockId);
+  const pilotComparisonUnavailable = isPhase35bPilotId(activeBlockId);
   const summary = detail?.summary;
   const [selectedLevelIndex, setSelectedLevelIndex] = useState(0);
+
+  useEffect(() => subscribeActiveMainBlock(setActiveBlockId), []);
 
   useEffect(() => {
     setSelectedLevelIndex(0);
@@ -347,19 +358,19 @@ export function ComparisonPage({
             <span>OBSERVATION SOURCES</span>
             <h3>Select verified Argo evidence</h3>
           </div>
-          <small>Provider-QC accepted source profiles only</small>
+          <small>{pilotComparisonUnavailable ? "Comparison availability depends on the selected scientific block" : "Provider-QC accepted source profiles only"}</small>
         </header>
         <div className="comparison-source-grid">
           <div className="comparison-selector-card">
             <label>
               Verified Argo profile
               <select
-                value={selectedProfileId}
-                disabled={profiles.length === 0}
+                value={pilotComparisonUnavailable ? "" : selectedProfileId}
+                disabled={pilotComparisonUnavailable || profiles.length === 0}
                 onChange={(event) => onProfileChange(event.target.value)}
               >
-                {profiles.length === 0 && <option value="">No verified profile available</option>}
-                {profiles.map((profile) => (
+                {(pilotComparisonUnavailable || profiles.length === 0) && <option value="">{pilotComparisonUnavailable ? `No matched profiles for ${activeBlockId}` : "No verified profile available"}</option>}
+                {!pilotComparisonUnavailable && profiles.map((profile) => (
                   <option key={profile.profile_id} value={profile.profile_id}>
                     {profile.platform_id} · cycle {profile.cycle} {profile.direction}
                   </option>
@@ -367,8 +378,8 @@ export function ComparisonPage({
               </select>
             </label>
             <div className="comparison-selector-meta">
-              <span>{profiles.length} verified comparison profile{profiles.length === 1 ? "" : "s"}</span>
-              <strong>{summary ? `Argo ${summary.platform_id} · cycle ${summary.cycle}` : "Awaiting profile"}</strong>
+              <span>{pilotComparisonUnavailable ? "Argo comparison not attached to this block" : `${profiles.length} verified comparison profile${profiles.length === 1 ? "" : "s"}`}</span>
+              <strong>{pilotComparisonUnavailable ? activeBlockId : summary ? `Argo ${summary.platform_id} · cycle ${summary.cycle}` : "Awaiting profile"}</strong>
             </div>
           </div>
           <article className="comparison-source-summary">
@@ -380,16 +391,33 @@ export function ComparisonPage({
             <div>
               <span>OBSERVATION SOURCE</span>
               <strong>{provenance?.observations.provider ?? "Ifremer Argo GDAC"}</strong>
-              <small>{provenance?.observations.doi ?? "Verified comparison evidence"}</small>
+              <small>{pilotComparisonUnavailable ? "Reference provider only · no matched profiles attached to this block" : provenance?.observations.doi ?? "Verified comparison evidence"}</small>
             </div>
           </article>
         </div>
       </section>
 
-      {loading ? (
+      {pilotComparisonUnavailable ? (
+        <section className="comparison-state-card comparison-unavailable" aria-labelledby="comparison-unavailable-heading">
+          <h3 id="comparison-unavailable-heading">No Argo comparisons are attached to {activeBlockId}</h3>
+          <p>
+            This pilot block has source-backed model data, but no matched Argo comparison bundle.
+            Profiles and metrics from the verified reference baseline cannot be used to validate this block.
+          </p>
+          <p>
+            Switch to BASE-GLORYS-001 to view its verified Argo comparisons.
+            This changes the active scientific block across the workspace.
+          </p>
+          <button type="button" onClick={() => publishActiveMainBlockId(CURRENT_VERIFIED_BASELINE.id)}>
+            View verified baseline Argo comparisons
+          </button>
+        </section>
+      ) : loading ? (
         <div className="comparison-state-card">Loading verified matched-depth evidence…</div>
       ) : !detail || !summary ? (
-        <div className="comparison-state-card">Select a verified Argo comparison profile.</div>
+        <div className="comparison-state-card">{profiles.length === 0
+          ? "Verified Argo comparison evidence is loading or unavailable. If this persists, refresh the workspace to retry."
+          : "Select a verified Argo comparison profile."}</div>
       ) : (
         <>
           <section id="comparison-matchups" className="comparison-directory-section" data-comparison-home="matchups">

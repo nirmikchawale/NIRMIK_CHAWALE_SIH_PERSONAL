@@ -285,3 +285,22 @@
   .ocean-workbench .comparison-page :focus-visible { outline-color:Highlight; }
   .ocean-workbench .comparison-page :is(.positive-bias,.negative-bias) { color:CanvasText!important; }
 }
+.ocean-workbench .comparison-unavailable { text-align:left; }
+.ocean-workbench .comparison-unavailable h3 { margin:0 0 12px; }
+.ocean-workbench .comparison-unavailable p { max-width:75ch; line-height:1.6; }
+.ocean-workbench .comparison-unavailable button {
+  min-height:44px;
+  max-width:100%;
+  padding:12px 18px;
+  border:1px solid var(--station-line);
+  border-radius:10px;
+  background:var(--station-raised);
+  color:var(--station-text);
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
+}
+.ocean-workbench .comparison-unavailable button:focus-visible {
+  outline:3px solid var(--station-accent);
+  outline-offset:3px;
+}
