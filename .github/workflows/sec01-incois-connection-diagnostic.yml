@@ -1,0 +1,43 @@
+name: sec01-one-shot-INCOIS-DAP2-TLS-probe
+on:
+  push:
+    branches:
+      - diagnostic/sec01-incois-tls-20261105
+permissions:
+  contents: read
+jobs:
+  real-provider-connection:
+    name: INCOIS-two-DAP2-datasets-verified-TLS
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify original live provider endpoints and pinned-or-CA TLS
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/verify_incois_opendap.py --output /tmp/sec01-incois-verified.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('/tmp/sec01-incois-verified.json').read_text())
+          expected={'incois_argo_10d_VAM','IRS_chlorophyll_datasets'}
+          assert p['provider']=='INCOIS' and p['protocol']=='OPeNDAP DAP2'
+          assert p['integrity']['real_network_endpoints_checked'] is True
+          assert p['integrity']['placeholder_endpoints'] is False
+          assert set(x['dataset_id'] for x in p['sources']) == expected
+          for x in p['sources']:
+              assert len(x['dds_sha256'])==64 and len(x['das_sha256'])==64
+              assert x['transport_tls_ca_verified'] is True or (
+                  x['transport_leaf_cert_sha256'] is not None and
+                  len(x['transport_leaf_cert_sha256']) == 64
+              )
+              print('REAL_PROVIDER_VALIDATED',x['dataset_id'],
+                    'CA_TLS=',x['transport_tls_ca_verified'],
+                    'PINNED_FINGERPRINT=',bool(x['transport_leaf_cert_sha256']))
+          PY
