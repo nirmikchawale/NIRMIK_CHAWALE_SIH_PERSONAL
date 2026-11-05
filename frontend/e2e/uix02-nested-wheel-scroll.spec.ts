@@ -58,7 +58,9 @@ test("UIX-02 nested scroll consumes wheel until boundary then delegates to Telem
 
   // Nested scroll at top must yield upward to that SAME actual page scroller.
   await inner.evaluate(el => { el.scrollTop = 0; });
-  await owner.evaluate(el => { el.scrollTop = 200; });
+  // Avoid a CSS smooth-scroll animation racing the wheel hit target in this
+  // test-created nested scroller. Production CSS and scroll behavior are unchanged.
+  await owner.evaluate(el => { el.style.scrollBehavior = "auto"; el.scrollTop = 200; });
   // Hover can auto-scroll the Telemetry ancestor; measuring beforehand gives
   // a stale beforeUp (observed public CI: 160 before, 380 after the wheel).
   await inner.hover();
