@@ -106,6 +106,20 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
     const focusId = window.requestAnimationFrame(focusSelectedCategory);
     // Wait for the overlay to become focusable after its opening visibility transition.
     const focusFallbackId = window.setTimeout(focusSelectedCategory, 190);
+    // Opening transitions can outlast the initial animation-frame/timer focus
+    // attempts under software-rendered WebGL. Retry ONCE at the actual drawer
+    // transition boundary, without stealing focus if a user already entered
+    // the directory and moved to another control.
+    const transitionDirectory = directoryRef.current;
+    const onOpeningTransitionEnd = (event: TransitionEvent) => {
+      if (event.target !== transitionDirectory) return;
+      if (event.propertyName === "transform" ||
+          event.propertyName === "opacity" ||
+          event.propertyName === "visibility") {
+        focusSelectedCategory();
+      }
+    };
+    transitionDirectory?.addEventListener("transitionend", onOpeningTransitionEnd);
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -127,6 +141,7 @@ export function AppNavigation({ page, focusMode, onNavigate }: Props) {
     return () => {
       window.cancelAnimationFrame(focusId);
       window.clearTimeout(focusFallbackId);
+      transitionDirectory?.removeEventListener("transitionend", onOpeningTransitionEnd);
       window.removeEventListener("keydown", onKeyDown);
       // Explicit click/route navigation restores to its correct launcher.
       void previousFocus;

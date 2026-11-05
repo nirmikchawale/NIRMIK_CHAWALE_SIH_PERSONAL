@@ -1,0 +1,104 @@
+name: sec01g-two-original-failures-focused-chromium
+on:
+  push:
+    branches:
+      - diagnostic/sec01g-focus-wheel-20261105
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: sec01g-focused-real-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  two-genuine-focused-browser-cases:
+    name: MPR03-focus-and-UIX02-wheel-zero-retries
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Reuse verified unchanged build's original scientific assets only
+        uses: actions/download-artifact@v4
+        with:
+          name: final-mvp-verified-production-static
+          run-id: 41958073548
+          repository: nirmikchawale/NIRMIK_CHAWALE_SIH_PERSONAL
+          github-token: ${{ github.token }}
+          path: /tmp/sec01g-ref-dist
+      - name: Restore only immutable source-native payloads, never old JavaScript, CSS or HTML
+        shell: bash
+        run: |
+          set -euo pipefail
+          for d in science-static operational observations samples main-blocks; do
+            test -d "/tmp/sec01g-ref-dist/$d"
+            mkdir -p "frontend/public/$d"
+            cp -a "/tmp/sec01g-ref-dist/$d/." "frontend/public/$d/"
+          done
+          test -s frontend/public/science-static/manifest.json
+          test -s frontend/public/main-blocks/manifest.json
+          test -s frontend/public/observations/verified-profiles.json
+          find frontend/public/science-static frontend/public/main-blocks frontend/public/operational frontend/public/observations frontend/public/samples -type f -print0 | sort -z | xargs -0 sha256sum | sed 's#frontend/public/##' > /tmp/source-evidence.sha256
+          test -s /tmp/source-evidence.sha256
+      - name: Build only exact diagnostic candidate UI against immutable science files
+        working-directory: frontend
+        env:
+          VITE_STATIC_SCIENCE: 'true'
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+      - name: Independently compare rebuilt original scientific payload bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          for d in science-static operational observations samples main-blocks; do
+            test -d "frontend/dist/$d"
+          done
+          ( cd frontend/dist && sha256sum -c /tmp/source-evidence.sha256 )
+          test -s frontend/dist/cesiumStatic/Assets/Textures/NaturalEarthII/0/0/0.jpg
+      - name: Install genuine headless Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Discover only the two previously failed cases
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          npx playwright test -c playwright.live.config.ts e2e/mpr-03-workspace-navigation.spec.ts --grep 'MPR-03 directory keyboard trap' --list | tee /tmp/sec01g-focus-list.txt
+          grep -q '1 test in 1 file' /tmp/sec01g-focus-list.txt
+          npx playwright test -c playwright.live.config.ts e2e/uix02-nested-wheel-scroll.spec.ts --list | tee /tmp/sec01g-wheel-list.txt
+          grep -q '1 test in 1 file' /tmp/sec01g-wheel-list.txt
+      - name: One real focus and one real wheel case with zero retry
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > /tmp/sec01g-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          ready=0
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4174/ > /dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          test "$ready" -eq 1
+          npx playwright test -c playwright.live.config.ts e2e/mpr-03-workspace-navigation.spec.ts --grep 'MPR-03 directory keyboard trap' --workers=1 --retries=0 --trace=retain-on-failure --reporter=list
+          npx playwright test -c playwright.live.config.ts e2e/uix02-nested-wheel-scroll.spec.ts --workers=1 --retries=0 --trace=retain-on-failure --reporter=list
+      - name: Retain only two-case diagnostic traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec01g-focused-failure-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            /tmp/sec01g-http.log
+            /tmp/sec01g-focus-list.txt
+            /tmp/sec01g-wheel-list.txt
+          if-no-files-found: warn
+          retention-days: 7
