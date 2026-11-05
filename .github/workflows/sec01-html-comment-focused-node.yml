@@ -1,0 +1,22 @@
+name: sec01-html-comment-focused-node
+on:
+  push:
+    branches:
+      - security/sec01-html-comment-recovery-20261105
+permissions:
+  contents: read
+jobs:
+  single-security-suite:
+    name: sec01-node-security-22-cases
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax and full controller security tests only
+        run: |
+          node --check .github/scripts/release-conductor.cjs
+          node --check scripts/test_release_conductor.cjs
+          node --test scripts/test_release_conductor.cjs

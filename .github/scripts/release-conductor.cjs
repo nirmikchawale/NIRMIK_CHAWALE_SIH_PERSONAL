@@ -37,20 +37,38 @@ const CONFIG = Object.freeze({
 // Markdown code fences are documentation, never release authorization.
 function hasStandaloneEnrollmentMarker(body, marker) {
   let fence = null;
+  let htmlComment = false;
   for (const line of String(body || "").split(/\r?\n/)) {
-    const match = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
     if (fence) {
+      const match = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
       if (match && match[1][0] === fence.character &&
           match[1].length >= fence.length && /^\s*$/.test(match[2])) {
         fence = null;
       }
       continue;
     }
+    // HTML comments are documentation, not an explicit owner authorization.
+    // Exclude complete, multiline and unclosed comments before checking markers.
+    const beganInsideComment = htmlComment;
+    let visible = "";
+    let cursor = 0;
+    while (cursor < line.length) {
+      if (htmlComment) {
+        const end = line.indexOf("-->", cursor);
+        if (end < 0) { cursor = line.length; }
+        else { htmlComment = false; cursor = end + 3; }
+      } else {
+        const start = line.indexOf("<!--", cursor);
+        if (start < 0) { visible += line.slice(cursor); cursor = line.length; }
+        else { visible += line.slice(cursor, start); htmlComment = true; cursor = start + 4; }
+      }
+    }
+    const match = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(visible);
     if (match && (match[1][0] === "~" || !match[2].includes("`"))) {
       fence = { character: match[1][0], length: match[1].length };
       continue;
     }
-    if (line === marker) return true;
+    if (!beganInsideComment && line === marker) return true;
   }
   return false;
 }
