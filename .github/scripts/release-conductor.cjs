@@ -34,6 +34,27 @@ const CONFIG = Object.freeze({
   ])
 });
 
+// Markdown code fences are documentation, never release authorization.
+function hasStandaloneEnrollmentMarker(body, marker) {
+  let fence = null;
+  for (const line of String(body || "").split(/\r?\n/)) {
+    const match = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
+    if (fence) {
+      if (match && match[1][0] === fence.character &&
+          match[1].length >= fence.length && /^\s*$/.test(match[2])) {
+        fence = null;
+      }
+      continue;
+    }
+    if (match && (match[1][0] === "~" || !match[2].includes("`"))) {
+      fence = { character: match[1][0], length: match[1].length };
+      continue;
+    }
+    if (line === marker) return true;
+  }
+  return false;
+}
+
 function isEnrolled(pr, config = CONFIG) {
   if (!pr || pr.state !== "open" || pr.draft || pr.base?.ref !== config.main) {
     return false;
@@ -44,9 +65,7 @@ function isEnrolled(pr, config = CONFIG) {
   if (config.seededPRs.includes(pr.number)) return true;
   // Enrollment must be a standalone affirmative directive, not an
   // incidental quote in a checklist, explanatory paragraph or code snippet.
-  const marker = String(pr.body || "").split(/\r?\n/).some(line =>
-    line === config.enrollmentMarker
-  );
+  const marker = hasStandaloneEnrollmentMarker(pr.body, config.enrollmentMarker);
   return config.acceptedPrefixes.some(prefix => pr.head.ref.startsWith(prefix))
     && marker;
 }

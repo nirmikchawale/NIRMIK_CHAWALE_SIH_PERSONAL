@@ -47,6 +47,28 @@ test("draft PRs, forks, foreign authors and non-main targets are never eligible"
   } })), false);
   assert.equal(isEnrolled(makePR({ base: { ref:"legacy" } })), false);
 });
+test("fenced Markdown marker examples cannot enroll a release", () => {
+  const future = makePR({ number: 501, head: {
+    ...makePR().head, ref: "phase/PH001"
+  } });
+  const marker = CONFIG.enrollmentMarker;
+  for (const body of [
+    "```text\n" + marker + "\n```",
+    "~~~text\n" + marker + "\n~~~",
+    "````md\n" + marker + "\n````",
+    "````md\n```\n" + marker + "\n````",
+    "```\n" + marker,
+    "   ~~~text\n" + marker + "\n   ~~~",
+    "```text\n" + marker + "\n```\n> " + marker,
+    "    " + marker
+  ]) {
+    assert.equal(isEnrolled({...future, body}), false, JSON.stringify(body));
+  }
+  assert.equal(isEnrolled({...future, body:
+    "```text\n" + marker + "\n```\n" + marker}), true);
+  assert.equal(isEnrolled({...future, body: marker}), true);
+});
+
 test("future opt-in requires owner phase branch AND exact marker", () => {
   const future = makePR({number:501,head:{...makePR().head,ref:"phase/PH001"}});
   assert.equal(isEnrolled(future),false);
