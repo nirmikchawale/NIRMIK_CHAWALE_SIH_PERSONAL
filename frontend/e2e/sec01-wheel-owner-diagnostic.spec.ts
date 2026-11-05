@@ -64,7 +64,7 @@ test("SEC01 isolated original Telemetry nested-wheel upward boundary", async ({ 
     await page.mouse.wheel(0,160);
     await expect.poll(()=>owner.evaluate(el=>el.scrollTop)).toBeGreaterThan(beforeDown);
     await inner.evaluate(el => {el.scrollTop=0;});
-    await owner.evaluate(el => {el.scrollTop=200;});
+    await owner.evaluate(el => { el.style.scrollBehavior = "auto"; el.scrollTop=200; });
     await inner.hover();
     expect(await inner.evaluate(el=>el.scrollTop)).toBe(0);
     const beforeUp = await owner.evaluate(el=>el.scrollTop);
