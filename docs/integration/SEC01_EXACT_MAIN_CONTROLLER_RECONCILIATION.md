@@ -1,33 +1,35 @@
-# SEC-01 — Exact-main fail-closed release-controller security reconciliation
+# SEC-01 — Fail-closed release-conductor security reconciliation
 
-**Status: DRAFT / SECURITY REVIEW CANDIDATE — NOT MERGED OR DEPLOYED**
+**Status:** DRAFT — CURRENT-MAIN CERTIFICATION CANDIDATE; NOT MERGED OR DEPLOYED.
 
-## Exact-source checkpoint
+## Verified production parent
 - Repository: `nirmikchawale/NIRMIK_CHAWALE_SIH_PERSONAL`
-- Certified X69 production parent: `051f0fbd84fef4aaea2c95c85b16b758d660fabe`, PR #246. X69 postmerge Pages and 4/4 public Chromium passed at this parent; do not repeat X69's 110-source hashes as a diagnostic loop.
-- Candidate branch: `security/sec01-exact-main-controller-20261105`, one commit to be made with exactly four paths, never a rewrite of old draft PR #234.
-- Historical source patch: draft PR #234 head `594f296a9c8c3b9de85278d2e33436db0b7dc79d`. Three code/workflow/test blobs are copied unchanged from its audited four-file candidate; only this documentation is regenerated against current production.
+- Certified X69 science base: `051f0fbd84fef4aaea2c95c85b16b758d660fabe`
+- Subsequently certified UIX release: PR #252, merged commit `460192f7a48a7311134b929e16cbef18f8abac37`; postmerge 4/4 Chromium, public 4/4 Chromium and 110/110 live original scientific SHA-256 verified.
+- Security review PR: #250, existing branch `security/sec01-exact-main-controller-20261105` now reconciled with new public production in one two-parent security-branch merge commit. Never replace or rewrite the certified `main`.
+- Prior isolated controller candidate: `266f81de45e617b2a0ea1c1edb127c66a57e6e16` (two security commits from old X69 base); staged independently tested HTML-comment patch: `d80d8eb7f812b5b7af02c0f0a7a5cfc536783283`. Exact approved controller+test Git blobs are reused; the separate diagnostic-only workflow is NOT ported.
 
-## Confirmed main-controller risks
-1. `seededPRs: [202]` and `recoveryPRs: [202]` implicitly enroll an old recovery PR and excuse a red public main.
-2. `isEnrolled()` accepts an approval marker anywhere in PR body prose, including incidental descriptions.
-3. Controller does not recheck both the exact current main and PR head/base/draft just before calling GitHub merge.
-4. Any branch's PR CI workflow completion wakes a controller poll; keep trusted default-main-only workflow_run triggering and the existing 15-minute scheduled fallback.
+## Approved security scope — four paths only
+1. `.github/scripts/release-conductor.cjs`: default-deny historic #202 pre-enrollment and red-main bypass; enforce standalone opt-in outside fenced Markdown or HTML comments, owner/same-repo, non-draft eligible branches, exact-current-main and exact-head premerge compare-and-swap; distinguish MPR-sensitive paths without waiving genuinely applicable tests or science failures.
+2. `.github/workflows/release-conductor.yml`: limit `workflow_run` completion trigger to `main`, retain periodic polling, trusted checkout, no automatic repeat dispatch on missing prior checks.
+3. `scripts/test_release_conductor.cjs`: 22 focused Node security and mock-GitHub checks, including negative fenced/HTML-comment opt-in cases, race guards, MPR routing and unrelated scientific failure blocking.
+4. `docs/integration/SEC01_EXACT_MAIN_CONTROLLER_RECONCILIATION.md`: this current-main release evidence and category ledger.
 
-## Exactly four allowed paths
-1. `.github/scripts/release-conductor.cjs`: default-deny historic PRs, exact standalone explicit marker, no red-main exception, required MPR for actual affected UI/E2E/scope paths, hard block for triggered 3DB/science failure, final main/PR SHA race guard.
-2. `.github/workflows/release-conductor.yml`: scope `workflow_run.branches` to `main`.
-3. `scripts/test_release_conductor.cjs`: 20 focused Node security and mock-GitHub integration tests with syntax checks.
-4. `docs/integration/SEC01_EXACT_MAIN_CONTROLLER_RECONCILIATION.md`: this auditable release-gate ledger.
+No frontend/src, frontend/e2e, CSS, glass themes, evidence/data payloads, source-native timestamps/depths, 110 ocean originals, MPR verifier implementation or other workflow modifications.
 
-No scientific source measurements, frozen GLORYS/Argo baselines, model/observation metadata, 110 frame bytes, browser UI, CSS, 16 glass themes, or other workflow source changes.
+## Verification and applicability — do not mislabel failures
+- Controller security-only changes are **not UI/MPR scope**. The universal MPR job may genuinely FAIL its frontend-only scope assertion, with dependent jobs SKIPPED. It is NOT claimed to PASS, is not applicable to a controller-only change, and cannot be silently made mandatory/optional without an explicit category decision. Actual enforced GitHub-required checks and any triggered scientific/3DB checks still block if failing.
+- Require on the **new exact security head**, not stale prior head: original `ocean-canvas-release-conductor-tests` Node syntax and full **22/22** tests; `tests` Python PASS; `final-mvp` original science + hosted build + React/Cesium and 4/4 genuine browser shard PASS (as release-category requirement); immutable original science compared to current-main baseline. Do not restart an entire suite for an isolated provider/network fault; preserve #220 circuit-breaker and real provider TLS verification.
+- Independent assistant-led security diff review under owner project-wide solo policy #248; no third-party reviewer request, no fictitious approval. Retain branch/repository policy controls, and never use force-bypass or downgrade tests.
+- This branch is `security/`, not controller-eligible `phase/` or `release/`; PR remains DRAFT and no standalone marker appears in the PR description.
+- Do **NOT** merge or deploy on staging. The next release decision follows genuine exact-head applicable CI and a final main/head/file-scope check with `expected_head_sha` guard.
+- After separately certified merge, postmerge `tests`, `final-mvp`, `deploy-oceantwin-pages`, original 110/110 live native science SHA-256 and 4/4 public Chromium MUST independently PASS to mark LIVE.
 
-## Verification and safety gates
-- This is a `security/` branch, not auto-enrollable by the controller's `phase/` or `release/` gate; PR stays DRAFT with no standalone `OC-AUTO-RELEASE: approved` opt-in directive.
-- Trigger `ocean-canvas-release-conductor-tests` through this PR once and require real Node syntax + all tests genuine PASS on the exact candidate SHA. Also confirm normal Python/science/React/full browser CI as required by a reviewer-approved security-controller-only release category; do not count old-head runs as the new certificate.
-- The generic MPR scope workflow intentionally fails for controller-only paths. Report that genuine status as failure with dependent jobs skipped, not a PASS; validate category applicability independently. Never waive any GitHub-enforced required status, alter an MPR scope allowlist, or bypass an actual scientific/UI failure.
-- Resolve and independently document release scope and any code-review/branch-policy requirements before a guarded exact-head merge. Issue #248 standing owner authorization applies only after every applicable gate passes; issue #220 prohibits repetitive CI/Chromium/96-PNG loops.
-- After any future authorized merge, independently verify the new `main` and postmerge tests/Pages/public browser; do not claim LIVE before success. Preserve original draft PRs #234, #209 and #217 for reference without merging them.
+## Anti-loop and phase isolation
+Preserve previously certified SEC-01-G PR #252 and X69 exact production science, all 16 glassmorphism themes, older held drafts (#234, #209, #217, #242, #243, #247) and other unrelated work. Correct only a demonstrated failure fingerprint; no blind test reruns or speculative certification loop.
 
-## Handoff
-**First incomplete gate:** new draft PR exact-main CI + security-only gate classification. No merge/deploy in this staging step.
+## Gate ledger
+- Focused historical HTML-comment fix: run #41958242231, genuine PASS on staged diagnostic SHA; 22 Node tests.
+- Security-branch current-main reconciliation: PENDING exact-head CI.
+- Release integration: HOLD until all applicable exact-head gates PASS.
+- Postmerge/public certification: NOT STARTED for this security candidate.

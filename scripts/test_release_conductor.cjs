@@ -69,6 +69,31 @@ test("fenced Markdown marker examples cannot enroll a release", () => {
   assert.equal(isEnrolled({...future, body: marker}), true);
 });
 
+test("HTML comments and documentation cannot grant release enrollment", () => {
+  const future = makePR({ number: 501, head: {
+    ...makePR().head, ref: "release/SEC01"
+  } });
+  const marker = CONFIG.enrollmentMarker;
+  for (const body of [
+    "<!--\n" + marker + "\n-->",
+    "<!--\n" + marker,
+    "<!-- explained " + marker + " -->",
+    "intro<!--\n" + marker + "\n-->",
+    "~~~html\n<!--\n" + marker + "\n-->\n~~~",
+    "<!--\n~~~\n" + marker + "\n-->",
+    "    " + marker
+  ]) {
+    assert.equal(isEnrolled({...future, body}), false, JSON.stringify(body));
+  }
+  for (const body of [
+    "<!-- documentation -->\n" + marker,
+    "<!--\n```\n-->\n" + marker,
+    marker
+  ]) {
+    assert.equal(isEnrolled({...future, body}), true, JSON.stringify(body));
+  }
+});
+
 test("future opt-in requires owner phase branch AND exact marker", () => {
   const future = makePR({number:501,head:{...makePR().head,ref:"phase/PH001"}});
   assert.equal(isEnrolled(future),false);
