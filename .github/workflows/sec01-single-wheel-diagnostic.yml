@@ -1,0 +1,80 @@
+name: sec01-single-wheel-boundary-diagnostic
+
+on:
+  push:
+    branches:
+      - diagnostic/sec01-wheel-owner-20261105
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: sec01-single-wheel-20261105
+  cancel-in-progress: false
+
+jobs:
+  isolated-one-case:
+    name: one-real-chromium-case-zero-retries
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install browser dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Reuse exact failed SEC-01 final-MVP production-build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: final-mvp-verified-production-static
+          run-id: 41949343650
+          repository: nirmikchawale/NIRMIK_CHAWALE_SIH_PERSONAL
+          github-token: ${{ github.token }}
+          path: frontend/dist
+      - name: Require unchanged real static source and main-block manifest
+        run: |
+          test -s frontend/dist/science-static/manifest.json
+          test -s frontend/dist/main-blocks/manifest.json
+          test -s frontend/dist/index.html
+      - name: Install genuine Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Discover exactly one test
+        working-directory: frontend
+        run: |
+          npx playwright test -c playwright.live.config.ts e2e/sec01-wheel-owner-diagnostic.spec.ts --list | tee /tmp/sec01-wheel-list.txt
+          grep -q '1 test in 1 file' /tmp/sec01-wheel-list.txt
+      - name: Run one original-boundary test with event/target evidence (no retry)
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: http://127.0.0.1:4174
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory dist > /tmp/sec01-wheel-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          ready=0
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4174/ >/dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          test "$ready" -eq 1
+          npx playwright test -c playwright.live.config.ts e2e/sec01-wheel-owner-diagnostic.spec.ts --workers=1 --retries=0 --trace=retain-on-failure --reporter=list
+      - name: Retain only focused evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec01-one-wheel-case-${{ github.run_id }}
+          path: |
+            frontend/test-results
+            /tmp/sec01-wheel-list.txt
+            /tmp/sec01-wheel-server.log
+          if-no-files-found: warn
+          retention-days: 7
