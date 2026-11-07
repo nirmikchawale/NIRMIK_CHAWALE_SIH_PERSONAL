@@ -13,8 +13,16 @@ test("3DB-07 keeps only ocean-intersecting blocks and switches genuine pilot tim
 
   const globe = page.locator(".globe-visualization-layer.active .globe-shell");
   await expect(globe).toHaveAttribute("data-main-block-count", "112", { timeout: 30_000 });
+  // The block controls are intentionally gated by the real first-open
+  // orientation/loader. Finish that user-visible journey before asserting
+  // that Block & Region controls are actionable.
+  await expect(page.locator("#ocean-launch")).toHaveCount(0, { timeout: 60_000 });
+  const skip = page.getByRole("button", { name: "Skip journey", exact: true });
+  if (await skip.isVisible().catch(() => false)) await skip.click({ timeout: 15_000 });
+  await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 30_000 });
 
   const hud = page.getByTestId("integrated-main-block-hud");
+  await expect(hud).toHaveAttribute("data-intro-ready", "true");
   await expect(hud).toBeVisible();
   const selector = hud.getByLabel("Active main block");
   await expect(selector.locator("option")).toHaveCount(113);

@@ -1,0 +1,76 @@
+name: backlog05b-shard1-first-open-focused-diagnostic
+
+# Diagnostic-only, branch-scoped real public Chromium. Not a release gate
+# waiver, production deployment, or replacement for original 4/4 suites.
+on:
+  push:
+    branches:
+      - diagnostic/backlog05b-shard1-first-open-20261107
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backlog05b-shard1-focused-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  focused-public-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Verify live source is the original GLORYS-backed deployment
+        run: |
+          python - <<'PY'
+          import json
+          from urllib.request import urlopen
+          root = 'https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/'
+          with urlopen(root+'science-static/manifest.json', timeout=30) as response:
+              manifest=json.load(response)
+          integrity=manifest['model_source_integrity']
+          assert integrity['source']['sha256']=='b306ae1e4e13595688e994456e90e1ea59d4b76f3d1326e86710cf33efcf72c1'
+          assert integrity['scientific_facets']['source']=='MATERIALIZED'
+          assert integrity['scientific_facets']['observation']=='UNAVAILABLE'
+          print('Public native GLORYS model evidence verified; no provider-authentication claim')
+          PY
+      - name: Install browser dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Install genuine Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Discover exactly the three affected real Chromium cases
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          npx playwright test -c playwright.live.config.ts \
+            e2e/3db07-time-aware-ocean-block-field.spec.ts \
+            e2e/journey.spec.ts \
+            --grep '3DB-07 keeps only|orientation replay, skip|fresh refresh replays' \
+            --list | tee /tmp/backlog05b-focused-list.txt
+          grep -q '3 tests in 2 files' /tmp/backlog05b-focused-list.txt
+      - name: Run three affected public real Chromium cases with zero retry
+        working-directory: frontend
+        env:
+          OCEANTWIN_LIVE_URL: https://nirmikchawale.github.io/NIRMIK_CHAWALE_SIH_PERSONAL/#/explore
+        run: |
+          npx playwright test -c playwright.live.config.ts \
+            e2e/3db07-time-aware-ocean-block-field.spec.ts \
+            e2e/journey.spec.ts \
+            --grep '3DB-07 keeps only|orientation replay, skip|fresh refresh replays' \
+            --workers=1 --retries=0 --trace=retain-on-failure --reporter=list
+      - name: Preserve only genuine focused test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backlog05b-shard1-focused-${{ github.run_id }}
+          path: |
+            frontend/test-results
+          if-no-files-found: warn
+          retention-days: 14
