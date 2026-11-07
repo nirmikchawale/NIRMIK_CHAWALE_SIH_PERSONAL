@@ -1,25 +1,90 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const liveUrl = process.env.OCEANTWIN_LIVE_URL;
+/**
+ * Capture the *real* document's orientation transitions at the DOM mutation
+ * boundary, not with a Playwright poll that can miss the short Earth/India
+ * phases under loaded software-rendered Cesium.
+ */
+async function recordDocumentJourney(page: Page) {
+  await page.addInitScript(() => {
+    const record = { phases: [] as string[], statuses: [] as string[] };
+    (window as Window & { __oceanJourneyRecord?: typeof record }).__oceanJourneyRecord = record;
+    let watching = false;
+    const attach = () => {
+      if (watching) return true;
+      const globe = document.querySelector<HTMLElement>(".globe-shell[data-journey-phase]");
+      if (!globe) return false;
+      watching = true;
+      const capture = () => {
+        const phase = globe.getAttribute("data-journey-phase");
+        if (phase && record.phases.at(-1) !== phase) record.phases.push(phase);
+        const status = globe.querySelector(".globe-intro-status")?.textContent?.trim();
+        if (status && record.statuses.at(-1) !== status) record.statuses.push(status);
+      };
+      new MutationObserver(capture).observe(globe, {
+        attributes: true, attributeFilter: ["data-journey-phase"],
+        childList: true, subtree: true
+      });
+      capture();
+      return true;
+    };
+    const start = () => {
+      if (attach()) return;
+      const observer = new MutationObserver(() => {
+        if (attach()) observer.disconnect();
+      });
+      observer.observe(document.documentElement, { childList: true, subtree: true });
+    };
+    if (document.documentElement) start();
+    else {
+      // Attach before deferred application modules mount the globe: waiting
+      // until DOMContentLoaded would miss an early real journey transition.
+      const rootObserver = new MutationObserver(() => {
+        if (!document.documentElement) return;
+        rootObserver.disconnect();
+        start();
+      });
+      rootObserver.observe(document, { childList: true });
+    }
+  });
+}
+
+async function expectFullDocumentJourney(page: Page) {
+  const expected = ["earth", "india", "flying", "region"];
+  // The strict ordering is unchanged; only observation is resilient to lag
+  // between Playwright/CI and the browser's actual React commits.
+  await expect.poll(async () => {
+    const phases = await page.evaluate(
+      () => (window as Window & { __oceanJourneyRecord?: { phases: string[] } })
+        .__oceanJourneyRecord?.phases ?? []
+    );
+    let cursor = 0;
+    for (const phase of phases) {
+      if (cursor < expected.length && phase === expected[cursor]) cursor += 1;
+    }
+    return cursor === expected.length;
+  }, { timeout: 90_000 }).toBe(true);
+  await expect(page.locator(".globe-shell[data-journey-phase]")).toHaveAttribute(
+    "data-journey-phase", "region", { timeout: 10_000 }
+  );
+}
+
 
 test("orientation replay, skip, explicit Water Column entry and return remain usable", async ({ page }) => {
   test.setTimeout(300_000);
   if (!liveUrl) throw new Error("OCEANTWIN_LIVE_URL is required");
+  await recordDocumentJourney(page);
   await page.goto(liveUrl, { waitUntil: "domcontentloaded" });
   const globe = page.locator(".globe-shell[data-journey-phase]");
 
-  // A fresh document load must visibly orient Earth → India → ocean.
-  await expect(globe).toHaveAttribute("data-journey-phase", "earth", { timeout: 45_000 });
-  await expect(globe).toHaveAttribute("data-journey-phase", "india", { timeout: 45_000 });
-  await expect(globe).toHaveAttribute("data-journey-phase", "flying", { timeout: 45_000 });
-  await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 45_000 });
+  // Record every actual React DOM phase, in order, even if runner/Playwright
+  // pauses beyond a short transitional animation state.
+  await expectFullDocumentJourney(page);
 
-  // A browser refresh creates a new document and must replay the same story.
+  // The init-script recorder is reset on each full document reload.
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(globe).toHaveAttribute("data-journey-phase", "earth", { timeout: 45_000 });
-  await expect(globe).toHaveAttribute("data-journey-phase", "india", { timeout: 45_000 });
-  await expect(globe).toHaveAttribute("data-journey-phase", "flying", { timeout: 45_000 });
-  await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 45_000 });
+  await expectFullDocumentJourney(page);
 
   // Replay must restart the active orientation sequence. On a loaded public
   // Cesium scene the 900 ms Earth state can advance before Playwright finishes
@@ -61,20 +126,23 @@ test("orientation replay, skip, explicit Water Column entry and return remain us
 
 
 test("fresh refresh replays the Earth India ocean orientation", async ({ page }) => {
+  test.setTimeout(240_000);
   if (!liveUrl) throw new Error("OCEANTWIN_LIVE_URL is required");
+  await recordDocumentJourney(page);
   await page.goto(liveUrl, { waitUntil: "domcontentloaded" });
   const globe = page.locator(".globe-shell[data-journey-phase]");
-  await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 30_000 });
+  await expectFullDocumentJourney(page);
 
   await page.reload({ waitUntil: "domcontentloaded" });
-  // On cold reload, the genuine scientific viewer can stay in "idle" while
-  // the first-open loading overlay owns the screen (up to 120 × 75 ms).
-  // Require the actual Earth→India→flying sequence after readiness, not
-  // an arbitrary 5-second deadline measured before Cesium is interactive.
-  await expect(globe).toHaveAttribute("data-journey-phase", /^(earth|india|flying)$/, { timeout: 25_000 });
-  await expect(page.locator(".globe-intro-status")).toBeVisible();
-  await expect(page.locator(".globe-intro-status")).toContainText(/EARTH|INDIA|VERIFIED OCEAN FIELD/);
-  await expect(globe).toHaveAttribute("data-journey-phase", "region", { timeout: 30_000 });
+  // Verify real, ordered Earth→India→flying→region DOM states. The old poll
+  // missed short-lived phases when Chromium was under software-GPU load.
+  await expectFullDocumentJourney(page);
+  const recordedStatusText = await page.evaluate(
+    () => (window as Window & { __oceanJourneyRecord?: { statuses: string[] } })
+      .__oceanJourneyRecord?.statuses.join(" ") ?? ""
+  );
+  expect(recordedStatusText).toMatch(/EARTH|INDIA|VERIFIED OCEAN FIELD/);
+  await expect(globe).toHaveAttribute("data-journey-phase", "region");
 });
 
 test("mobile pinch, wheel and reduced-motion orientation work", async ({ page }) => {
